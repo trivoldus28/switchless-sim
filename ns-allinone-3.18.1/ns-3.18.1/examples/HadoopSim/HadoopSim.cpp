@@ -43,9 +43,13 @@ void completeCluster(HadoopNetSim::NetSim *netsim)
 
 void initSim()
 {
+    cout << "InitSim" << endl;
     srand(time(NULL));
+    cout << "Cleared1" << endl;
     initTraceReader(traceFilePrefix, numTraceFiles, needDebug, debugDir);
+    cout << "Cleared2" << endl;
     setupCluster(topoType, nodesPerRack, topologyFile, !schedType, debugDir);
+    cout << "Cleared3" << endl;
 }
 
 void runSim()
@@ -64,41 +68,46 @@ void endSim()
 
 void helper()
 {
-    cout<<"./HadoopSim jobSubmitTYpe[0-replay, 1-serial, 2-stress] schedType[0-default, 1-netOpt] \
+    //cout<<"./HadoopSim jobSubmitTYpe[0-replay, 1-serial, 2-stress] schedType[0-default, 1-netOpt] \
           topoType[0-star, 1-rackrow, 2-fattree] nodesPerRack topologyFile traceFilePrefix numTraceFiles \
           needDebug debugDir scaledMapCPUTime(ms) scaledDownRatioForReduce customMapNum customReduceNum needDataImport\n";
-    cout<<"Each trace file represents a single job. For N trace files, the trace file name is represented "
-        <<"as prefix0, prefix1, prefix2, ......\n";
+    //cout<<"Each trace file represents a single job. For N trace files, the trace file name is represented "
+   //     <<"as prefix0, prefix1, prefix2, ......\n";
 }
 
 int parseParameters(int argc, char *argv[])
 {
     if (argc != 15) {
         helper();
+        cout << "Error parsingTooFewParameters1" << endl;
         return Status::TooFewParameters;
     }
 
     submitType = atoi(argv[1]);
     if (submitType < 0 || submitType > 2) {
         helper();
+        cout << "Error parsingWrongParameters2" << endl;
         return Status::WrongParameters;
     }
 
     schedType = atoi(argv[2]);
     if (schedType < 0 || schedType > 1) {
         helper();
+        cout << "Error parsingWrongParameters3" << endl;
         return Status::WrongParameters;
     }
 
     topoType = atoi(argv[3]);
     if (topoType < 0 || topoType > 3) {
         helper();
+        cout << "Error parsingWrongParameters4" << endl;
         return Status::WrongParameters;
     }
 
     nodesPerRack = atoi(argv[4]);
     if (nodesPerRack <= 0) {
         helper();
+        cout << "Error parsingWrongParameters5" << endl;
         return Status::WrongParameters;
     }
 
@@ -106,6 +115,7 @@ int parseParameters(int argc, char *argv[])
     topologyFile.assign(argv[5]);
     if (access(topologyFile.c_str(), 0) < 0) {
         helper();
+        cout << "Error parsingNonExistentFile6" << endl;
         return Status::NonExistentFile;
     }
 
@@ -114,6 +124,7 @@ int parseParameters(int argc, char *argv[])
     int nameLength = traceFilePrefix.size();
     if (numTraceFiles <= 0 || nameLength <= 0) {
         helper();
+        cout << "Error parsingWrongParameters7" << endl;
         return Status::WrongParameters;
     }
 
@@ -126,6 +137,7 @@ int parseParameters(int argc, char *argv[])
     needDataImport = (atoi(argv[14]) == 0) ? false : true;
     if (scaledMapCPUTime < 0 || scaledDownRatioForReduce < 0 || customMapNum <= 0 || customReduceNum <= 0) {
         helper();
+        cout << "Error parsingWrongParameters8" << endl;
         return Status::WrongParameters;
     }
 
@@ -133,6 +145,7 @@ int parseParameters(int argc, char *argv[])
         traceFilePrefix.append(to_string(i));
         if (access(traceFilePrefix.c_str(), 0) < 0) {
             helper();
+        cout << "Error parsingNonExistentFile9" << endl;
             return Status::NonExistentFile;
         }
         traceFilePrefix.resize(nameLength);
@@ -143,12 +156,18 @@ int parseParameters(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     int ret;
+    cout << "Init" << endl;
     ret = parseParameters(argc, argv);
-    if (ret < 0)
+    if (ret < 0){
+        cout << "Error parsing" << endl;
         return ret;
+    }
 
+    cout << "ClearedParsed" << endl;
     initSim();
+    cout << "Cleared" << endl;
     runSim();
+    cout << "Cleared" << endl;
     getchar();
 
     // analyze simulation result

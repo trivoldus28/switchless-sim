@@ -14,7 +14,7 @@ cd ../../
 ./waf clean
 patch -p1 < examples/HadoopSim/ns-3.16_c11.patch
 #CXXFLAGS='--std=gnu++0x -g -I../examples/HadoopSim' ./waf configure --enable-examples --with-openflow=../openflow
-CXXFLAGS='--std=gnu++0x -g -I../examples/HadoopSim' ./waf configure --enable-examples
+CXXFLAGS='-O2 --std=gnu++0x -g -I../examples/HadoopSim' ./waf configure -d debug --enable-examples
 ./waf
 cd examples/HadoopSim
 touch .ns3patched

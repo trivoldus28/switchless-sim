@@ -11,3 +11,9 @@
 *.lai
 *.la
 *.a
+
+# ns-3 build directory
+build/
+.waf*
+
+*.pyc
