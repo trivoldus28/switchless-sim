@@ -43,13 +43,9 @@ void completeCluster(HadoopNetSim::NetSim *netsim)
 
 void initSim()
 {
-    cout << "InitSim" << endl;
     srand(time(NULL));
-    cout << "Cleared1" << endl;
     initTraceReader(traceFilePrefix, numTraceFiles, needDebug, debugDir);
-    cout << "Cleared2" << endl;
     setupCluster(topoType, nodesPerRack, topologyFile, !schedType, debugDir);
-    cout << "Cleared3" << endl;
 }
 
 void runSim()
@@ -163,11 +159,8 @@ int main(int argc, char *argv[])
         return ret;
     }
 
-    cout << "ClearedParsed" << endl;
     initSim();
-    cout << "Cleared" << endl;
     runSim();
-    cout << "Cleared" << endl;
     getchar();
 
     // analyze simulation result

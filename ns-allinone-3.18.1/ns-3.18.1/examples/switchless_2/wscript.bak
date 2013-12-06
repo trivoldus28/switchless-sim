@@ -1,20 +1,14 @@
 ## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
 
 def build(bld):
-    obj = bld.create_ns3_program('topo-test', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
+    obj = bld.create_ns3_program('mysecond', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
+
     obj.source = {
-        'topo-test.cc',
+        'mysecond.cc',
         'p2p-2d-torus.cc',
         'p2p-2d-mesh.cc'
     }
-   
-    obj = bld.create_ns3_program('test-mesh', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
-    obj.source = {
-        'test-mesh.cc',
-        'p2p-2d-torus.cc',
-        'p2p-2d-mesh.cc'
-    } 
-
+    
     obj = bld.create_ns3_program('two-node-test', ['core', 'point-to-point', 'internet', 'applications'])
     obj.source = {
         'two-node-test.cc',
