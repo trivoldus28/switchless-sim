@@ -53,7 +53,7 @@ public:
    *                     in the grid
    */
   PointToPoint2DMeshHelper (uint32_t nRows, 
-                          uint32_t nCols, 
+                          uint32_t nCols, bool isTorus,
                           PointToPointHelper pointToPoint);
 
   ~PointToPoint2DMeshHelper ();
@@ -87,30 +87,12 @@ public:
   Ipv4Address GetIpv4Address (uint32_t row, uint32_t col);
 
   /**
-   * This returns an Ipv6 address at the node specified by 
-   * the (row, col) address.  Technically, a node will have 
-   * multiple interfaces in the grid; therefore, it also has 
-   * multiple Ipv6 addresses.  This method only returns one of 
-   * the addresses. If you picture the grid, the address returned 
-   * is the left row device of all the nodes, except the left-most 
-   * grid nodes, which returns the right row device.
-   *
-   * \param row the row address of the node desired
-   *
-   * \param col the column address of the node desired
-   *
-   * \returns Ipv6Address of one of the interfaces of the node 
-   *          specified by the (row, col) address
-   */
-  Ipv6Address GetIpv6Address (uint32_t row, uint32_t col);
-
-  /**
    * \param stack an InternetStackHelper which is used to install 
    *              on every node in the grid
    */
   void InstallStack (InternetStackHelper stack);
 
-  void AssignIpv4Addresses (Ipv4AddressHelper rowIp);
+  void AssignIpv4Addresses (Ipv4AddressHelper ip, Ipv4AddressHelper link_ip);
 
   /**
    * Assigns Ipv6 addresses to all the row and column interfaces
@@ -119,34 +101,18 @@ public:
    *                of the IPv6 Address
    * \param prefix the prefix length
    */
-  void AssignIpv6Addresses (Ipv6Address network, Ipv6Prefix prefix);
 
-  /**
-   * Sets up the node canvas locations for every node in the grid.
-   * This is needed for use with the animation interface
-   *
-   * \param ulx upper left x value
-   * \param uly upper left y value
-   * \param lrx lower right x value
-   * \param lry lower right y value
-   */
-  void BoundingBox (double ulx, double uly, double lrx, double lry);
-
-private:
+protected:
   uint32_t m_xSize;
   uint32_t m_ySize;
   std::vector<NetDeviceContainer> m_rowDevices;
   std::vector<NetDeviceContainer> m_colDevices;
   std::vector<NetDeviceContainer> m_hubDevices;
   std::vector<Ipv4InterfaceContainer> m_Interfaces;
-  // std::vector<Ipv4InterfaceContainer> m_rowInterfaces;
-  // std::vector<Ipv4InterfaceContainer> m_colInterfaces;
-  std::vector<Ipv6InterfaceContainer> m_rowInterfaces6;
-  std::vector<Ipv6InterfaceContainer> m_colInterfaces6;
   std::vector<NodeContainer> m_nodes;
-  std::vector<NodeContainer> m_routers;
+  std::vector<NodeContainer> m_hubs;
 };
 
 } // namespace ns3
 
-#endif /* POINT_TO_POINT_TORUS_HELPER_H */
+#endif /* POINT_TO_POINT_MESH_HELPER_H */

@@ -23,7 +23,6 @@
 // #include "ns3/point-to-point-grid.h"
 
 #include "p2p-2d-mesh.h"
-#include "p2p-2d-torus.h"
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("SecondScriptExample");
@@ -53,7 +52,8 @@ main (int argc, char *argv[])
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
-  PointToPoint2DMeshHelper grid(nDimensionLength, nDimensionLength, pointToPoint);
+  bool isTorus = false;
+  PointToPoint2DMeshHelper grid(nDimensionLength, nDimensionLength, isTorus, pointToPoint);
 
   // NetDeviceContainer p2pDevices;
   // p2pDevices = pointToPoint.Install (p2pNodes);
@@ -62,9 +62,12 @@ main (int argc, char *argv[])
   grid.InstallStack(stack);
   // stack.Install (p2pDevices);
 
-  Ipv4AddressHelper address1;
-  address1.SetBase ("10.1.1.0", "255.255.255.0");
-  grid.AssignIpv4Addresses(address1);
+  Ipv4AddressHelper nodeAddresses;
+  nodeAddresses.SetBase ("10.1.1.0", "255.255.255.0");
+  // grid.AssignIpv4Addresses(nodeAddresses);
+  Ipv4AddressHelper linkAddresses;
+  linkAddresses.SetBase ("10.2.1.0", "255.255.255.0");
+  grid.AssignIpv4Addresses(nodeAddresses, linkAddresses);
   // Ipv4InterfaceContainer p2pInterfaces;
   // p2pInterfaces = address.Assign (p2pDevices);
 
