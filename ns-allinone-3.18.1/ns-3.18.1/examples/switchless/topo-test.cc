@@ -64,9 +64,7 @@ main (int argc, char *argv[])
 
   Ipv4AddressHelper address1;
   address1.SetBase ("10.1.1.0", "255.255.255.0");
-  Ipv4AddressHelper address2;
-  address2.SetBase ("10.2.1.0", "255.255.255.0");
-  grid.AssignIpv4Addresses(address1, address2);
+  grid.AssignIpv4Addresses(address1);
   // Ipv4InterfaceContainer p2pInterfaces;
   // p2pInterfaces = address.Assign (p2pDevices);
 

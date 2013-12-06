@@ -110,16 +110,7 @@ public:
    */
   void InstallStack (InternetStackHelper stack);
 
-  /**
-   * Assigns Ipv4 addresses to all the row and column interfaces
-   *
-   * \param rowIp the Ipv4AddressHelper used to assign Ipv4 addresses 
-   *              to all of the row interfaces in the grid
-   *
-   * \param colIp the Ipv4AddressHelper used to assign Ipv4 addresses 
-   *              to all of the row interfaces in the grid
-   */
-  void AssignIpv4Addresses (Ipv4AddressHelper rowIp, Ipv4AddressHelper colIp);
+  void AssignIpv4Addresses (Ipv4AddressHelper rowIp);
 
   /**
    * Assigns Ipv6 addresses to all the row and column interfaces
@@ -146,13 +137,16 @@ private:
   uint32_t m_ySize;
   std::vector<NetDeviceContainer> m_rowDevices;
   std::vector<NetDeviceContainer> m_colDevices;
-  std::vector<Ipv4InterfaceContainer> m_rowInterfaces;
-  std::vector<Ipv4InterfaceContainer> m_colInterfaces;
+  std::vector<NetDeviceContainer> m_hubDevices;
+  std::vector<Ipv4InterfaceContainer> m_Interfaces;
+  // std::vector<Ipv4InterfaceContainer> m_rowInterfaces;
+  // std::vector<Ipv4InterfaceContainer> m_colInterfaces;
   std::vector<Ipv6InterfaceContainer> m_rowInterfaces6;
   std::vector<Ipv6InterfaceContainer> m_colInterfaces6;
   std::vector<NodeContainer> m_nodes;
+  std::vector<NodeContainer> m_routers;
 };
 
 } // namespace ns3
 
-#endif /* POINT_TO_POINT_MESH_HELPER_H */
+#endif /* POINT_TO_POINT_TORUS_HELPER_H */

@@ -46,30 +46,37 @@ PointToPoint2DMeshHelper::PointToPoint2DMeshHelper (uint32_t nRows,
   for (uint32_t y = 0; y < nRows; ++y)
     {
       NodeContainer rowNodes;
+      NodeContainer rowRouters;
       NetDeviceContainer rowDevices;
       NetDeviceContainer colDevices;
+      NetDeviceContainer hubDevices;
 
       for (uint32_t x = 0; x < nCols; ++x)
         {
-          rowNodes.Create (1);
+          rowRouters.Create (1);
+          rowNodes.Create(1);
+          hubDevices.Add (pointToPoint.
+                          Install (rowNodes.Get(x), rowRouters.Get (x)));;
 
           // install p2p links across the row
           if (x > 0)
             {
               rowDevices.Add (pointToPoint.
-                              Install (rowNodes.Get (x-1), rowNodes.Get (x)));
+                              Install (rowRouters.Get (x-1), rowRouters.Get (x)));
             }
 
           // install vertical p2p links
           if (y > 0)
             {
               colDevices.Add (pointToPoint.
-                              Install ((m_nodes.at (y-1)).Get (x), rowNodes.Get (x)));
+                              Install ((m_routers.at (y-1)).Get (x), rowRouters.Get (x)));
             }
         }
 
+      m_routers.push_back (rowRouters);
       m_nodes.push_back (rowNodes);
       m_rowDevices.push_back (rowDevices);
+      m_hubDevices.push_back (hubDevices);
 
       if (y > 0)
         m_colDevices.push_back (colDevices);
@@ -86,15 +93,17 @@ PointToPoint2DMeshHelper::InstallStack (InternetStackHelper stack)
   for (uint32_t i = 0; i < m_nodes.size (); ++i)
     {
       NodeContainer rowNodes = m_nodes[i];
+      NodeContainer rowRouters = m_routers[i];
       for (uint32_t j = 0; j < rowNodes.GetN (); ++j)
         {
           stack.Install (rowNodes.Get (j));
+          stack.Install (rowRouters.Get (j));
         }
     }
 }
 
 void
-PointToPoint2DMeshHelper::AssignIpv4Addresses (Ipv4AddressHelper rowIp, Ipv4AddressHelper colIp)
+PointToPoint2DMeshHelper::AssignIpv4Addresses (Ipv4AddressHelper rowIp)
 {
   // Assign addresses to all row devices in the grid.
   // These devices are stored in a vector.  Each row 
@@ -103,14 +112,23 @@ PointToPoint2DMeshHelper::AssignIpv4Addresses (Ipv4AddressHelper rowIp, Ipv4Addr
   for (uint32_t i = 0; i < m_rowDevices.size (); ++i)
     {
       Ipv4InterfaceContainer rowInterfaces; 
+      Ipv4InterfaceContainer hubInterfaces; 
       NetDeviceContainer rowContainer = m_rowDevices[i];
+      NetDeviceContainer hubContainer = m_hubDevices[i];
       for (uint32_t j = 0; j < rowContainer.GetN (); j+=2)
         {
           rowInterfaces.Add (rowIp.Assign (rowContainer.Get (j))); 
           rowInterfaces.Add (rowIp.Assign (rowContainer.Get (j+1)));
           rowIp.NewNetwork ();
         }
-      m_rowInterfaces.push_back (rowInterfaces);
+      for (uint32_t j = 0; j < hubContainer.GetN (); j+=2)
+        {
+          hubInterfaces.Add (rowIp.Assign (hubContainer.Get (j))); 
+          hubInterfaces.Add (rowIp.Assign (hubContainer.Get (j+1)));
+          rowIp.NewNetwork ();
+        }
+      // m_rowInterfaces.push_back (rowInterfaces);
+      m_Interfaces.push_back(hubInterfaces);
     }
 
   // Assign addresses to all col devices in the grid.
@@ -123,11 +141,11 @@ PointToPoint2DMeshHelper::AssignIpv4Addresses (Ipv4AddressHelper rowIp, Ipv4Addr
       NetDeviceContainer colContainer = m_colDevices[i];
       for (uint32_t j = 0; j < colContainer.GetN (); j+=2)
         {
-          colInterfaces.Add (colIp.Assign (colContainer.Get (j))); 
-          colInterfaces.Add (colIp.Assign (colContainer.Get (j+1)));
-          colIp.NewNetwork ();
+          colInterfaces.Add (rowIp.Assign (colContainer.Get (j))); 
+          colInterfaces.Add (rowIp.Assign (colContainer.Get (j+1)));
+          rowIp.NewNetwork ();
         }
-      m_colInterfaces.push_back (colInterfaces);
+      // m_colInterfaces.push_back (colInterfaces);
     }
 }
 
@@ -248,21 +266,7 @@ PointToPoint2DMeshHelper::GetIpv4Address (uint32_t row, uint32_t col)
       NS_FATAL_ERROR ("Index out of bounds in PointToPoint2DMeshHelper::GetIpv4Address.");
     }
 
-  // Right now this just gets one of the addresses of the
-  // specified node.  The exact device can't be specified.
-  // If you picture the grid, the address returned is the 
-  // address of the left (row) device of all nodes, with 
-  // the exception of the left-most nodes in the grid; 
-  // in which case the right (row) device address is 
-  // returned
-  if (col == 0)
-    {
-      return (m_rowInterfaces.at (row)).GetAddress (0);
-    }
-  else
-    {
-      return (m_rowInterfaces.at (row)).GetAddress ((2*col)-1);
-    }
+  return (m_Interfaces.at (row)).GetAddress (col);
 }
 
 Ipv6Address
