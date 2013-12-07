@@ -25,5 +25,3 @@ def build(bld):
         'two-node-test.cc',
         'data-center-app.cc'
     }
-
-
