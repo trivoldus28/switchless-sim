@@ -13,6 +13,7 @@
 
 // NS-3 Includes
 #include "ns3/core-module.h"
+#include "ns3/internet-module.h"
 #include "ns3/applications-module.h"
 
 using namespace ns3;
@@ -42,11 +43,11 @@ public:
     typedef struct  SendParamsStruct
     {
         bool            m_sending;
-        Address*        m_nodes;
+        Ipv4Address*    m_nodes;
         RECEIVERS       m_receivers;
         uint32_t        m_nReceivers;
         SEND_PATTERN    m_sendPattern;
-        uint32_t        m_sendInterval;
+        Time            m_sendInterval;
         uint32_t        m_packetSize;
         uint32_t        m_nPackets;
     } SendParams;
@@ -62,18 +63,31 @@ private:
     virtual void StartApplication (void);
     virtual void StopApplication (void);
 
+    // Callback functions
+    bool HandleConnectionRequest (Ptr<Socket>, const Address& from);
+    void HandleAccept (Ptr<Socket>, const Address& from);
+    void HandleRead (Ptr<Socket>);
+    void HandleClose (Ptr<Socket>);
+    void HandleError (Ptr<Socket>);
+    void HandleConnectionSucceeded (Ptr<Socket>);
+    void HandleConnectionFailed (Ptr<Socket>);
+
     // Send a packet
     void SendPacket (uint32_t sockIndex);
     // Schedule the next packet to send
-    void ScheduleSend (void);
+    void ScheduleSend (uint32_t sockIndex);
 
-    SendParams          m_sendParams;
-    EventId             m_sendEvent;
-    bool                m_setup;
-    bool                m_running;
-    uint32_t            m_packetsSent;
-
-    // TODO: Sockets and receiving
+    SendParams                  m_sendParams;
+    EventId                     m_sendEvent;
+    bool                        m_setup;
+    bool                        m_running;
+    uint32_t                    m_packetsSent;
+    uint32_t                    m_bytesSent;
+    uint32_t                    m_packetsReceived;
+    uint32_t                    m_bytesReceived;
+    Ptr<Socket>*                m_txSockets;
+    Ptr<Socket>                 m_rxSocket;
+    std::list<Ptr<Socket>>      m_acceptSocketList;
 };
 
 #endif
