@@ -1,4 +1,4 @@
-cscope 15 $HOME/programming/switchless-sim/ns-allinone-3.18.1/ns-3.18.1/examples/HadoopSim               0001611344
+cscope 15 $HOME/programming/switchless-sim/ns-allinone-3.18.1/ns-3.18.1/examples/HadoopSim               0001611669
 	@Cluster.cpp
 
 1 
@@ -3811,15 +3811,43 @@ Simuœt‹
 	$hñ≥r
 ()
 
-67 
-cout
-<<"./HadoopSim jobSubmitTYpe[0-replay, 1-serial, 2-stress] schedType[0-default, 1-netOpt] \
-[0-star, 1-rackrow, 2-fattree]ÇodesPerRackÅopologyFileÅraceFilePrefixÇumTraceFiles \
- debugDir scaledMapCPUTime(ms) scaledDownRatioForReduce customMapNum customReduceNumÇeedDataImport\n";
+68 
+t›oTy≥
+[0-
+°¨
+, 1-
+øckrow
+, 2-
+Áâªe
+] 
+nodesPîRack
+ 
+t›ﬁogyFûe
+ 
+åa˚FûePªfix
+ 
+numTø˚Fûes
+ \
 
-70 
-cout
-<<"EachÅrace fileÑepresentsá single job. For NÅrace files,ÅheÅrace fileÇame isÑepresented "
+69 
+√edDebug
+ 
+debugDú
+ 
+	`sˇÀdM≠CPUTime
+(
+ms
+Ë
+sˇÀdDownR©ioF‹Redu˚
+ 
+cu°omM≠Num
+ 
+cu°omRedu˚Num
+ 
+√edD©aImp‹t
+\
+n
+";
 
 72 
 	}
@@ -3841,13 +3869,19 @@ cout
 	`hñ≥r
 ();
 
-78  
+78 
+cout
+ << "Eº‹Ö¨sögTooFewP¨amëîs1" << 
+ídl
+;
+
+79  
 Sètus
 ::
 TooFewP¨amëîs
 ;
 
-81 
+82 
 submôTy≥
  = 
 	`©oi
@@ -3855,21 +3889,27 @@ submôTy≥
 ¨gv
 [1]);
 
-82 i‡(
+83 i‡(
 submôTy≥
  < 0 || submitType > 2) {
 
-83 
+84 
 	`hñ≥r
 ();
 
-84  
+85 
+cout
+ << "Eº‹Ö¨sögWr⁄gP¨amëîs2" << 
+ídl
+;
+
+86  
 Sètus
 ::
 Wr⁄gP¨amëîs
 ;
 
-87 
+89 
 schedTy≥
  = 
 	`©oi
@@ -3877,21 +3917,27 @@ schedTy≥
 ¨gv
 [2]);
 
-88 i‡(
+90 i‡(
 schedTy≥
  < 0 || schedType > 1) {
 
-89 
+91 
 	`hñ≥r
 ();
 
-90  
+92 
+cout
+ << "Eº‹Ö¨sögWr⁄gP¨amëîs3" << 
+ídl
+;
+
+93  
 Sètus
 ::
 Wr⁄gP¨amëîs
 ;
 
-93 
+96 
 t›oTy≥
  = 
 	`©oi
@@ -3899,21 +3945,27 @@ t›oTy≥
 ¨gv
 [3]);
 
-94 i‡(
+97 i‡(
 t›oTy≥
  < 0 ||ÅopoType > 3) {
 
-95 
+98 
 	`hñ≥r
 ();
 
-96  
+99 
+cout
+ << "Eº‹Ö¨sögWr⁄gP¨amëîs4" << 
+ídl
+;
+
+100  
 Sètus
 ::
 Wr⁄gP¨amëîs
 ;
 
-99 
+103 
 nodesPîRack
  = 
 	`©oi
@@ -3921,21 +3973,27 @@ nodesPîRack
 ¨gv
 [4]);
 
-100 i‡(
+104 i‡(
 nodesPîRack
  <= 0) {
 
-101 
+105 
 	`hñ≥r
 ();
 
-102  
+106 
+cout
+ << "Eº‹Ö¨sögWr⁄gP¨amëîs5" << 
+ídl
+;
+
+107  
 Sètus
 ::
 Wr⁄gP¨amëîs
 ;
 
-106 
+111 
 t›ﬁogyFûe
 .
 	`assign
@@ -3943,7 +4001,7 @@ t›ﬁogyFûe
 ¨gv
 [5]);
 
-107 i‡(
+112 i‡(
 	`ac˚ss
 (
 t›ﬁogyFûe
@@ -3951,17 +4009,23 @@ t›ﬁogyFûe
 	`c_°r
 (), 0) < 0) {
 
-108 
+113 
 	`hñ≥r
 ();
 
-109  
+114 
+cout
+ << "Eº‹Ö¨sögN⁄Exi°ítFûe6" << 
+ídl
+;
+
+115  
 Sètus
 ::
 N⁄Exi°ítFûe
 ;
 
-112 
+118 
 åa˚FûePªfix
 .
 	`assign
@@ -3969,7 +4033,7 @@ N⁄Exi°ítFûe
 ¨gv
 [6]);
 
-113 
+119 
 numTø˚Fûes
  = 
 	`©oi
@@ -3977,7 +4041,7 @@ numTø˚Fûes
 ¨gv
 [7]);
 
-114 
+120 
 «meLígth
  = 
 åa˚FûePªfix
@@ -3985,23 +4049,29 @@ numTø˚Fûes
 	`size
 ();
 
-115 i‡(
+121 i‡(
 numTø˚Fûes
  <0 || 
 «meLígth
  <= 0) {
 
-116 
+122 
 	`hñ≥r
 ();
 
-117  
+123 
+cout
+ << "Eº‹Ö¨sögWr⁄gP¨amëîs7" << 
+ídl
+;
+
+124  
 Sètus
 ::
 Wr⁄gP¨amëîs
 ;
 
-120 
+127 
 √edDebug
  = (
 	`©oi
@@ -4013,7 +4083,7 @@ Wr⁄gP¨amëîs
 åue
 ;
 
-121 
+128 
 debugDú
 .
 	`assign
@@ -4021,7 +4091,7 @@ debugDú
 ¨gv
 [9]);
 
-122 
+129 
 sˇÀdM≠CPUTime
  = 
 	`©oi
@@ -4029,7 +4099,7 @@ sˇÀdM≠CPUTime
 ¨gv
 [10]);
 
-123 
+130 
 sˇÀdDownR©ioF‹Redu˚
  = 
 	`©oi
@@ -4037,7 +4107,7 @@ sˇÀdDownR©ioF‹Redu˚
 ¨gv
 [11]);
 
-124 
+131 
 cu°omM≠Num
  = 
 	`©oi
@@ -4045,7 +4115,7 @@ cu°omM≠Num
 ¨gv
 [12]);
 
-125 
+132 
 cu°omRedu˚Num
  = 
 	`©oi
@@ -4053,7 +4123,7 @@ cu°omRedu˚Num
 ¨gv
 [13]);
 
-126 
+133 
 √edD©aImp‹t
  = (
 	`©oi
@@ -4065,7 +4135,7 @@ cu°omRedu˚Num
 åue
 ;
 
-127 i‡(
+134 i‡(
 sˇÀdM≠CPUTime
  < 0 || 
 sˇÀdDownR©ioF‹Redu˚
@@ -4075,23 +4145,29 @@ cu°omM≠Num
 cu°omRedu˚Num
  <= 0) {
 
-128 
+135 
 	`hñ≥r
 ();
 
-129  
+136 
+cout
+ << "Eº‹Ö¨sögWr⁄gP¨amëîs8" << 
+ídl
+;
+
+137  
 Sètus
 ::
 Wr⁄gP¨amëîs
 ;
 
-132 
+140 
 i
  = 0; i < 
 numTø˚Fûes
 ; i++) {
 
-133 
+141 
 åa˚FûePªfix
 .
 	`≠≥nd
@@ -4101,7 +4177,7 @@ numTø˚Fûes
 i
 ));
 
-134 i‡(
+142 i‡(
 	`ac˚ss
 (
 åa˚FûePªfix
@@ -4109,17 +4185,23 @@ i
 	`c_°r
 (), 0) < 0) {
 
-135 
+143 
 	`hñ≥r
 ();
 
-136  
+144 
+cout
+ << "Eº‹Ö¨sögN⁄Exi°ítFûe9" << 
+ídl
+;
+
+145  
 Sètus
 ::
 N⁄Exi°ítFûe
 ;
 
-138 
+147 
 åa˚FûePªfix
 .
 	`ªsize
@@ -4127,11 +4209,11 @@ N⁄Exi°ítFûe
 «meLígth
 );
 
-141 
+150 
 	}
 }
 
-143 
+152 
 	$maö
 (
 ¨gc
@@ -4139,11 +4221,17 @@ N⁄Exi°ítFûe
 ¨gv
 [])
 
-145 
+154 
 ªt
 ;
 
-146 
+155 
+cout
+ << "Inô" << 
+ídl
+;
+
+156 
 ªt
  = 
 	`∑r£P¨amëîs
@@ -4153,31 +4241,37 @@ N⁄Exi°ítFûe
 ¨gv
 );
 
-147 i‡(
+157 i‡(
 ªt
- < 0)
+ < 0){
 
-148  
+158 
+cout
+ << "Eº‹Ö¨sög" << 
+ídl
+;
+
+159  
 ªt
 ;
 
-150 
+162 
 	`öôSim
 ();
 
-151 
+163 
 	`runSim
 ();
 
-152 
+164 
 	`gëch¨
 ();
 
-155 i‡(
+167 i‡(
 √edDebug
 ) {
 
-156 
+168 
 	`°¨tA«lysis
 (
 Ál£
@@ -4185,15 +4279,15 @@ N⁄Exi°ítFûe
 debugDú
 );
 
-157 
+169 
 	`dißbÀNëM⁄ô‹
 ();
 
-159 
+171 
 	`ídSim
 ();
 
-161 
+173 
 	}
 }
 

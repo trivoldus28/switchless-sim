@@ -24,6 +24,12 @@ def build(bld):
         'test-ncube.cc',
         'p2p-ncube.cc'
     } 
+   
+    obj = bld.create_ns3_program('test-fattree', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
+    obj.source = {
+        'test-fattree.cc',
+        'p2p-fattree.cc'
+    } 
 
     obj = bld.create_ns3_program('two-node-test', ['core', 'point-to-point', 'internet', 'applications'])
     obj.source = {
