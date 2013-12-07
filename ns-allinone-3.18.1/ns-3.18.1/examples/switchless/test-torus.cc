@@ -48,6 +48,8 @@ main (int argc, char *argv[])
   // NodeContainer p2pNodes;
   // p2pNodes.Create (nDimensionLength);
 
+  std::cout << "Setting up simulation" << std::endl;
+
   PointToPointHelper pointToPoint;
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
@@ -63,13 +65,12 @@ main (int argc, char *argv[])
   // stack.Install (p2pDevices);
 
   Ipv4AddressHelper nodeAddresses;
-  nodeAddresses.SetBase ("10.1.1.0", "255.255.255.0");
-  // grid.AssignIpv4Addresses(nodeAddresses);
   Ipv4AddressHelper linkAddresses;
-  linkAddresses.SetBase ("10.2.1.0", "255.255.255.0");
+  // nodeAddresses.SetBase ("10.1.1.0", "255.255.255.0");
+  // linkAddresses.SetBase ("10.2.1.0", "255.255.255.0");
+  nodeAddresses.SetBase ("0.0.0.0", "255.255.255.0");
+  linkAddresses.SetBase ("1.0.0.0", "255.0.0.0");
   grid.AssignIpv4Addresses(nodeAddresses, linkAddresses);
-  // Ipv4InterfaceContainer p2pInterfaces;
-  // p2pInterfaces = address.Assign (p2pDevices);
 
   UdpEchoServerHelper echoServer (9);
 
@@ -92,6 +93,8 @@ main (int argc, char *argv[])
 
   // pointToPoint.EnablePcapAll ("second");
   // csma.EnablePcap ("second", csmaDevices.Get (1), true);
+
+  std::cout << "Running simulation" << std::endl;
 
   Simulator::Run ();
   Simulator::Destroy ();

@@ -23,7 +23,7 @@
 // #include "ns3/point-to-point-grid.h"
 
 #include "p2p-2d-mesh.h"
-#include "p2p-2d-torus.h"
+#include "p2p-cube.h"
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("SecondScriptExample");

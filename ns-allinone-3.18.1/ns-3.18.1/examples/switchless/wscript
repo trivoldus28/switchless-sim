@@ -4,7 +4,6 @@ def build(bld):
     # obj = bld.create_ns3_program('topo-test', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
     # obj.source = {
     #     'topo-test.cc',
-    #     'p2p-2d-torus.cc',
     #     'p2p-2d-mesh.cc'
     # }
    
@@ -18,6 +17,12 @@ def build(bld):
     obj.source = {
         'test-torus.cc',
         'p2p-2d-mesh.cc'
+    } 
+   
+    obj = bld.create_ns3_program('test-ncube', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
+    obj.source = {
+        'test-ncube.cc',
+        'p2p-ncube.cc'
     } 
 
     obj = bld.create_ns3_program('two-node-test', ['core', 'point-to-point', 'internet', 'applications'])

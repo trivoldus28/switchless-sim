@@ -63,13 +63,12 @@ main (int argc, char *argv[])
   // stack.Install (p2pDevices);
 
   Ipv4AddressHelper nodeAddresses;
-  nodeAddresses.SetBase ("10.1.1.0", "255.255.255.0");
-  // grid.AssignIpv4Addresses(nodeAddresses);
   Ipv4AddressHelper linkAddresses;
-  linkAddresses.SetBase ("10.2.1.0", "255.255.255.0");
+  // nodeAddresses.SetBase ("10.1.1.0", "255.255.255.0");
+  // linkAddresses.SetBase ("10.2.1.0", "255.255.255.0");
+  nodeAddresses.SetBase ("0.0.0.0", "255.255.0.0");
+  linkAddresses.SetBase ("1.0.0.0", "255.255.0.0");
   grid.AssignIpv4Addresses(nodeAddresses, linkAddresses);
-  // Ipv4InterfaceContainer p2pInterfaces;
-  // p2pInterfaces = address.Assign (p2pDevices);
 
   UdpEchoServerHelper echoServer (9);
 

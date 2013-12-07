@@ -81,13 +81,13 @@ PointToPoint2DMeshHelper::PointToPoint2DMeshHelper (uint32_t nRows,
             if (x == nCols - 1 && nCols > 1)
               {
                 rowDevices.Add (pointToPoint.
-                                Install (rowNodes.Get (x), rowNodes.Get (0)));
+                                Install (rowHubs.Get (x), rowHubs.Get (0)));
               }
 
             if (y == nRows - 1 && nRows > 1)
               {
                 colDevices.Add (pointToPoint.
-                                Install ((m_nodes.at (0)).Get (x), rowNodes.Get (x)));
+                                Install ((m_hubs.at (0)).Get (x), rowHubs.Get (x)));
               }
             }
         }
@@ -150,7 +150,7 @@ PointToPoint2DMeshHelper::AssignIpv4Addresses (Ipv4AddressHelper nodeIp, Ipv4Add
         {
           rowInterfaces.Add (linkIp.Assign (rowContainer.Get (j))); 
           rowInterfaces.Add (linkIp.Assign (rowContainer.Get (j+1)));
-          linkIp.NewNetwork ();
+          // linkIp.NewNetwork ();
         }
     }
 
@@ -166,7 +166,7 @@ PointToPoint2DMeshHelper::AssignIpv4Addresses (Ipv4AddressHelper nodeIp, Ipv4Add
         {
           colInterfaces.Add (linkIp.Assign (colContainer.Get (j))); 
           colInterfaces.Add (linkIp.Assign (colContainer.Get (j+1)));
-          linkIp.NewNetwork ();
+          // linkIp.NewNetwork ();
         }
       // m_colInterfaces.push_back (colInterfaces);
     }
