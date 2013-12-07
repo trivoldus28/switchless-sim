@@ -188,17 +188,17 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
         else
         {
             // Log received packet
+            uint32_t bytesReceived = packet->GetSize ();
             SeqTsHeader seqTs;
             packet->RemoveHeader (seqTs);
             uint32_t currentSeqNum = seqTs.GetSeq ();
             m_packetsReceived++;
-            m_bytesReceived += packet->GetSize ();
-            // TODO: Total packets received and total bytes received
+            m_bytesReceived += bytesReceived;
             NS_LOG_INFO ("Node " << GetNode ()->GetId () << " RX:\n" <<
                          "    Source: " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << "\n" <<
                          "    Destination: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () 
                               << "\n" <<
-                         "    Payload Size: " << packet->GetSize () << " bytes\n" <<
+                         "    Payload Size: " << bytesReceived << " bytes\n" <<
                          "    Sequence Number: " << currentSeqNum << "\n" << 
                          "    UID: " << packet->GetUid () << "\n" <<
                          "    TXTime: " << seqTs.GetTs () << "\n" <<
