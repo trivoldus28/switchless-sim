@@ -27,8 +27,8 @@ public:
     typedef enum RECEIVERS_ENUM
     {
         RECEIVERS_INVALID = 0,
-        RANDOM_SUBSET,
-        ALL_IN_LIST
+        ALL_IN_LIST,
+        RANDOM_SUBSET
     } RECEIVERS;
     // The pattern in which packets will be sent,
     // at fixed intervals or at random intervals
@@ -44,6 +44,7 @@ public:
     {
         bool            m_sending;
         Ipv4Address*    m_nodes;
+        uint32_t        m_nNodes;
         RECEIVERS       m_receivers;
         uint32_t        m_nReceivers;
         SEND_PATTERN    m_sendPattern;
@@ -57,8 +58,29 @@ public:
     virtual ~DataCenterApp ();
 
     // Function to setup app
-    void Setup (SendParams& sendingParams, bool debug);  
+    bool Setup (SendParams& sendingParams, uint32_t nodeId, bool debug);  
 private:
+    // Constants
+    static const uint16_t PORT = 8080;
+
+    // Struct to hold information to sending to a node
+    typedef struct SendInfoStruct
+    {
+        Ptr<Socket>     m_socket;
+        EventId         m_event;
+        uint32_t        m_packetsSent;
+        uint32_t        m_bytesSent;
+    } SendInfo;
+    static void InitSendInfo (SendInfo& sendInfo, Ptr<Socket> socket);
+
+    // Struct to hold receive information
+    typedef struct ReceiveInfoStruct
+    {
+        uint32_t        m_packetsReceived;
+        uint32_t        m_bytesReceived;
+    } ReceiveInfo;
+    static void InitReceiveInfo (ReceiveInfo& receiveInfo);
+
     // Overridden methods called when app starts and stops
     virtual void StartApplication (void);
     virtual void StopApplication (void);
@@ -73,21 +95,16 @@ private:
     void HandleConnectionFailed (Ptr<Socket>);
 
     // Send a packet
-    void SendPacket (uint32_t sockIndex);
+    void SendPacket (uint32_t index);
     // Schedule the next packet to send
-    void ScheduleSend (uint32_t sockIndex);
+    void ScheduleSend (uint32_t index);
 
-    SendParams                  m_sendParams;
-    EventId                     m_sendEvent;
-    bool                        m_setup;
-    bool                        m_running;
-    uint32_t                    m_packetsSent;
-    uint32_t                    m_bytesSent;
-    uint32_t                    m_packetsReceived;
-    uint32_t                    m_bytesReceived;
-    Ptr<Socket>*                m_txSockets;
-    Ptr<Socket>                 m_rxSocket;
-    std::list<Ptr<Socket>>      m_acceptSocketList;
+    SendParams                          m_sendParams;
+    bool                                m_setup;
+    bool                                m_running;
+    std::vector<SendInfo>               m_sendInfos;
+    Ptr<Socket>                         m_rxSocket;
+    std::map<Ptr<Socket>, ReceiveInfo>  m_acceptSocketMap;
 };
 
 #endif

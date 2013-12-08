@@ -11,16 +11,11 @@ NS_OBJECT_ENSURE_REGISTERED (DataCenterApp);
 
 DataCenterApp::DataCenterApp ()
   : m_sendParams (),
-    m_sendEvent (),
     m_setup (false),
     m_running (false),
-    m_packetsSent (0),
-    m_bytesSent (0),
-    m_packetsReceived (0),
-    m_bytesReceived (0),
-    m_txSockets (NULL),
-    m_rxSocket (NULL),
-    m_acceptSocketList ()
+    m_sendInfos (),
+    m_rxSocket (),
+    m_acceptSocketMap ()
 {
     NS_LOG_FUNCTION (this);
     // Default sending parameters
@@ -39,19 +34,43 @@ DataCenterApp::~DataCenterApp ()
     NS_LOG_FUNCTION (this);
 }
 
-void
-DataCenterApp::Setup (SendParams& sendingParams, bool debug)
+bool
+DataCenterApp::Setup (SendParams& sendingParams, uint32_t nodeId, bool debug)
 {
     NS_LOG_FUNCTION (this << debug);
 
+    if (sendingParams.m_nReceivers > sendingParams.m_nNodes)
+    {
+        NS_LOG_ERROR ("Number of receivers is greater than number of nodes");
+        return false;
+    }
+
     m_sendParams = sendingParams;
 
+    // When debugging make packets deterministic
     if (debug)
-        srand(0);
+        srand (nodeId);
     else
-        srand(time(NULL));
+        srand (time (NULL));
 
     m_setup = true;   
+
+    return true;
+}
+
+void
+DataCenterApp::InitSendInfo (SendInfo& sendInfo, Ptr<Socket> socket)
+{
+    sendInfo.m_socket = socket;
+    sendInfo.m_packetsSent = 0;
+    sendInfo.m_bytesSent = 0;
+}
+
+void
+DataCenterApp::InitReceiveInfo (ReceiveInfo& receiveInfo)
+{
+    receiveInfo.m_packetsReceived = 0;
+    receiveInfo.m_bytesReceived = 0;
 }
 
 void
@@ -60,19 +79,13 @@ DataCenterApp::StartApplication (void)
     NS_LOG_FUNCTION (this);
 
     if (!m_setup)
-        NS_LOG_WARN ("Application started before calling DataCenterApp::Setup");
+        NS_LOG_WARN ("Application started before calling DataCenterApp::Setup. Using defaults.");
 
     m_running = true;
 
-    // TODO: I think this may need to be a vector of packets sent for each socket
-    m_packetsSent = 0;
-    m_bytesSent = 0;
-    m_packetsReceived = 0;
-    m_bytesReceived = 0;
-
     // Setup socket for receiving
     m_rxSocket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
-    Address local (InetSocketAddress (Ipv4Address::GetAny (), 8080));
+    Address local (InetSocketAddress (Ipv4Address::GetAny (), PORT));
     m_rxSocket->Bind (local);
     m_rxSocket->Listen ();
     m_rxSocket->ShutdownSend ();
@@ -85,22 +98,72 @@ DataCenterApp::StartApplication (void)
     // Only open sending sockets if this app is sending
     if (m_sendParams.m_sending)
     {
-        // Allocate space for sending socket pointers
-        m_txSockets = (Ptr<Socket>*)malloc (m_sendParams.m_nReceivers * sizeof(Socket*)); 
-
-        // TODO: Need to do different things for different ways of choosing receivers
-        // Setup sockets for sending
-        for (int i = 0; i < m_sendParams.m_nReceivers; i++)
+        switch (m_sendParams.m_receivers)
         {
-            m_txSockets[i] = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
-            Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[i], 8080));
-            m_txSockets[i]->Bind ();
-            m_txSockets[i]->Connect (nodeAddress);
-            m_txSockets[i]->SetConnectCallback (MakeCallback (&DataCenterApp::HandleConnectionSucceeded, this),
+            case ALL_IN_LIST:
+            {
+                // Setup socket for each node in list
+                for (int i = 0; i < m_sendParams.m_nNodes; i++)
+                {
+                    Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
+                    Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[i], PORT));
+                    socket->Bind ();
+                    socket->Connect (nodeAddress);
+                    socket->SetConnectCallback (MakeCallback (&DataCenterApp::HandleConnectionSucceeded, this),
                                                 MakeCallback (&DataCenterApp::HandleConnectionFailed, this));
-            // TODO: This may need to be different based on different send patterns
-            //       and whether the first packet is sent at time 0 or after an interval    
-            SendPacket(i);
+                    SendInfo sendInfo;
+                    InitSendInfo (sendInfo, socket);
+                    m_sendInfos.push_back (sendInfo);
+
+                    // TODO: Figure out sending
+                    SendPacket(i);
+                }
+                break;
+            }
+            case RANDOM_SUBSET:
+            {
+                // Check we will not infinite loop when picking a receiver
+                if (m_sendParams.m_nReceivers > m_sendParams.m_nNodes)
+                {
+                    NS_LOG_ERROR ("Number of receivers is greater than number of nodes");
+                    break;
+                }
+
+                // Setup socket for each randomly picked receiver
+                std::set<int> pickedReceivers;
+                for (int i = 0; i < m_sendParams.m_nReceivers; i++)
+                {
+                    Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
+                    
+                    // Pick receiver
+                    int receiver = -1;
+                    while (receiver == -1)
+                    {
+                        int candidate = rand() % m_sendParams.m_nNodes;
+                        if (pickedReceivers.find(candidate) == pickedReceivers.end())
+                        {
+                            pickedReceivers.insert(candidate);
+                            receiver = candidate;
+                            break;
+                        }
+                    }
+
+                    Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[receiver], PORT));
+                    socket->Bind ();
+                    socket->Connect (nodeAddress);
+                    socket->SetConnectCallback (MakeCallback (&DataCenterApp::HandleConnectionSucceeded, this),
+                                                MakeCallback (&DataCenterApp::HandleConnectionFailed, this));
+                    SendInfo sendInfo;
+                    InitSendInfo (sendInfo, socket);
+                    m_sendInfos.push_back (sendInfo);
+
+                    // TODO: Figure out sending
+                }
+                break;
+            }
+            default:
+                NS_LOG_ERROR ("Invalid receivers specifier");
+                break;
         }
     }
 }
@@ -112,32 +175,22 @@ DataCenterApp::StopApplication (void)
 
     m_running = false;
 
-    // Cancel send event if it is running
-    if (m_sendEvent.IsRunning ())
-        Simulator::Cancel (m_sendEvent);
-
-    // Cleanup sending sockets if this app is sending
-    if (m_sendParams.m_sending)
+    for (int i = 0; i < m_sendInfos.size (); i++)
     {
-        // Close sockets for sending
-        for (int i = 0; i < m_sendParams.m_nReceivers; i++)
-        {
-            m_txSockets[i]->Close ();
-            m_txSockets[i] = NULL;
-        }
+        if (m_sendInfos[i].m_event.IsRunning ())
+            Simulator::Cancel (m_sendInfos[i].m_event);
 
-        // Free memory allocated for sockets
-        free(m_txSockets);
+        m_sendInfos[i].m_socket->Close ();
+        m_sendInfos[i].m_socket = NULL;
     }
+    m_sendInfos.clear ();
 
     // Close accepted sockets
-    while (!m_acceptSocketList.empty ())
-    {
-        Ptr<Socket> acceptedSocket = m_acceptSocketList.front();
-        m_acceptSocketList.pop_front();
-        acceptedSocket->Close();
-    }
-    
+    std::map<Ptr<Socket>, ReceiveInfo>::iterator it;
+    for (it = m_acceptSocketMap.begin (); it != m_acceptSocketMap.end (); it++)
+        it->first->Close ();
+    m_acceptSocketMap.clear();
+   
     // Close socket for receiving
     m_rxSocket->Close();
     m_rxSocket->SetCloseCallbacks (MakeNullCallback<void, Ptr<Socket>> (),
@@ -165,8 +218,10 @@ DataCenterApp::HandleAccept (Ptr<Socket> socket, const Address& from)
     NS_LOG_FUNCTION (this << socket << from);
     // Setup receive callback
     socket->SetRecvCallback (MakeCallback (&DataCenterApp::HandleRead, this));
-    // Keep socket around
-    m_acceptSocketList.push_back (socket); 
+    // Add socket and info to map
+    ReceiveInfo recvInfo;
+    InitReceiveInfo (recvInfo);
+    m_acceptSocketMap[socket] = recvInfo;
     NS_LOG_INFO ("Node " << GetNode ()->GetId () << " Connection Accepted:\n" <<
                  "    Source: " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << "\n" <<
                  "    Destination: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
@@ -192,8 +247,8 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
             SeqTsHeader seqTs;
             packet->RemoveHeader (seqTs);
             uint32_t currentSeqNum = seqTs.GetSeq ();
-            m_packetsReceived++;
-            m_bytesReceived += bytesReceived;
+            m_acceptSocketMap[socket].m_packetsReceived++;
+            m_acceptSocketMap[socket].m_bytesReceived += bytesReceived;
             NS_LOG_INFO ("Node " << GetNode ()->GetId () << " RX:\n" <<
                          "    Source: " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << "\n" <<
                          "    Destination: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () 
@@ -204,8 +259,8 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
                          "    TXTime: " << seqTs.GetTs () << "\n" <<
                          "    RXTime: " << Simulator::Now() << "\n" <<
                          "    Delay: " << Simulator::Now() - seqTs.GetTs () << "\n" <<
-                         "    Packets Received: " << m_packetsReceived << "\n" <<
-                         "    Bytes Received: " << m_bytesReceived);
+                         "    Packets Received: " << m_acceptSocketMap[socket].m_packetsReceived << "\n" <<
+                         "    Bytes Received: " << m_acceptSocketMap[socket].m_bytesReceived);
         }
     }
 }
@@ -243,35 +298,37 @@ DataCenterApp::HandleConnectionFailed (Ptr<Socket> socket)
 }
 
 void
-DataCenterApp::SendPacket (uint32_t sockIndex)
+DataCenterApp::SendPacket (uint32_t index)
 {
     NS_LOG_FUNCTION (this);
 
     Ptr<Packet> packet = Create<Packet> (m_sendParams.m_packetSize);
-    m_txSockets[sockIndex]->Send (packet);
-    m_packetsSent++;
-    m_bytesSent += m_sendParams.m_packetSize;
+    m_sendInfos[index].m_socket->Send (packet);
+    m_sendInfos[index].m_packetsSent++;
+    m_sendInfos[index].m_bytesSent += m_sendParams.m_packetSize;
 
     NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
                  "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
                  "    Destination: " << "TODO" << "\n" <<
                  "    Packet Size: " << m_sendParams.m_packetSize << "\n" <<
+                 "    UID: " << packet->GetUid() << "\n" << 
                  "    TXTime: " << Simulator::Now() << "\n" <<
-                 "    Packets Sent: " << m_packetsSent << "\n" <<
-                 "    Bytes Sent: " << m_bytesSent);
+                 "    Packets Sent: " << m_sendInfos[index].m_packetsSent << "\n" <<
+                 "    Bytes Sent: " << m_sendInfos[index].m_bytesSent);
 
     // TODO: This may need to be different for different send patterns
-    if (m_packetsSent < m_sendParams.m_nPackets)
-        ScheduleSend(sockIndex);
+    if (m_sendInfos[index].m_packetsSent < m_sendParams.m_nPackets)
+        ScheduleSend(index);
 }
 
 void
-DataCenterApp::ScheduleSend (uint32_t sockIndex)
+DataCenterApp::ScheduleSend (uint32_t index)
 {
     NS_LOG_FUNCTION (this);
 
     // TODO: Setup a send event based on the sending pattern.
     //       Also, I think this should probably be a vector of send events for each socket
     if (m_running)
-        m_sendEvent = Simulator::Schedule (m_sendParams.m_sendInterval, &DataCenterApp::SendPacket, this, sockIndex);
+        m_sendInfos[index].m_event = 
+                Simulator::Schedule (m_sendParams.m_sendInterval, &DataCenterApp::SendPacket, this, index);
 }
