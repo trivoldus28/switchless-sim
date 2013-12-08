@@ -66,12 +66,13 @@ private:
     // Struct to hold information to sending to a node
     typedef struct SendInfoStruct
     {
+        Address         m_address;
         Ptr<Socket>     m_socket;
         EventId         m_event;
         uint32_t        m_packetsSent;
         uint32_t        m_bytesSent;
     } SendInfo;
-    static void InitSendInfo (SendInfo& sendInfo, Ptr<Socket> socket);
+    static void InitSendInfo (SendInfo& sendInfo, Address address, Ptr<Socket> socket);
 
     // Struct to hold receive information
     typedef struct ReceiveInfoStruct

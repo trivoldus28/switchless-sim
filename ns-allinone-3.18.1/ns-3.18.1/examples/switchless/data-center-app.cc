@@ -59,8 +59,9 @@ DataCenterApp::Setup (SendParams& sendingParams, uint32_t nodeId, bool debug)
 }
 
 void
-DataCenterApp::InitSendInfo (SendInfo& sendInfo, Ptr<Socket> socket)
+DataCenterApp::InitSendInfo (SendInfo& sendInfo, Address address, Ptr<Socket> socket)
 {
+    sendInfo.m_address = address;
     sendInfo.m_socket = socket;
     sendInfo.m_packetsSent = 0;
     sendInfo.m_bytesSent = 0;
@@ -112,7 +113,7 @@ DataCenterApp::StartApplication (void)
                     socket->SetConnectCallback (MakeCallback (&DataCenterApp::HandleConnectionSucceeded, this),
                                                 MakeCallback (&DataCenterApp::HandleConnectionFailed, this));
                     SendInfo sendInfo;
-                    InitSendInfo (sendInfo, socket);
+                    InitSendInfo (sendInfo, m_sendParams.m_nodes[i], socket);
                     m_sendInfos.push_back (sendInfo);
                 }
                 KickOffSending();
@@ -153,7 +154,7 @@ DataCenterApp::StartApplication (void)
                     socket->SetConnectCallback (MakeCallback (&DataCenterApp::HandleConnectionSucceeded, this),
                                                 MakeCallback (&DataCenterApp::HandleConnectionFailed, this));
                     SendInfo sendInfo;
-                    InitSendInfo (sendInfo, socket);
+                    InitSendInfo (sendInfo, m_sendParams.m_nodes[receiver], socket);
                     m_sendInfos.push_back (sendInfo);
                 }
                 KickOffSending();
@@ -357,7 +358,7 @@ DataCenterApp::DoSendPacket (SendInfo& sendInfo)
 
     NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
                  "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
-                 "    Destination: " << "TODO" << "\n" <<
+                 "    Destination: " << Ipv4Address::ConvertFrom (sendInfo.m_address) << "\n" <<
                  "    Packet Size: " << m_sendParams.m_packetSize << "\n" <<
                  "    UID: " << packet->GetUid() << "\n" <<
                  "    TXTime: " << Simulator::Now() << "\n" <<
