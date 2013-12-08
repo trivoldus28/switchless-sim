@@ -114,10 +114,9 @@ DataCenterApp::StartApplication (void)
                     SendInfo sendInfo;
                     InitSendInfo (sendInfo, socket);
                     m_sendInfos.push_back (sendInfo);
-
-                    // TODO: Figure out sending
-                    SendPacket(i);
                 }
+                KickOffSending();
+
                 break;
             }
             case RANDOM_SUBSET:
@@ -156,9 +155,9 @@ DataCenterApp::StartApplication (void)
                     SendInfo sendInfo;
                     InitSendInfo (sendInfo, socket);
                     m_sendInfos.push_back (sendInfo);
-
-                    // TODO: Figure out sending
                 }
+                KickOffSending();
+
                 break;
             }
             default:
@@ -198,6 +197,26 @@ DataCenterApp::StopApplication (void)
     m_rxSocket->SetAcceptCallback (MakeNullCallback<bool, Ptr<Socket>, const Address &> (),
                                    MakeNullCallback<void, Ptr<Socket>, const Address &> ());
     m_rxSocket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket>> ());
+}
+
+void 
+DataCenterApp::KickOffSending (void)
+{
+    NS_LOG_FUNCTION (this);
+    switch (m_sendParams.m_sendPattern)
+    {
+        case FIXED_INTERVAL:
+        case RANDOM_INTERVAL:
+            BulkSendPackets();
+            break;
+        case RANDOM_SPORADIC:
+            for (int i = 0; i < m_sendInfos.size(); i++)
+                ScheduleSend(i);
+            break;
+        default:
+            NS_LOG_ERROR ("Invalid send pattern specified");
+            break;
+    }
 }
 
 bool
@@ -297,28 +316,86 @@ DataCenterApp::HandleConnectionFailed (Ptr<Socket> socket)
                   "    Time: " << Simulator::Now());
 }
 
+void 
+DataCenterApp::BulkSendPackets ()
+{
+    NS_LOG_FUNCTION (this);
+    
+    // Send a packet for all send infos
+    for (int i = 0; i < m_sendInfos.size(); i++)
+        DoSendPacket (m_sendInfos[i]);
+    
+    // Schedule next bulk send (just have to check packets sent for
+    // one send info since all are happening synchronized, they should
+    // all be the same)
+    if (m_sendInfos[0].m_packetsSent < m_sendParams.m_nPackets)
+        BulkScheduleSend();
+}
+
 void
 DataCenterApp::SendPacket (uint32_t index)
 {
     NS_LOG_FUNCTION (this);
 
+    // Do the actual send
+    DoSendPacket (m_sendInfos[index]);
+
+    // Schedule the next send if there is another packket to send
+    if (m_sendInfos[index].m_packetsSent < m_sendParams.m_nPackets)
+        ScheduleSend(index);
+}
+
+void
+DataCenterApp::DoSendPacket (SendInfo& sendInfo)
+{
+    NS_LOG_FUNCTION (this);
+
     Ptr<Packet> packet = Create<Packet> (m_sendParams.m_packetSize);
-    m_sendInfos[index].m_socket->Send (packet);
-    m_sendInfos[index].m_packetsSent++;
-    m_sendInfos[index].m_bytesSent += m_sendParams.m_packetSize;
+    sendInfo.m_socket->Send (packet);
+    sendInfo.m_packetsSent++;
+    sendInfo.m_bytesSent += m_sendParams.m_packetSize;
 
     NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
                  "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
                  "    Destination: " << "TODO" << "\n" <<
                  "    Packet Size: " << m_sendParams.m_packetSize << "\n" <<
-                 "    UID: " << packet->GetUid() << "\n" << 
+                 "    UID: " << packet->GetUid() << "\n" <<
                  "    TXTime: " << Simulator::Now() << "\n" <<
-                 "    Packets Sent: " << m_sendInfos[index].m_packetsSent << "\n" <<
-                 "    Bytes Sent: " << m_sendInfos[index].m_bytesSent);
+                 "    Packets Sent: " << sendInfo.m_packetsSent << "\n" <<
+                 "    Bytes Sent: " << sendInfo.m_bytesSent);
+}
 
-    // TODO: This may need to be different for different send patterns
-    if (m_sendInfos[index].m_packetsSent < m_sendParams.m_nPackets)
-        ScheduleSend(index);
+void
+DataCenterApp::BulkScheduleSend ()
+{
+    NS_LOG_FUNCTION (this);
+    
+    if (m_running)
+    {
+        switch (m_sendParams.m_sendPattern)
+        {
+            case FIXED_INTERVAL:
+            {
+                // Just use send event for 0th send info since we only need to schedule one event
+                m_sendInfos[0].m_event = 
+                    Simulator::Schedule (m_sendParams.m_sendInterval, &DataCenterApp::BulkSendPackets, this);
+                break;
+            }
+            case RANDOM_INTERVAL:
+            {
+                // Choose a random interval
+                Time interval = NanoSeconds((((double) rand()) / ((double) RAND_MAX)) * 
+                                m_sendParams.m_sendInterval.GetNanoSeconds());
+                // Just use send event for 0th send info since we only need to schedule one event
+                m_sendInfos[0].m_event = 
+                    Simulator::Schedule (interval, &DataCenterApp::BulkSendPackets, this);
+                break;
+            }
+            default:
+                NS_LOG_ERROR ("BulkScheduleSend called with invald send pattern");
+                break;
+        }
+    }
 }
 
 void
@@ -326,9 +403,22 @@ DataCenterApp::ScheduleSend (uint32_t index)
 {
     NS_LOG_FUNCTION (this);
 
-    // TODO: Setup a send event based on the sending pattern.
-    //       Also, I think this should probably be a vector of send events for each socket
     if (m_running)
-        m_sendInfos[index].m_event = 
-                Simulator::Schedule (m_sendParams.m_sendInterval, &DataCenterApp::SendPacket, this, index);
+    {
+        switch (m_sendParams.m_sendPattern)
+        {
+            case RANDOM_SPORADIC:
+            {
+                // Choose a random interval
+                Time interval = NanoSeconds((((double) rand()) / ((double) RAND_MAX)) * 
+                                m_sendParams.m_sendInterval.GetNanoSeconds());
+                m_sendInfos[index].m_event =
+                    Simulator::Schedule (interval, &DataCenterApp::SendPacket, this, index);
+                break;
+            }
+            default:
+                NS_LOG_ERROR ("ScheduleSend called with invalid send pattern");
+                break;
+        }
+    }
 }

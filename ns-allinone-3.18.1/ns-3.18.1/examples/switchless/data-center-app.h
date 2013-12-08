@@ -85,6 +85,9 @@ private:
     virtual void StartApplication (void);
     virtual void StopApplication (void);
 
+    // Called from Start Application to start the sending
+    void KickOffSending (void);
+
     // Callback functions
     bool HandleConnectionRequest (Ptr<Socket>, const Address& from);
     void HandleAccept (Ptr<Socket>, const Address& from);
@@ -95,9 +98,12 @@ private:
     void HandleConnectionFailed (Ptr<Socket>);
 
     // Send a packet
+    void BulkSendPackets ();
     void SendPacket (uint32_t index);
+    void DoSendPacket (SendInfo& sendInfo);
     // Schedule the next packet to send
-    void ScheduleSend (uint32_t index);
+    void BulkScheduleSend ();
+    void ScheduleSend (uint32_t index); 
 
     SendParams                          m_sendParams;
     bool                                m_setup;
