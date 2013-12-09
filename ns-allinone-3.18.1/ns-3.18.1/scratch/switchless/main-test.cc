@@ -67,6 +67,8 @@ main (int argc, char * argv[])
     int m_cube=0;
     int n_cube=0;
     int nNeighbor=0;
+    int sChoice=0;
+    int rChoice=0;
     CommandLine cmd;
     cmd.AddValue("tp", "Topology",topologytype); // 1 or 2 or 3
     cmd.AddValue("t1", "",topo_sub1); // leaf-fan-out or row or m
@@ -81,7 +83,18 @@ main (int argc, char * argv[])
     cmd.AddValue("maxint", "",nMaxinterval); // only for random
     cmd.AddValue("sync", "",synchronized);
     cmd.AddValue("neighborcount","",nNeighbor);
+    cmd.AddValue("sChoice", "", sChoice); //0 for random
+    cmd.AddValue("rChoice", "", rChoice); //0 for random
     cmd.Parse (argc, argv);
+    if(sChoice != 0)
+    {  
+        //senderChoice = "set";
+        //We don't support it
+    }
+    if(rChoice != 0)
+    {  
+        receiverChoice = "set";
+    }
     if(intervaltype==RANDOM)
     {
         bFixedInterval = false;
@@ -184,6 +197,7 @@ main (int argc, char * argv[])
         std::vector <Ipv4Address> receiverNodeList;
 
         if (sReceiverChoice == "random"){
+            // TODO : PUT ALL NODES
             params.m_nNodes = nNodes;
             params.m_nReceivers = nReceiver;
             params.m_receivers = DataCenterApp::RANDOM_SUBSET;
@@ -305,27 +319,31 @@ main (int argc, char * argv[])
              else if(topologytype == CUBE){
                 NS_ASSERT(false);
              }
-            //params.m_nodes = &receiverNodeList; // TODO: enable this when interface is changed // So who's method are we using.
+            //params.m_nodes = &receiverNodeList; 
             params.m_nNodes = receiverNodeList.size();
-            params.m_nReceivers = nReceiver;
+            params.m_nReceivers = nSender * nNeighbor;
             params.m_receivers = DataCenterApp::ALL_IN_LIST;
         }
-
         if (bFixedInterval && bSynchronized){
             params.m_sendPattern = DataCenterApp::FIXED_INTERVAL;
-            params.m_sendInterval = MilliSeconds (500.);
+            params.m_sendInterval = MilliSeconds (nintervalsize);
         }
         else if(bFixedInterval && !bSynchronized)
         {
-            std::cout << "Unimplemented2\n" << std::endl; // Implement Parameter Setting
+            params.m_sendPattern = DataCenterApp::FIXED_SPORADIC;
+            params.m_sendInterval = MilliSeconds (nintervalsize);
         }
         else if(!bFixedInterval && bSynchronized)
         {
-            std::cout << "Unimplemented2\n" << std::endl; // Implement Parameter Setting
+            params.m_sendPattern = DataCenterApp::RANDOM_INTERVAL;
+            params.m_maxSendInterval = nMaxinterval;
+            params.m_minSendInterval = nMininterval;
         }
         else
         {
-            std::cout << "Unimplemented2\n" << std::endl; // Implement Parameter Setting
+            params.m_sendPattern = DataCenterApp::RANDOM_SPORADIC;
+            params.m_maxSendInterval = nMaxinterval;
+            params.m_minSendInterval = nMininterval;
         }
         params.m_packetSize = nPacketSize;
         params.m_nPackets = nIterations; 
@@ -333,7 +351,6 @@ main (int argc, char * argv[])
         app->Setup(params, *it, DEBUG); 
         topology->GetNode(*it)->AddApplication(app);
 
-        // TODO: set time
         app->SetStartTime (Seconds(0.));
         app->SetStopTime (Seconds(100.));
     }
