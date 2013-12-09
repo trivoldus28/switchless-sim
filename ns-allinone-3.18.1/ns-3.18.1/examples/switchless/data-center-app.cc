@@ -9,6 +9,23 @@
 NS_LOG_COMPONENT_DEFINE ("DataCenterApp");
 NS_OBJECT_ENSURE_REGISTERED (DataCenterApp);
 
+void
+DataCenterApp::copySendParams (SendParams& src, SendParams& dst)
+{
+    dst.m_sending = src.m_sending;
+    dst.m_nodes = new Ipv4Address[src.m_nNodes];
+    memcpy(dst.m_nodes, src.m_nodes, src.m_nNodes * sizeof(Ipv4Address));
+    dst.m_nNodes = src.m_nNodes;
+    dst.m_receivers = src.m_receivers;
+    dst.m_nReceivers = src.m_nReceivers;
+    dst.m_sendPattern = src.m_sendPattern;
+    dst.m_sendInterval = src.m_sendInterval;
+    dst.m_maxSendInterval = src.m_maxSendInterval;
+    dst.m_minSendInterval = src.m_minSendInterval;
+    dst.m_packetSize = src.m_packetSize;
+    dst.m_nPackets = src.m_nPackets;
+}
+
 DataCenterApp::DataCenterApp ()
   : m_sendParams (),
     m_setup (false),
@@ -35,6 +52,9 @@ DataCenterApp::DataCenterApp ()
 DataCenterApp::~DataCenterApp ()
 {
     NS_LOG_FUNCTION (this);
+
+    if (m_sendParams.m_nodes != NULL)
+        delete [] m_sendParams.m_nodes;
 }
 
 bool
@@ -60,7 +80,7 @@ DataCenterApp::Setup (SendParams& sendingParams, uint32_t nodeId, bool debug)
         return false;
     }
 
-    m_sendParams = sendingParams;
+    copySendParams(sendingParams, m_sendParams);
 
     // When debugging make packets deterministic
     if (debug)

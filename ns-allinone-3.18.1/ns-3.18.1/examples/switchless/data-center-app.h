@@ -54,6 +54,7 @@ public:
         uint32_t        m_packetSize;
         uint32_t        m_nPackets;
     } SendParams;
+    static void copySendParams(SendParams& src, SendParams& dst);
 
     // Constructor/Destructor
     DataCenterApp ();
