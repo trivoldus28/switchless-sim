@@ -21,10 +21,13 @@ DataCenterApp::DataCenterApp ()
     // Default sending parameters
     m_sendParams.m_sending = false;
     m_sendParams.m_nodes = NULL;
+    m_sendParams.m_nNodes = 0;
     m_sendParams.m_receivers = RECEIVERS_INVALID;
     m_sendParams.m_nReceivers = 0;
     m_sendParams.m_sendPattern = SEND_PATTERN_INVALID;
-    m_sendParams.m_sendInterval = MilliSeconds(100.);
+    m_sendParams.m_sendInterval = MilliSeconds (100.);
+    m_sendParams.m_maxSendInterval = MilliSeconds (500.0);
+    m_sendParams.m_minSendInterval = MilliSeconds (100.0);
     m_sendParams.m_packetSize = 1024;
     m_sendParams.m_nPackets = 100;
 }
@@ -42,6 +45,18 @@ DataCenterApp::Setup (SendParams& sendingParams, uint32_t nodeId, bool debug)
     if (sendingParams.m_nReceivers > sendingParams.m_nNodes)
     {
         NS_LOG_ERROR ("Number of receivers is greater than number of nodes");
+        return false;
+    }
+
+    if (sendingParams.m_packetSize > MAX_PACKET_SIZE)
+    {
+        NS_LOG_ERROR ("Packet size is greater than max packet size");
+        return false;
+    }
+
+    if (sendingParams.m_minSendInterval > sendingParams.m_maxSendInterval)
+    {
+        NS_LOG_ERROR ("Min send interval is greater than max send interval");
         return false;
     }
 
@@ -263,10 +278,10 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
         else
         {
             // Log received packet
-            uint32_t bytesReceived = packet->GetSize ();
             SeqTsHeader seqTs;
             packet->RemoveHeader (seqTs);
             uint32_t currentSeqNum = seqTs.GetSeq ();
+            uint32_t bytesReceived = packet->GetSize ();
             m_acceptSocketMap[socket].m_packetsReceived++;
             m_acceptSocketMap[socket].m_bytesReceived += bytesReceived;
             NS_LOG_INFO ("Node " << GetNode ()->GetId () << " RX:\n" <<
@@ -321,6 +336,7 @@ void
 DataCenterApp::BulkSendPackets ()
 {
     NS_LOG_FUNCTION (this);
+    NS_ASSERT (m_sendInfos[0].m_event.IsExpired ());
     
     // Send a packet for all send infos
     for (int i = 0; i < m_sendInfos.size(); i++)
@@ -337,6 +353,7 @@ void
 DataCenterApp::SendPacket (uint32_t index)
 {
     NS_LOG_FUNCTION (this);
+    NS_ASSERT (m_sendInfos[index].m_event.IsExpired ());
 
     // Do the actual send
     DoSendPacket (m_sendInfos[index]);
@@ -351,7 +368,19 @@ DataCenterApp::DoSendPacket (SendInfo& sendInfo)
 {
     NS_LOG_FUNCTION (this);
 
+    if (m_sendParams.m_packetSize > MAX_PACKET_SIZE)
+    {
+        NS_LOG_ERROR ("Packet size is greater than max packet size");
+        return;
+    }
+
+    // Create a header with sequence number and time
+    SeqTsHeader seqTs;
+    seqTs.SetSeq (sendInfo.m_packetsSent);
+
+    // Create packet and add header
     Ptr<Packet> packet = Create<Packet> (m_sendParams.m_packetSize);
+    packet->AddHeader (seqTs);
     sendInfo.m_socket->Send (packet);
     sendInfo.m_packetsSent++;
     sendInfo.m_bytesSent += m_sendParams.m_packetSize;
@@ -360,10 +389,51 @@ DataCenterApp::DoSendPacket (SendInfo& sendInfo)
                  "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
                  "    Destination: " << Ipv4Address::ConvertFrom (sendInfo.m_address) << "\n" <<
                  "    Packet Size: " << m_sendParams.m_packetSize << "\n" <<
-                 "    UID: " << packet->GetUid() << "\n" <<
-                 "    TXTime: " << Simulator::Now() << "\n" <<
+                 "    Sequence Number: " << seqTs.GetSeq () << "\n" <<
+                 "    TXTime: " << seqTs.GetTs() << "\n" <<
                  "    Packets Sent: " << sendInfo.m_packetsSent << "\n" <<
                  "    Bytes Sent: " << sendInfo.m_bytesSent);
+
+    /*// Break up packets and send in MAX_PACKET_SIZE chunks
+    uint32_t packetsToSend = m_sendParams.m_packetSize / MAX_PACKET_SIZE;
+    for (int i = 0; i < packetsToSend; i++)
+    {
+        // Create a header with sequence number and time
+        SeqTsHeader seqTs;
+        seqTs.SetSeq (sendInfo.m_packetsSent);
+
+        // Create packet and add header
+        Ptr<Packet> packet = Create<Packet> (MAX_PACKET_SIZE);
+        packet->AddHeader (seqTs);
+        sendInfo.m_socket->Send (packet);
+    }
+
+    // Send any leftover data
+    uint32_t leftover = m_sendParams.m_packetSize % MAX_PACKET_SIZE;
+    NS_LOG_INFO ("Leftover" << leftover);
+    if (leftover > 0)
+    {
+        // Create a header with sequence number and time
+        SeqTsHeader seqTs;
+        seqTs.SetSeq (sendInfo.m_packetsSent);
+        
+        // Create packet and add header
+        Ptr<Packet> packet = Create<Packet> (leftover);
+        packet->AddHeader (seqTs);
+        sendInfo.m_socket->Send (packet);
+    }
+
+    sendInfo.m_packetsSent++;
+    sendInfo.m_bytesSent += m_sendParams.m_packetSize;
+
+    NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
+                 "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
+                 "    Destination: " << Ipv4Address::ConvertFrom (sendInfo.m_address) << "\n" <<
+                 "    Packet Size: " << m_sendParams.m_packetSize << "\n" <<
+                 "    Sequence Number: " << sendInfo.m_packetsSent - 1 << "\n" <<
+                 "    TXTime: " << Simulator::Now() << "\n" <<
+                 "    Packets Sent: " << sendInfo.m_packetsSent << "\n" <<
+                 "    Bytes Sent: " << sendInfo.m_bytesSent);*/
 }
 
 void
@@ -385,8 +455,10 @@ DataCenterApp::BulkScheduleSend ()
             case RANDOM_INTERVAL:
             {
                 // Choose a random interval
-                Time interval = NanoSeconds((((double) rand()) / ((double) RAND_MAX)) * 
-                                m_sendParams.m_sendInterval.GetNanoSeconds());
+                Time interval = NanoSeconds (rand () % 
+                    (m_sendParams.m_maxSendInterval.GetNanoSeconds () - 
+                     m_sendParams.m_minSendInterval.GetNanoSeconds () + 1) + 
+                    m_sendParams.m_minSendInterval.GetNanoSeconds());
                 // Just use send event for 0th send info since we only need to schedule one event
                 m_sendInfos[0].m_event = 
                     Simulator::Schedule (interval, &DataCenterApp::BulkSendPackets, this);
@@ -411,8 +483,10 @@ DataCenterApp::ScheduleSend (uint32_t index)
             case RANDOM_SPORADIC:
             {
                 // Choose a random interval
-                Time interval = NanoSeconds((((double) rand()) / ((double) RAND_MAX)) * 
-                                m_sendParams.m_sendInterval.GetNanoSeconds());
+                Time interval = NanoSeconds (rand () %
+                    (m_sendParams.m_maxSendInterval.GetNanoSeconds () - 
+                     m_sendParams.m_minSendInterval.GetNanoSeconds () + 1) +   
+                    m_sendParams.m_minSendInterval.GetNanoSeconds());
                 m_sendInfos[index].m_event =
                     Simulator::Schedule (interval, &DataCenterApp::SendPacket, this, index);
                 break;
