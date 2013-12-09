@@ -249,11 +249,20 @@ main (int argc, char * argv[])
                 while(boundaryFactor * boundaryFactor < nNeighbor)
                     boundaryFactor++;
                 std::unordered_set<unsigned> recvCoordSet;
+                unsigned mindistance =1;
                 while (recvCoordSet.size() < nNeighbor){
                     unsigned randx = rand() % boundaryFactor;
                     unsigned randy = rand() % boundaryFactor;
+                    unsigned distance = randx + randy; 
                     unsigned coord = randy * meshNumCol + randx;
-                    recvCoordSet.insert(coord);
+                    if(mindistance == distance)
+                    {
+                        recvCoordSet.insert(coord);
+                    }
+                    if(recvCoordSet.size() == mindistance+1)
+                    {
+                        mindistance++;
+                    }
                 }
 
                 // calculate the offset factor with regard to the sender
