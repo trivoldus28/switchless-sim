@@ -32,31 +32,15 @@ NS_LOG_COMPONENT_DEFINE ("MainProgram");
 #define RANDOM 1
 #define FIXED 2
 
-char* getCmdOption(char ** begin, char ** end, const std::string & option)
-{
-    char ** itr = std::find(begin, end, option);
-    if (itr != end && ++itr != end)
-    {
-        return *itr;
-    }
-    return 0;
-}
-
-bool cmdOptionExists(char** begin, char** end, const std::string& option)
-{
-    return std::find(begin, end, option) != end;
-}
 
 int
 main (int argc, char * argv[])
 {
     unsigned nRackSize = 0;
     unsigned nTreeFanout = 0;
-    unsigned nRow = 0;
-    unsigned nCol = 0;
     //bool bTorus = false; // not parsed
-    std::string sSenderTopology = "random";  // not parsed
-    std::string sReceiverTopology = "random"; // not parsed
+    std::string sSenderChoice = "random";  // not parsed
+    std::string sReceiverChoice = "random"; // not parsed
     bool bFixedInterval = false;
     bool bRandomInterval = false;
     bool bSynchronized = false;
@@ -74,6 +58,9 @@ main (int argc, char * argv[])
     int nMininterval = 0;
     int nMaxinterval = 0;
     int synchronized = 0;
+    int m_cube=0;
+    int n_cube=0;
+    int nNeighbor=0;
     CommandLine cmd;
     cmd.AddValue("tp", "Topology",topologytype); // 1 or 2 or 3
     cmd.AddValue("t1", "",topo_sub1); // leaf-fan-out or row or m
@@ -87,6 +74,7 @@ main (int argc, char * argv[])
     cmd.AddValue("minint", "",nMininterval); // only for random 
     cmd.AddValue("maxint", "",nMaxinterval); // only for random
     cmd.AddValue("sync", "",synchronized);
+    cmd.AddValue("neighborcount","",nNeighbor);
     cmd.Parse (argc, argv);
     if(intervaltype==RANDOM)
     {
@@ -101,8 +89,7 @@ main (int argc, char * argv[])
     bSynchronized = synchronized;
     if(topologytype == MESH)
     {
-        nRow = topo_sub1;
-        nCol = topo_sub2;
+        // Only n^2
     }
     else if (topologytype == TREE)
     {   
@@ -111,12 +98,12 @@ main (int argc, char * argv[])
     }
     else
     {
-        //m-ary n-cube
+        m_cube= topo_sub1;
+        n_cube= topo_sub2;
     }
 
 
     // LogComponentEnable ("DataCenterApp", LOG_LEVEL_ALL);
-    // Parsing
 
     // common variables
     PointToPointHelper pointToPoint;
@@ -132,14 +119,17 @@ main (int argc, char * argv[])
     }
     else if (topologytype == MESH){
         std::cout << "Not implemented\n";
+        //TODO: DO IT
         return 0;
     }
     else if (topologytype == CUBE){
         std::cout << "Not implemented\n";
+        //TODO: DO IT
         return 0;
     }
     else{
         std::cout << "No such topo\n";
+        //TODO: DO IT
         return 0;
     }
 
@@ -147,96 +137,150 @@ main (int argc, char * argv[])
 
     InternetStackHelper stack;
     topology->InstallStack(stack);
-
     Ipv4AddressHelper nodeAddresses;
     Ipv4AddressHelper linkAddresses;
     nodeAddresses.SetBase ("0.0.0.0", "255.255.0.0");
     linkAddresses.SetBase ("1.0.0.0", "255.255.0.0");
     topology->AssignIpv4Addresses(nodeAddresses, linkAddresses); 
 
-    // application installation
 
-    // std::vector <int> senderSet;
+    // Random Seed 
+    srand(100);
+
     std::unordered_set<int> senderSet;
-    if (sSenderTopology == "random"){
-        unsigned randid = 1;
+    if (sSenderChoice == "random"){
+        unsigned randid = 0;
         for (int i = 0; i < nSender; i++){
-            randid = randid * 1103515245 + 12345;
+            randid = rand();
             randid %= nNodes;
-            senderSet.insert(randid);
-            // senderSet.push_back(randid);
-            // TODO: need to check for uniqueness
-            // check to see if unordered_set is C++11 supported
+            if(senderSet.find(randid) != senderSet.end())
+            {
+                senderSet.insert(randid);
+            }
+            else
+            {
+                i--;
+            }
         }
     }
-    else if (sSenderTopology == "set"){
+    else if (sSenderChoice == "set"){
         // For now let's just get the first n nodes
         for (int i = 0; i < nSender; i++){
-            // senderSet.push_back(i);
             senderSet.insert(i);
-            // TODO: need to check for uniqueness
-            // check to see if unordered_set is C++11 supported
         } 
     }
-
-    // vector <int> receiverSet;
-    // if (sReceiverTopology == "random"){
-    //     unsigned randid = 10;
-    //     for (int i = 0; i < nSender; i++){
-    //         randid = randid * 1103515245 + 12345;
-    //         randid %= nNodes;
-    //         receiverSet.push_back(randid);
-    //         // TODO: need to check for uniqueness
-    //         // check to see if unordered_set is C++11 supported
-    //     }
-    // }
-    // else if (sReceiverTopology == "set"){
-    //     // For now let's just get the first n nodes
-    //     for (int i = nSender - 1; i >= 0; i--){
-    //         receiverSet.push_back(i);
-    //         // TODO: need to check for uniqueness
-    //         // check to see if unordered_set is C++11 supported
-    //     } 
-    // }
 
     for (std::unordered_set<int>::iterator it = senderSet.begin(); it != senderSet.end(); it++){
         DataCenterApp::SendParams params;
         params.m_sending = true;
         std::vector <Ipv4Address> receiverNodeList;
 
-        if (sSenderTopology == "random"){
-            for (int i = 0; i < nNodes; i++){
-                Ipv4Address t = topology->GetIpv4Address(i);
-                receiverNodeList.push_back(t);
+        if (sReceiverChoice == "random"){
+            unsigned randid=0;
+            for (int i = 0; i < nReceiver; i++){
+                randid = rand();
+                randid %= nNodes;
+                if(std::find(receiverNodeList.begin(), receiverNodeList.end(), topology->GetIpv4Address(randid))!=receiverNodeList.end())
+                {
+                     Ipv4Address t = topology->GetIpv4Address(randid);
+                     receiverNodeList.push_back(t);
+                }
+                else
+                {
+                    i--;
+                }
+              
             }
-            // params.m_nodes = &receiverNodeList; // TODO: enable this when interface is changed
+            //params.m_nodes = &receiverNodeList; // TODO: enable this when interface is changed // So who's method are we using.
             params.m_nNodes = nNodes;
             params.m_nReceivers = nReceiver;
             params.m_receivers = DataCenterApp::RANDOM_SUBSET;
         }
         else{
-            std::cout << "Unimplemented1\n" << std::endl;
+             std::cout << "Unimplemented1\n" << std::endl; // Neighborhood Case
+             if (topologytype == TREE){
+                int nodeid = *it;
+                if(nodeid >= (nNeighbor/2) && nodeid <= nNodes-1-(nNeighbor/2))
+                {
+                    for(int i=1; i <= nNeighbor/2; i++)
+                    {
+                        Ipv4Address t = topology->GetIpv4Address(nodeid-i);
+                        receiverNodeList.push_back(t);
+                        t= topology->GetIpv4Address(nodeid+i);
+                        receiverNodeList.push_back(t);
+                    }
+                }
+                else if(nodeid >= (nNeighbor/2) && nodeid > nNodes-1-(nNeighbor/2))
+                {
+                    int getFirst = nodeid-nNodes+1+(nNeighbor/2);
+                    for(int i=1; i<=getFirst; i++)
+                    {
+                        Ipv4Address t = topology->GetIpv4Address(i);
+                        receiverNodeList.push_back(t);
+                    }
+                    for(int i=1; i <= nNeighbor/2; i++)
+                    {
+                        Ipv4Address t = topology->GetIpv4Address(nodeid-i);
+                        receiverNodeList.push_back(t);
+                    }
+                    for (int i=1; i<= nNeighbor/2 - getFirst ; i++)
+                    {
+                        Ipv4Address t = topology->GetIpv4Address(nodeid+i);
+                        receiverNodeList.push_back(t);   
+                    }
+
+                }
+                else if(nodeid < (nNeighbor/2) && nodeid <= nNodes-1-(nNeighbor/2))
+                {
+                    int getLast = nNeighbor/2 - nodeid;
+                    for(int i=1; i<=getLast; i++)
+                    {
+                        Ipv4Address t = topology->GetIpv4Address(nNodes-i);
+                        receiverNodeList.push_back(t);
+                    }
+                    for(int i=1; i <= nNeighbor/2; i++)
+                    {
+                        Ipv4Address t = topology->GetIpv4Address(nodeid+i);
+                        receiverNodeList.push_back(t);
+                    }
+                    for (int i=1; i<= nNeighbor/2 - getLast ; i++)
+                    {
+                        Ipv4Address t = topology->GetIpv4Address(nodeid-i);
+                        receiverNodeList.push_back(t);   
+                    }
+                }
+             }
+             else if(topologytype == MESH){
+             }
+             else if(topologytype == CUBE){
+             }
         }
 
         if (bFixedInterval && bSynchronized){
             params.m_sendPattern = DataCenterApp::FIXED_INTERVAL;
             params.m_sendInterval = MilliSeconds (500.);
         }
-        else{
-            std::cout << "Unimplemented2\n" << std::endl;
+        else if(bFixedInterval && !bSynchronized)
+        {
+            std::cout << "Unimplemented2\n" << std::endl; // Implement Parameter Setting
         }
-        
-        params.m_packetSize = 1024;
+        else if(!bFixedInterval && bSynchronized)
+        {
+            std::cout << "Unimplemented2\n" << std::endl; // Implement Parameter Setting
+        }
+        else
+        {
+            std::cout << "Unimplemented2\n" << std::endl; // Implement Parameter Setting
+        }
+        params.m_packetSize = nPacketSize;
         params.m_nPackets = nIterations; 
-        // TODO: MISSING MAX/MIN
-
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
         app->Setup(params, *it, DEBUG); 
         topology->GetNode(*it)->AddApplication(app);
 
         // TODO: set time
         app->SetStartTime (Seconds(0.));
-        app->SetStopTime (Seconds(20.));
+        app->SetStopTime (Seconds(100.));
     }
 
     Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
