@@ -19,6 +19,7 @@
 #include "p2p-ncube.h"
 
 #include <unordered_set>
+#include <utility> // std::pair, std::make_pair
 
 using namespace ns3;
 
@@ -260,20 +261,57 @@ main (int argc, char * argv[])
              else if(topologytype == MESH){
                 // Basically we will have a box to draw random, clustered nodes from
                 // Box boundaries are 1,4,9,16,25,...
+                // centered around this particular send node (*it)
                 unsigned boundaryFactor = 1;
                 while(boundaryFactor * boundaryFactor < nReceiver)
                     boundaryFactor++;
-                typedef pair<unsigned, unsigned> coord_t;
-                std::unordered_set<coord_t> recvCoordList;
-                while (recvCoordList.size() < nReceiver){
+                // typedef std::pair<unsigned, unsigned> coord_t;
+
+                std::unordered_set<unsigned> recvCoordSet;
+                while (recvCoordSet.size() < nReceiver){
                     unsigned randx = rand() % boundaryFactor;
                     unsigned randy = rand() % boundaryFactor;
-                    recvCoordList.insert(make_pair(randx,randy));
+                    unsigned coord = randy * meshNumCol + randx;
+                    recvCoordSet.insert(coord);
                 }
 
-                // calculate the offset factor with regard to the center receiver node
+                // calculate the offset factor with regard to the sender
+                // a box of 0 will have offset 0 (only 1 point)
+                // of 3 will have -1
+                // of 5 will have -2
+                // ...
+                // box of 2 can be either 0 or -1. I pick 0
+                // of 4 can be -1 or -2. Just pick -1
+                // ...
                 int offset = -1 * ((boundaryFactor - 1) / 2);
-                
+
+                // unsigned senderID = *it;
+                unsigned senderY = *it / meshNumCol;
+                unsigned senderX = *it % meshNumCol;
+
+                // vector <coord_t> coordList;
+                for (auto it = recvCoordSet.begin(); it != recvCoordSet.end(); it++){
+                    unsigned recvCoord = *it;
+                    int x = recvCoord % meshNumCol;
+                    int y = recvCoord / meshNumCol;
+                    x = x + senderX + offset;
+                    y = y + senderY + offset;
+
+                    NS_ASSERT(bTorus == true);
+                    if (x < 0)
+                        x += meshNumCol;
+                    if (y < 0)
+                        y += meshNumRow;
+
+                    NS_ASSERT(x < meshNumCol);
+                    NS_ASSERT(y < meshNumRow);
+
+                    unsigned recvid = y * meshNumCol + x;
+                    Ipv4Address t = topology->GetIpv4Address(recvid);
+                    receiverNodeList.push_back(t);
+                    // coordList.push_back(make_pair())
+                }
+
              }
              else if(topologytype == CUBE){
                 NS_ASSERT(false);
