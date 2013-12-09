@@ -23,7 +23,7 @@
 // #include "ns3/point-to-point-grid.h"
 
 #include "p2p-2d-mesh.h"
-#include "p2p-ncube.h"
+#include "p2p-cube.h"
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("SecondScriptExample");
@@ -53,7 +53,7 @@ main (int argc, char *argv[])
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
-  PointToPoint2DMeshHelper grid(nDimensionLength, nDimensionLength, false, pointToPoint);
+  PointToPoint2DMeshHelper grid(nDimensionLength, nDimensionLength, pointToPoint);
 
   // NetDeviceContainer p2pDevices;
   // p2pDevices = pointToPoint.Install (p2pNodes);

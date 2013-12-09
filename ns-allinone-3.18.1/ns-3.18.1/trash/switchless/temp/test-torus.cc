@@ -20,21 +20,18 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/ipv4-global-routing-helper.h"
-#include "p2p-fattree.h"
+// #include "ns3/point-to-point-grid.h"
+
+#include "p2p-2d-mesh.h"
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("FatTreeTest");
+NS_LOG_COMPONENT_DEFINE ("SecondScriptExample");
 
 int 
 main (int argc, char *argv[])
 {
   bool verbose = true;
   unsigned nDimensionLength = 8;
-  unsigned nGroupSize = 8;
-  unsigned nRouterFanout = 2;
-  unsigned nTreeDepth = 4;
-  // 16 * 8 machines total
-  // unsigned nTotalNode = nGroupSize * (pow(nRouterFanout,nTreeDepth));
 
   CommandLine cmd;
   cmd.AddValue ("nDimensionLength", "Number of nodes in one dimension", nDimensionLength);
@@ -51,44 +48,44 @@ main (int argc, char *argv[])
   // NodeContainer p2pNodes;
   // p2pNodes.Create (nDimensionLength);
 
+  std::cout << "Setting up simulation" << std::endl;
+
   PointToPointHelper pointToPoint;
-  uint64_t datarate = 1024 * 1024 * 1024;
-  pointToPoint.SetDeviceAttribute ("DataRate", DataRateValue(datarate));
+  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
-  //bool isTorus = false;
-  PointToPointFattreeHelper fattree(nGroupSize, nRouterFanout, nTreeDepth, datarate, pointToPoint);
+  bool isTorus = true;
+  PointToPoint2DMeshHelper grid(nDimensionLength, nDimensionLength, isTorus, pointToPoint);
 
   // NetDeviceContainer p2pDevices;
   // p2pDevices = pointToPoint.Install (p2pNodes);
 
   InternetStackHelper stack;
-  fattree.InstallStack(stack);
+  grid.InstallStack(stack);
   // stack.Install (p2pDevices);
 
   Ipv4AddressHelper nodeAddresses;
   Ipv4AddressHelper linkAddresses;
   // nodeAddresses.SetBase ("10.1.1.0", "255.255.255.0");
   // linkAddresses.SetBase ("10.2.1.0", "255.255.255.0");
-  nodeAddresses.SetBase ("0.0.0.0", "255.255.0.0");
-  linkAddresses.SetBase ("1.0.0.0", "255.255.0.0");
-  fattree.AssignIpv4Addresses(nodeAddresses, linkAddresses);
+  nodeAddresses.SetBase ("0.0.0.0", "255.255.255.0");
+  linkAddresses.SetBase ("1.0.0.0", "255.0.0.0");
+  grid.AssignIpv4Addresses(nodeAddresses, linkAddresses);
 
   UdpEchoServerHelper echoServer (9);
 
   // ApplicationContainer serverApps = echoServer.Install (p2pNodes.Get (0));
-  ApplicationContainer serverApps = echoServer.Install (fattree.GetNode(0));
+  ApplicationContainer serverApps = echoServer.Install (grid.GetNode(0,0));
   serverApps.Start (Seconds (1.0));
   serverApps.Stop (Seconds (10.0));
 
   // UdpEchoClientHelper echoClient (p2pInterfaces.GetAddress (0), 9);
-  UdpEchoClientHelper echoClient (fattree.GetIpv4Address(0), 9);
+  UdpEchoClientHelper echoClient (grid.GetIpv4Address(0,0), 9);
   echoClient.SetAttribute ("MaxPackets", UintegerValue (1));
   echoClient.SetAttribute ("Interval", TimeValue (Seconds (1.0)));
   echoClient.SetAttribute ("PacketSize", UintegerValue (1024));
 
-  // ApplicationContainer clientApps = echoClient.Install (fattree.GetNode(nTotalNode-1));
-  ApplicationContainer clientApps = echoClient.Install (fattree.GetNode(1));
+  ApplicationContainer clientApps = echoClient.Install (grid.GetNode(nDimensionLength-1,nDimensionLength-1));
   clientApps.Start (Seconds (2.0));
   clientApps.Stop (Seconds (10.0));
 
@@ -96,6 +93,8 @@ main (int argc, char *argv[])
 
   // pointToPoint.EnablePcapAll ("second");
   // csma.EnablePcap ("second", csmaDevices.Get (1), true);
+
+  std::cout << "Running simulation" << std::endl;
 
   Simulator::Run ();
   Simulator::Destroy ();

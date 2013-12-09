@@ -25,7 +25,7 @@
 #include "p2p-2d-mesh.h"
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("MeshTest");
+NS_LOG_COMPONENT_DEFINE ("SecondScriptExample");
 
 int 
 main (int argc, char *argv[])
