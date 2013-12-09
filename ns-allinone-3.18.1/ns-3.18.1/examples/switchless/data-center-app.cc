@@ -243,12 +243,31 @@ DataCenterApp::KickOffSending (void)
     {
         case FIXED_INTERVAL:
         case RANDOM_INTERVAL:
+        {
             BulkSendPackets();
             break;
+        }
+        case FIXED_SPORADIC:
+        {
+            // This starts as random starts time but continues as a fixed interval after
+            for (int i = 0; i < m_sendInfos.size(); i++)
+            {
+                // Choose a random interval
+                Time interval = NanoSeconds (rand () %
+                    (m_sendParams.m_maxSendInterval.GetNanoSeconds () -
+                     m_sendParams.m_minSendInterval.GetNanoSeconds () + 1) +
+                    m_sendParams.m_minSendInterval.GetNanoSeconds());
+                m_sendInfos[i].m_event =
+                    Simulator::Schedule (interval, &DataCenterApp::SendPacket, this, i); 
+            }
+            break;
+        }
         case RANDOM_SPORADIC:
+        {
             for (int i = 0; i < m_sendInfos.size(); i++)
                 ScheduleSend(i);
             break;
+        }
         default:
             NS_LOG_ERROR ("Invalid send pattern specified");
             break;
@@ -500,6 +519,11 @@ DataCenterApp::ScheduleSend (uint32_t index)
     {
         switch (m_sendParams.m_sendPattern)
         {
+            case FIXED_SPORADIC:
+            {
+                Simulator::Schedule (m_sendParams.m_sendInterval, &DataCenterApp::SendPacket, this, index);
+                break;
+            }
             case RANDOM_SPORADIC:
             {
                 // Choose a random interval

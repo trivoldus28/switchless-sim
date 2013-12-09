@@ -37,6 +37,7 @@ public:
         SEND_PATTERN_INVALID = 0,
         FIXED_INTERVAL,
         RANDOM_INTERVAL,
+        FIXED_SPORADIC,
         RANDOM_SPORADIC
     } SEND_PATTERN;
     // Struct to hold all sending parameters
