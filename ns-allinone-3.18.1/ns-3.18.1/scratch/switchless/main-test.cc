@@ -246,12 +246,10 @@ main (int argc, char * argv[])
                 // Box boundaries are 1,4,9,16,25,...
                 // centered around this particular send node (*it)
                 unsigned boundaryFactor = 1;
-                while(boundaryFactor * boundaryFactor < nReceiver)
+                while(boundaryFactor * boundaryFactor < nNeighbor)
                     boundaryFactor++;
-                // typedef std::pair<unsigned, unsigned> coord_t;
-
                 std::unordered_set<unsigned> recvCoordSet;
-                while (recvCoordSet.size() < nReceiver){
+                while (recvCoordSet.size() < nNeighbor){
                     unsigned randx = rand() % boundaryFactor;
                     unsigned randy = rand() % boundaryFactor;
                     unsigned coord = randy * meshNumCol + randx;
@@ -292,7 +290,6 @@ main (int argc, char * argv[])
                     unsigned recvid = y * meshNumCol + x;
                     Ipv4Address t = topology->GetIpv4Address(recvid);
                     receiverNodeList.push_back(t);
-                    // coordList.push_back(make_pair())
                 }
 
              }
