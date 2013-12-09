@@ -139,7 +139,7 @@ DataCenterApp::StartApplication (void)
             case ALL_IN_LIST:
             {
                 // Setup socket for each node in list
-                for (int i = 0; i < m_sendParams.m_nNodes; i++)
+                for(unsigned i = 0; i < m_sendParams.m_nNodes; i++)
                 {
                     Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
                     Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[i], PORT));
@@ -166,7 +166,7 @@ DataCenterApp::StartApplication (void)
 
                 // Setup socket for each randomly picked receiver
                 std::set<int> pickedReceivers;
-                for (int i = 0; i < m_sendParams.m_nReceivers; i++)
+                for(unsigned i = 0; i < m_sendParams.m_nReceivers; i++)
                 {
                     Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
                     
@@ -210,7 +210,7 @@ DataCenterApp::StopApplication (void)
 
     m_running = false;
 
-    for (int i = 0; i < m_sendInfos.size (); i++)
+    for(unsigned i = 0; i < m_sendInfos.size (); i++)
     {
         if (m_sendInfos[i].m_event.IsRunning ())
             Simulator::Cancel (m_sendInfos[i].m_event);
@@ -250,7 +250,7 @@ DataCenterApp::KickOffSending (void)
         case FIXED_SPORADIC:
         {
             // This starts as random starts time but continues as a fixed interval after
-            for (int i = 0; i < m_sendInfos.size(); i++)
+            for(unsigned i = 0; i < m_sendInfos.size(); i++)
             {
                 // Choose a random interval
                 Time interval = NanoSeconds (rand () %
@@ -264,7 +264,7 @@ DataCenterApp::KickOffSending (void)
         }
         case RANDOM_SPORADIC:
         {
-            for (int i = 0; i < m_sendInfos.size(); i++)
+            for(unsigned i = 0; i < m_sendInfos.size(); i++)
                 ScheduleSend(i);
             break;
         }
@@ -378,7 +378,7 @@ DataCenterApp::BulkSendPackets ()
     NS_ASSERT (m_sendInfos[0].m_event.IsExpired ());
     
     // Send a packet for all send infos
-    for (int i = 0; i < m_sendInfos.size(); i++)
+    for(unsigned i = 0; i < m_sendInfos.size(); i++)
         DoSendPacket (m_sendInfos[i]);
     
     // Schedule next bulk send (just have to check packets sent for
@@ -435,7 +435,7 @@ DataCenterApp::DoSendPacket (SendInfo& sendInfo)
 
     /*// Break up packets and send in MAX_PACKET_SIZE chunks
     uint32_t packetsToSend = m_sendParams.m_packetSize / MAX_PACKET_SIZE;
-    for (int i = 0; i < packetsToSend; i++)
+    for(unsigned i = 0; i < packetsToSend; i++)
     {
         // Create a header with sequence number and time
         SeqTsHeader seqTs;

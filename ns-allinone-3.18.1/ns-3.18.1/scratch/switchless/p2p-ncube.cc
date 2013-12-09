@@ -30,7 +30,7 @@ NS_LOG_COMPONENT_DEFINE ("PointToPointNcubeHelper");
 
 unsigned getLesserInDimension(unsigned dimension, unsigned current_node, unsigned mary){
   unsigned scale = 1;
-  for (int i = 0; i < dimension; i++){
+  for (unsigned i = 0; i < dimension; i++){
     scale *= mary;
   }
   unsigned num = current_node - scale;
@@ -39,13 +39,13 @@ unsigned getLesserInDimension(unsigned dimension, unsigned current_node, unsigne
 
 unsigned getLeastInDimension(unsigned dimension, unsigned current_node, unsigned mary){
   unsigned pos = current_node;
-  for (int i = 0; i < dimension; i++){
+  for (unsigned i = 0; i < dimension; i++){
     pos /= mary;
   }
   pos = (pos % mary);
 
   unsigned scale = 1;
-  for (int i = 0; i < dimension; i++){
+  for (unsigned i = 0; i < dimension; i++){
     scale *= mary;
   }
   unsigned num = current_node - (scale * pos);
@@ -54,7 +54,7 @@ unsigned getLeastInDimension(unsigned dimension, unsigned current_node, unsigned
 
 unsigned isLeastInDimension(unsigned dimension, unsigned current_node, unsigned mary){
   unsigned num = current_node;
-  for (int i = 0; i < dimension; i++){
+  for (unsigned i = 0; i < dimension; i++){
     num /= mary;
   }
   return (num % mary) == 0;
@@ -62,7 +62,7 @@ unsigned isLeastInDimension(unsigned dimension, unsigned current_node, unsigned 
 
 unsigned isGreatestInDimension(unsigned dimension, unsigned current_node, unsigned mary){
   unsigned num = current_node;
-  for (int i = 0; i < dimension; i++){
+  for (unsigned i = 0; i < dimension; i++){
     num /= mary;
   }
   return (num % mary) == (mary - 1);

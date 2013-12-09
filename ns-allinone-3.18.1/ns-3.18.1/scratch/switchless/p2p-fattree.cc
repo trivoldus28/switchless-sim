@@ -42,13 +42,13 @@ PointToPointFattreeHelper::recursiveMakeTree(Node * root, unsigned group_size, u
                           PointToPointHelper p2p_host_to_router)
 {
   if (tree_depth == 0){
-    for (int i = 0; i < group_size; i++){
+    for (unsigned i = 0; i < group_size; i++){
       Node * leaf = makeOneNode(m_nodes);
       m_node_devices.Add(p2p_host_to_router.Install(leaf, root));
     }
   }
   else{
-    for (int i = 0; i < router_fanout; i++){
+    for (unsigned i = 0; i < router_fanout; i++){
       Node * router = makeOneNode(m_routers);
       uint64_t fat_datarate = base_datarate * group_size * pow(router_fanout,tree_depth - 1);
       p2p_host_to_router.SetDeviceAttribute("DataRate", DataRateValue(fat_datarate));
