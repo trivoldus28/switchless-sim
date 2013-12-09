@@ -88,12 +88,12 @@ main (int argc, char * argv[])
     cmd.Parse (argc, argv);
     if(sChoice != 0)
     {  
-        //senderChoice = "set";
+        //sSenderChoice = "set";
         //We don't support it
     }
     if(rChoice != 0)
     {  
-        receiverChoice = "set";
+        sReceiverChoice = "set";
     }
     if(intervaltype==RANDOM)
     {
@@ -294,7 +294,7 @@ main (int argc, char * argv[])
                 unsigned senderX = *it % meshNumCol;
 
                 // vector <coord_t> coordList;
-                for (auto it = recvCoordSet.begin(); it != recvCoordSet.end(); it++){
+                for (std::unordered_set<int>::iterator it = recvCoordSet.begin(); it != recvCoordSet.end(); it++){
                     unsigned recvCoord = *it;
                     int x = recvCoord % meshNumCol;
                     int y = recvCoord / meshNumCol;
