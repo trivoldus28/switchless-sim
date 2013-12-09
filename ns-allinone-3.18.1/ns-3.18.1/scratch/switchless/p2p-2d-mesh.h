@@ -29,6 +29,7 @@
 #include "ns3/ipv6-interface-container.h"
 #include "ns3/net-device-container.h"
 
+#include "p2p-topology-interface.h"
 namespace ns3 {
 
 /**
@@ -37,7 +38,7 @@ namespace ns3 {
  * \brief A helper to make it easier to create a grid topology
  * with p2p links
  */
-class PointToPoint2DMeshHelper 
+class PointToPoint2DMeshHelper : public PointToPointTopoHelper 
 {
 public: 
   /**
@@ -67,6 +68,7 @@ public:
    *          (row, col) address
    */
   Ptr<Node> GetNode (uint32_t row, uint32_t col);
+  Ptr<Node> GetNode (uint32_t nodeid);
 
   /**
    * This returns an Ipv4 address at the node specified by 
@@ -85,7 +87,7 @@ public:
    *          specified by the (row, col) address
    */
   Ipv4Address GetIpv4Address (uint32_t row, uint32_t col);
-
+  Ipv4Address GetIpv4Address (uint32_t nodeid);
   /**
    * \param stack an InternetStackHelper which is used to install 
    *              on every node in the grid

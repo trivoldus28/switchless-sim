@@ -184,9 +184,30 @@ PointToPoint2DMeshHelper::GetNode (uint32_t row, uint32_t col)
   return (m_nodes.at (row)).Get (col);
 }
 
+Ptr<Node> 
+PointToPoint2DMeshHelper::GetNode (unsigned nodeid)
+{
+  unsigned row = nodeid / m_xSize;
+  unsigned col = nodeid % m_xSize;
+  return (m_nodes.at (row)).Get (col);
+}
+
 Ipv4Address
 PointToPoint2DMeshHelper::GetIpv4Address (uint32_t row, uint32_t col)
 {
+  if (row > m_nodes.size () - 1 || 
+      col > m_nodes.at (row).GetN () - 1) 
+    {
+      NS_FATAL_ERROR ("Index out of bounds in PointToPoint2DMeshHelper::GetIpv4Address.");
+    }
+
+  return (m_Interfaces.at (row)).GetAddress (col);
+}
+
+Ipv4Address
+PointToPoint2DMeshHelper::GetIpv4Address (unsigned nodeid){
+  unsigned row = nodeid / m_xSize;
+  unsigned col = nodeid % m_xSize;
   if (row > m_nodes.size () - 1 || 
       col > m_nodes.at (row).GetN () - 1) 
     {

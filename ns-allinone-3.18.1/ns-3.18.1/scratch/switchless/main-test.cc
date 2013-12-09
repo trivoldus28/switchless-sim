@@ -38,12 +38,17 @@ main (int argc, char * argv[])
 {
     unsigned nRackSize = 0;
     unsigned nTreeFanout = 0;
-    //bool bTorus = false; // not parsed
+    bool bTorus = true; // not parsed
     std::string sSenderChoice = "random";  // not parsed
     std::string sReceiverChoice = "random"; // not parsed
     bool bFixedInterval = false;
     bool bRandomInterval = false;
     bool bSynchronized = false;
+    unsigned meshNumRow = 0;
+    unsigned meshNumCol = 0;
+    unsigned senderCenterNode = 0;
+    unsigned receiverCenterNode = 0;
+
 
     int topologytype = 0;
     int topo_sub1 = 0;
@@ -89,17 +94,22 @@ main (int argc, char * argv[])
     bSynchronized = synchronized;
     if(topologytype == MESH)
     {
-        // Only n^2
+        meshNumRow = topo_sub1;
+        meshNumCol = topo_sub2;
     }
     else if (topologytype == TREE)
     {   
         nRackSize = topo_sub1;
         nTreeFanout = topo_sub2;
     }
-    else
+    else if (topologytype == CUBE)
     {
         m_cube= topo_sub1;
         n_cube= topo_sub2;
+    }
+    else{
+        std::cout << "Invalid topo\n";
+        NS_ASSERT(false);
     }
 
 
@@ -113,23 +123,22 @@ main (int argc, char * argv[])
     PointToPointTopoHelper * topology;
     // switch statements
     if (topologytype == TREE){
-        unsigned depth = log(nNodes) / log(nTreeFanout);
+        NS_ASSERT(nNodes % nRackSize == 0);
+        unsigned depth = log(nNodes / nRackSize) / log(nTreeFanout);
+        NS_ASSERT(nNodes/nRackSize == pow(nTreeFanout, depth));
         uint64_t linkDataRate = 1024*1024*1024; // 1Gbps
         topology = new PointToPointFattreeHelper(nRackSize, nTreeFanout, depth, linkDataRate, pointToPoint);
     }
     else if (topologytype == MESH){
-        std::cout << "Not implemented\n";
-        //TODO: DO IT
-        return 0;
+        NS_ASSERT(nNodes == (meshNumRow * meshNumCol));
+        topology = new PointToPoint2DMeshHelper(meshNumRow, meshNumCol, bTorus, pointToPoint);
     }
     else if (topologytype == CUBE){
-        std::cout << "Not implemented\n";
-        //TODO: DO IT
-        return 0;
+        NS_ASSERT(nNodes == pow(m_cube, n_cube));
+        topology = new PointToPointNcubeHelper(m_cube, n_cube, bTorus, pointToPoint);
     }
     else{
-        std::cout << "No such topo\n";
-        //TODO: DO IT
+        std::cout << "Invalid topo\n";
         return 0;
     }
 
@@ -143,10 +152,8 @@ main (int argc, char * argv[])
     linkAddresses.SetBase ("1.0.0.0", "255.255.0.0");
     topology->AssignIpv4Addresses(nodeAddresses, linkAddresses); 
 
-
     // Random Seed 
     srand(100);
-
     std::unordered_set<int> senderSet;
     if (sSenderChoice == "random"){
         unsigned randid = 0;
@@ -251,9 +258,30 @@ main (int argc, char * argv[])
                 }
              }
              else if(topologytype == MESH){
+                // Basically we will have a box to draw random, clustered nodes from
+                // Box boundaries are 1,4,9,16,25,...
+                unsigned boundaryFactor = 1;
+                while(boundaryFactor * boundaryFactor < nReceiver)
+                    boundaryFactor++;
+                typedef pair<unsigned, unsigned> coord_t;
+                std::unordered_set<coord_t> recvCoordList;
+                while (recvCoordList.size() < nReceiver){
+                    unsigned randx = rand() % boundaryFactor;
+                    unsigned randy = rand() % boundaryFactor;
+                    recvCoordList.insert(make_pair(randx,randy));
+                }
+
+                // calculate the offset factor with regard to the center receiver node
+                int offset = -1 * ((boundaryFactor - 1) / 2);
+                
              }
              else if(topologytype == CUBE){
+                NS_ASSERT(false);
              }
+            //params.m_nodes = &receiverNodeList; // TODO: enable this when interface is changed // So who's method are we using.
+            params.m_nNodes = receiverNodeList.size();
+            params.m_nReceivers = nReceiver;
+            params.m_receivers = DataCenterApp::ALL_IN_LIST;
         }
 
         if (bFixedInterval && bSynchronized){
