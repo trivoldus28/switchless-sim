@@ -47,9 +47,6 @@ main (int argc, char * argv[])
     bool bSynchronized = false;
     unsigned meshNumRow = 0;
     unsigned meshNumCol = 0;
-    unsigned senderCenterNode = 0;
-    unsigned receiverCenterNode = 0;
-
 
     int topologytype = 0;
     int topo_sub1 = 0;
@@ -197,7 +194,12 @@ main (int argc, char * argv[])
         std::vector <Ipv4Address> receiverNodeList;
 
         if (sReceiverChoice == "random"){
-            // TODO : PUT ALL NODES
+            for(int i=0;i<nNodes;i++)
+            {
+                Ipv4Address t = topology->GetIpv4Address(i);
+                receiverNodeList.push_back(t);
+            }
+
             params.m_nNodes = nNodes;
             params.m_nReceivers = nReceiver;
             params.m_receivers = DataCenterApp::RANDOM_SUBSET;
@@ -294,7 +296,7 @@ main (int argc, char * argv[])
                 unsigned senderX = *it % meshNumCol;
 
                 // vector <coord_t> coordList;
-                for (std::unordered_set<int>::iterator it = recvCoordSet.begin(); it != recvCoordSet.end(); it++){
+                for (std::unordered_set<unsigned>::iterator it = recvCoordSet.begin(); it != recvCoordSet.end(); it++){
                     unsigned recvCoord = *it;
                     int x = recvCoord % meshNumCol;
                     int y = recvCoord / meshNumCol;
@@ -326,24 +328,24 @@ main (int argc, char * argv[])
         }
         if (bFixedInterval && bSynchronized){
             params.m_sendPattern = DataCenterApp::FIXED_INTERVAL;
-            params.m_sendInterval = MilliSeconds (nintervalsize);
+            //params.m_sendInterval = MilliSeconds (nintervalsize);
         }
         else if(bFixedInterval && !bSynchronized)
         {
             params.m_sendPattern = DataCenterApp::FIXED_SPORADIC;
-            params.m_sendInterval = MilliSeconds (nintervalsize);
+            //params.m_sendInterval = MilliSeconds (nintervalsize);
         }
         else if(!bFixedInterval && bSynchronized)
         {
             params.m_sendPattern = DataCenterApp::RANDOM_INTERVAL;
-            params.m_maxSendInterval = nMaxinterval;
-            params.m_minSendInterval = nMininterval;
+            //params.m_maxSendInterval = nMaxinterval;
+            //params.m_minSendInterval = nMininterval;
         }
         else
         {
             params.m_sendPattern = DataCenterApp::RANDOM_SPORADIC;
-            params.m_maxSendInterval = nMaxinterval;
-            params.m_minSendInterval = nMininterval;
+            //params.m_maxSendInterval = nMaxinterval;
+            //params.m_minSendInterval = nMininterval;
         }
         params.m_packetSize = nPacketSize;
         params.m_nPackets = nIterations; 
