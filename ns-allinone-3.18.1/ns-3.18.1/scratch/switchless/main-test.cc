@@ -170,12 +170,12 @@ main (int argc, char * argv[])
             }
         }
     }
-    else if (sSenderChoice == "set"){
+    /*else if (sSenderChoice == "set"){
         // For now let's just get the first n nodes
         for (int i = 0; i < nSender; i++){
             senderSet.insert(i);
         } 
-    }
+    }*/
 
     for (std::unordered_set<int>::iterator it = senderSet.begin(); it != senderSet.end(); it++){
         DataCenterApp::SendParams params;
@@ -183,28 +183,11 @@ main (int argc, char * argv[])
         std::vector <Ipv4Address> receiverNodeList;
 
         if (sReceiverChoice == "random"){
-            unsigned randid=0;
-            for (int i = 0; i < nReceiver; i++){
-                randid = rand();
-                randid %= nNodes;
-                if(std::find(receiverNodeList.begin(), receiverNodeList.end(), topology->GetIpv4Address(randid))!=receiverNodeList.end())
-                {
-                     Ipv4Address t = topology->GetIpv4Address(randid);
-                     receiverNodeList.push_back(t);
-                }
-                else
-                {
-                    i--;
-                }
-              
-            }
-            //params.m_nodes = &receiverNodeList; // TODO: enable this when interface is changed // So who's method are we using.
             params.m_nNodes = nNodes;
             params.m_nReceivers = nReceiver;
             params.m_receivers = DataCenterApp::RANDOM_SUBSET;
         }
         else{
-             std::cout << "Unimplemented1\n" << std::endl; // Neighborhood Case
              if (topologytype == TREE){
                 int nodeid = *it;
                 if(nodeid >= (nNeighbor/2) && nodeid <= nNodes-1-(nNeighbor/2))
