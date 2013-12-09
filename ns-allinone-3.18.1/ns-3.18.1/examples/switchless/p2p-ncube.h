@@ -29,6 +29,7 @@
 #include "ns3/ipv6-interface-container.h"
 #include "ns3/net-device-container.h"
 
+#include "p2p-topology-interface.h"
 namespace ns3 {
 
 /**
@@ -37,7 +38,7 @@ namespace ns3 {
  * \brief A helper to make it easier to create a grid topology
  * with p2p links
  */
-class PointToPointNcubeHelper 
+class PointToPointNcubeHelper : public PointToPointTopoHelper
 {
 public: 
   PointToPointNcubeHelper (uint32_t nMary, unsigned nNcube, bool isTorus,
@@ -60,9 +61,6 @@ public:
   void AssignIpv4Addresses (Ipv4AddressHelper ip, Ipv4AddressHelper link_ip);
 
 private:
-  unsigned m_mary;
-  unsigned m_ncube;
-  bool m_isTorus;
   unsigned m_total_nodes;
 
   NodeContainer m_nodes;

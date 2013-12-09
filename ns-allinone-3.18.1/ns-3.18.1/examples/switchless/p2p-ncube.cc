@@ -72,7 +72,6 @@ namespace ns3 {
 
 PointToPointNcubeHelper::PointToPointNcubeHelper (uint32_t nMary, unsigned nNcube, bool isTorus,
                                                 PointToPointHelper pointToPoint)
-  : m_mary (nMary), m_ncube(nNcube), m_isTorus(isTorus)
 {
 
   unsigned num_nodes = pow(nMary,nNcube);

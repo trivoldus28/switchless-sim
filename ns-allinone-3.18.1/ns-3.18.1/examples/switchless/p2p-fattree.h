@@ -29,9 +29,10 @@
 #include "ns3/ipv6-interface-container.h"
 #include "ns3/net-device-container.h"
 
+#include "p2p-topology-interface.h"
 namespace ns3 {
 
-class PointToPointFattreeHelper 
+class PointToPointFattreeHelper  : public PointToPointTopoHelper 
 {
 public: 
   PointToPointFattreeHelper (unsigned group_size, unsigned router_fanout, unsigned tree_depth, uint64_t base_datarate,
