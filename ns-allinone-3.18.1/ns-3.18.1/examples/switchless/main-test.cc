@@ -91,6 +91,7 @@ main (int argc, char * argv[])
     if(debuglog==1)
     {
         LogComponentEnable ("DataCenterApp", LOG_INFO);
+        LogComponentDisable("DataCenterApp", LOG_DEBUG);
     }
     if(sChoice != 0)
     {  
