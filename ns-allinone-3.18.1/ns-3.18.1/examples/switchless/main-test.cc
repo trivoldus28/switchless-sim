@@ -267,20 +267,20 @@ main (int argc, char * argv[])
                 // Box boundaries are 1,4,9,16,25,...
                 // centered around this particular send node (*it)
                 unsigned boundaryFactor = 1;
-                while(boundaryFactor * boundaryFactor < nNeighbor)
-                    boundaryFactor++;
                 std::unordered_set<unsigned> recvCoordSet;
                 unsigned mindistance =1;
                 while (recvCoordSet.size() < nNeighbor){
-                    unsigned randx = rand() % (boundaryFactor+1);
-                    unsigned randy = rand() % (boundaryFactor+1);
-                    unsigned distance = randx + randy; 
+                    int randx = rand() % (boundaryFactor*2+1);
+                    int randy = rand() % (boundaryFactor*2+1);
+                    randx = randx-boundaryFactor;
+                    randy = randy-boundaryFactor;
+                    int distance = abs(randx)+abs(randy);
                     unsigned coord = randy * meshNumCol + randx;
                     if(mindistance == distance)
                     {
                         recvCoordSet.insert(coord);
                     }
-                    if(recvCoordSet.size() == mindistance+1)
+                    if(recvCoordSet.size() == 2*mindistance*(mindistance+1))
                     {
                         mindistance++;
                     }
@@ -294,7 +294,6 @@ main (int argc, char * argv[])
                 // box of 2 can be either 0 or -1. I pick 0
                 // of 4 can be -1 or -2. Just pick -1
                 // ...
-                int offset = -1 * ((boundaryFactor - 1) / 2);
 
                 // unsigned senderID = *it;
                 unsigned senderY = *it / meshNumCol;
@@ -305,8 +304,8 @@ main (int argc, char * argv[])
                     unsigned recvCoord = *it;
                     int x = recvCoord % meshNumCol;
                     int y = recvCoord / meshNumCol;
-                    x = x + senderX + offset;
-                    y = y + senderY + offset;
+                    x = x + senderX ;
+                    y = y + senderY ;
 
                     NS_ASSERT(bTorus == true);
                     if (x < 0)
