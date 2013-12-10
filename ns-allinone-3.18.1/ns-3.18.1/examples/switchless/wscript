@@ -32,7 +32,7 @@ def build(bld):
     obj.source = {
         'test-fattree.cc',
         'p2p-fattree.cc'
-    } 
+    }     
 
     obj = bld.create_ns3_program('two-node-test', ['core', 'point-to-point', 'internet', 'applications'])
     obj.source = {

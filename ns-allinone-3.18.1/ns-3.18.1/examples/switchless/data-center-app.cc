@@ -228,11 +228,11 @@ DataCenterApp::StopApplication (void)
    
     // Close socket for receiving
     m_rxSocket->Close();
-    m_rxSocket->SetCloseCallbacks (MakeNullCallback<void, Ptr<Socket>> (),
-                                   MakeNullCallback<void, Ptr<Socket>> ());
+    m_rxSocket->SetCloseCallbacks (MakeNullCallback<void, Ptr<Socket> > (),
+                                   MakeNullCallback<void, Ptr<Socket> > ());
     m_rxSocket->SetAcceptCallback (MakeNullCallback<bool, Ptr<Socket>, const Address &> (),
                                    MakeNullCallback<void, Ptr<Socket>, const Address &> ());
-    m_rxSocket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket>> ());
+    m_rxSocket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
 }
 
 void 
