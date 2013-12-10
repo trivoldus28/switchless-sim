@@ -133,7 +133,7 @@ main (int argc, char * argv[])
     // common variables
     PointToPointHelper pointToPoint;
     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
-    pointToPoint.SetChannelAttribute ("Delay", StringValue ("1us"));
+    pointToPoint.SetChannelAttribute ("Delay", StringValue ("100ns"));
 
     std::cout << "Making topology\n";
     PointToPointTopoHelper * topology;
