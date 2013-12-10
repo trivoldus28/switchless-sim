@@ -192,6 +192,8 @@ if __name__ == '__main__':
 												args += " --rcount=" + `nreceiver`
 												args += " --ncount=" + `nNode`
 
+												# args += " --rChoice=" + `0`
+
 												log = ""
 
 												command = './waf --run "main-test' + args + '"'
