@@ -95,14 +95,14 @@ if __name__ == '__main__':
 		numreceivers = [1]
 
 	if workload == "test":
-		numberofnodes = [16]
+		numberofnodes = [32]
 		topologies = ["mesh"]
-		intervaltypes = ["fixed", "random"]
+		intervaltypes = ["fixed"]
 		synctypes = [1] #synchronized or not
 		packetsizes = [512]
 		intervals = [20] # in ns 
 		intervalranges = [[5,80]] # in ns, used in sporadic interval
-		numiterations = [1]
+		numiterations = [3]
 		numsenders = [1]
 		numreceivers = [1]
 
@@ -192,7 +192,7 @@ if __name__ == '__main__':
 		if writetofile:
 			command += " &> " + logfnames[i]
 		print(command)
-		# os.system(command) # uncomment this line to execute the command)
+		os.system(command) # uncomment this line to execute the command)
 
 
 

@@ -150,7 +150,7 @@ main (int argc, char * argv[])
         NS_ASSERT(nNodes % nRackSize == 0);
         unsigned depth = log(nNodes / nRackSize) / log(nTreeFanout);
         NS_ASSERT(nNodes/nRackSize == pow(nTreeFanout, depth));
-        uint64_t linkDataRate = 1000*1000*1000*10; // 1Gbps
+        uint64_t linkDataRate = 1000LL*1000*1000*10; // 1Gbps
         topology = new PointToPointFattreeHelper(nRackSize, nTreeFanout, depth, linkDataRate, pointToPoint);
     }
     else if (topologytype == MESH){
