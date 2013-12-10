@@ -158,7 +158,7 @@ main (int argc, char * argv[])
         return 0;
     }
 
-    Time::SetResolution (Time::NS);
+    Time::SetResolution (Time::MS);
 
     InternetStackHelper stack;
     topology->InstallStack(stack);
