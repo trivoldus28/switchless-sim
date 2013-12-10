@@ -37,6 +37,8 @@ NS_LOG_COMPONENT_DEFINE ("MainProgram");
 int
 main (int argc, char * argv[])
 {
+
+    LogComponentEnable ("DataCenterApp", LOG_LEVEL_ALL);
     unsigned nRackSize = 0;
     unsigned nTreeFanout = 0;
     bool bTorus = true; // not parsed
@@ -124,7 +126,6 @@ main (int argc, char * argv[])
     }
 
 
-    LogComponentEnable ("DataCenterApp", LOG_LEVEL_ALL);
 
     // common variables
     PointToPointHelper pointToPoint;
@@ -246,61 +247,35 @@ main (int argc, char * argv[])
                 // Basically we will have a box to draw random, clustered nodes from
                 // Box boundaries are 1,4,9,16,25,...
                 // centered around this particular send node (*it)
-                unsigned boundaryFactor = 1;
+                
+                unsigned senderY = *it / meshNumCol;
+                unsigned senderX = *it % meshNumCol;
                 std::unordered_set<unsigned> recvCoordSet;
                 unsigned mindistance =1;
-                while (recvCoordSet.size() < nNeighbor){
+                while (receiverNodeList.size() < nNeighbor){
                     int randx = rand() % (mindistance*2+1);
                     int randy = rand() % (mindistance*2+1);
                     randx = randx-mindistance;
                     randy = randy-mindistance;
                     int distance = abs(randx)+abs(randy);
-                    unsigned coord = randy * meshNumCol + randx;
                     if(mindistance == distance)
                     {
-                        recvCoordSet.insert(coord);
+                        int poty = randy + senderY;
+                        int potx = randx + senderX;
+                         NS_ASSERT(bTorus == true);
+                        if (potx < 0)
+                            potx += meshNumCol;
+                        if (poty < 0)
+                            poty += meshNumRow;
+                        unsigned coord = poty* meshNumCol + potx;
+                        Ipv4Address t = topology->GetIpv4Address(coord);
+                        receiverNodeList.push_back(t);
                     }
-                    if(recvCoordSet.size() == 2*mindistance*(mindistance+1))
+                    if(receiverNodeList.size() == 2*mindistance*(mindistance+1))
                     {
                         mindistance++;
                     }
                 }
-
-                // calculate the offset factor with regard to the sender
-                // a box of 0 will have offset 0 (only 1 point)
-                // of 3 will have -1
-                // of 5 will have -2
-                // ...
-                // box of 2 can be either 0 or -1. I pick 0
-                // of 4 can be -1 or -2. Just pick -1
-                // ...
-
-                // unsigned senderID = *it;
-                unsigned senderY = *it / meshNumCol;
-                unsigned senderX = *it % meshNumCol;
-
-                // vector <coord_t> coordList;
-                for (std::unordered_set<unsigned>::iterator it = recvCoordSet.begin(); it != recvCoordSet.end(); it++){
-                    unsigned recvCoord = *it;
-                    int x = recvCoord % meshNumCol;
-                    int y = recvCoord / meshNumCol;
-                    x = x + senderX ;
-                    y = y + senderY ;
-
-                    NS_ASSERT(bTorus == true);
-                    if (x < 0)
-                        x += meshNumCol;
-                    if (y < 0)
-                        y += meshNumRow;
-
-                    NS_ASSERT(x < meshNumCol);
-                    NS_ASSERT(y < meshNumRow);
-
-                    unsigned recvid = y * meshNumCol + x;
-                    Ipv4Address t = topology->GetIpv4Address(recvid);
-                    receiverNodeList.push_back(t);
-                }
-
              }
              else if(topologytype == CUBE){
                 NS_ASSERT(false);

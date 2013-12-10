@@ -107,6 +107,7 @@ DataCenterApp::InitReceiveInfo (ReceiveInfo& receiveInfo)
 void
 DataCenterApp::StartApplication (void)
 {
+    //NS_LOG(1,"Test");
     NS_LOG_FUNCTION (this);
 
     if (!m_setup)
