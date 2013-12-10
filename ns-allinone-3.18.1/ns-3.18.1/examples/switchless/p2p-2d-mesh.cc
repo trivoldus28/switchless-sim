@@ -139,7 +139,7 @@ PointToPoint2DMeshHelper::AssignIpv4Addresses (Ipv4AddressHelper nodeIp, Ipv4Add
       for (uint32_t j = 0; j < hubContainer.GetN (); j+=2)
         {
           hubInterfaces.Add (nodeIp.Assign (hubContainer.Get (j))); 
-          hubInterfaces.Add (nodeIp.Assign (hubContainer.Get (j+1)));
+          (nodeIp.Assign (hubContainer.Get (j+1)));
           nodeIp.NewNetwork ();
         }
       m_Interfaces.push_back(hubInterfaces);
