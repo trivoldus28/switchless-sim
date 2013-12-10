@@ -320,30 +320,30 @@ main (int argc, char * argv[])
              else if(topologytype == CUBE){
                 NS_ASSERT(false);
              }
-            //params.m_nodes = &receiverNodeList; 
             params.m_nReceivers = nSender * nNeighbor;
             params.m_receivers = DataCenterApp::ALL_IN_LIST;
         }
+        params.m_nodes = receiverNodeList; 
         if (bFixedInterval && bSynchronized){
             params.m_sendPattern = DataCenterApp::FIXED_INTERVAL;
-            //params.m_sendInterval = MilliSeconds (nintervalsize);
+            params.m_sendInterval = MilliSeconds (nintervalsize);
         }
         else if(bFixedInterval && !bSynchronized)
         {
             params.m_sendPattern = DataCenterApp::FIXED_SPORADIC;
-            //params.m_sendInterval = MilliSeconds (nintervalsize);
+            params.m_sendInterval = MilliSeconds (nintervalsize);
         }
         else if(!bFixedInterval && bSynchronized)
         {
             params.m_sendPattern = DataCenterApp::RANDOM_INTERVAL;
-            //params.m_maxSendInterval = nMaxinterval;
-            //params.m_minSendInterval = nMininterval;
+            params.m_maxSendInterval = MilliSeconds(nMaxinterval);
+            params.m_minSendInterval = MilliSeconds(nMininterval);
         }
         else
         {
             params.m_sendPattern = DataCenterApp::RANDOM_SPORADIC;
-            //params.m_maxSendInterval = nMaxinterval;
-            //params.m_minSendInterval = nMininterval;
+            params.m_maxSendInterval = MilliSeconds(nMaxinterval);
+            params.m_minSendInterval = MilliSeconds(nMininterval);
         }
         params.m_packetSize = nPacketSize;
         params.m_nPackets = nIterations; 
