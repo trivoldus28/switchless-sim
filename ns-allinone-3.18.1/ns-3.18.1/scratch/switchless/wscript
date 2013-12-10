@@ -8,31 +8,7 @@ def build(bld):
         'p2p-2d-mesh.cc',
         'p2p-fattree.cc',
         'data-center-app.cc'
-    }
-   
-    obj = bld.create_ns3_program('test-mesh', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
-    obj.source = {
-        'test-mesh.cc',
-        'p2p-2d-mesh.cc'
-    } 
-   
-    obj = bld.create_ns3_program('test-torus', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
-    obj.source = {
-        'test-torus.cc',
-        'p2p-2d-mesh.cc'
-    } 
-   
-    obj = bld.create_ns3_program('test-ncube', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
-    obj.source = {
-        'test-ncube.cc',
-        'p2p-ncube.cc'
-    } 
-   
-    obj = bld.create_ns3_program('test-fattree', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
-    obj.source = {
-        'test-fattree.cc',
-        'p2p-fattree.cc'
-    } 
+    
 
     obj = bld.create_ns3_program('two-node-test', ['core', 'point-to-point', 'internet', 'applications'])
     obj.source = {
