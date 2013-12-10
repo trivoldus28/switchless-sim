@@ -139,7 +139,7 @@ DataCenterApp::StartApplication (void)
             case ALL_IN_LIST:
             {
                 // Setup socket for each node in list
-                for(unsigned i = 0; i < m_sendParams.m_nNodes; i++)
+                for (uint32_t i = 0; i < m_sendParams.m_nNodes; i++)
                 {
                     Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
                     Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[i], PORT));
@@ -166,7 +166,7 @@ DataCenterApp::StartApplication (void)
 
                 // Setup socket for each randomly picked receiver
                 std::set<int> pickedReceivers;
-                for(unsigned i = 0; i < m_sendParams.m_nReceivers; i++)
+                for (uint32_t i = 0; i < m_sendParams.m_nReceivers; i++)
                 {
                     Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
                     
@@ -210,7 +210,7 @@ DataCenterApp::StopApplication (void)
 
     m_running = false;
 
-    for(unsigned i = 0; i < m_sendInfos.size (); i++)
+    for (uint32_t i = 0; i < m_sendInfos.size (); i++)
     {
         if (m_sendInfos[i].m_event.IsRunning ())
             Simulator::Cancel (m_sendInfos[i].m_event);
@@ -228,11 +228,11 @@ DataCenterApp::StopApplication (void)
    
     // Close socket for receiving
     m_rxSocket->Close();
-    m_rxSocket->SetCloseCallbacks (MakeNullCallback<void, Ptr<Socket> > (),
-                                   MakeNullCallback<void, Ptr<Socket> > ());
+    m_rxSocket->SetCloseCallbacks (MakeNullCallback<void, Ptr<Socket>> (),
+                                   MakeNullCallback<void, Ptr<Socket>> ());
     m_rxSocket->SetAcceptCallback (MakeNullCallback<bool, Ptr<Socket>, const Address &> (),
                                    MakeNullCallback<void, Ptr<Socket>, const Address &> ());
-    m_rxSocket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
+    m_rxSocket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket>> ());
 }
 
 void 
@@ -250,7 +250,7 @@ DataCenterApp::KickOffSending (void)
         case FIXED_SPORADIC:
         {
             // This starts as random starts time but continues as a fixed interval after
-            for(unsigned i = 0; i < m_sendInfos.size(); i++)
+            for (uint32_t i = 0; i < m_sendInfos.size(); i++)
             {
                 // Choose a random interval
                 Time interval = NanoSeconds (rand () %
@@ -264,7 +264,7 @@ DataCenterApp::KickOffSending (void)
         }
         case RANDOM_SPORADIC:
         {
-            for(unsigned i = 0; i < m_sendInfos.size(); i++)
+            for (uint32_t i = 0; i < m_sendInfos.size(); i++)
                 ScheduleSend(i);
             break;
         }
@@ -378,7 +378,7 @@ DataCenterApp::BulkSendPackets ()
     NS_ASSERT (m_sendInfos[0].m_event.IsExpired ());
     
     // Send a packet for all send infos
-    for(unsigned i = 0; i < m_sendInfos.size(); i++)
+    for (uint32_t i = 0; i < m_sendInfos.size(); i++)
         DoSendPacket (m_sendInfos[i]);
     
     // Schedule next bulk send (just have to check packets sent for
@@ -435,7 +435,7 @@ DataCenterApp::DoSendPacket (SendInfo& sendInfo)
 
     /*// Break up packets and send in MAX_PACKET_SIZE chunks
     uint32_t packetsToSend = m_sendParams.m_packetSize / MAX_PACKET_SIZE;
-    for(unsigned i = 0; i < packetsToSend; i++)
+    for (uint32_t i = 0; i < packetsToSend; i++)
     {
         // Create a header with sequence number and time
         SeqTsHeader seqTs;
