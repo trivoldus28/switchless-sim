@@ -335,7 +335,7 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
                          "    Packets Received: " << m_acceptSocketMap[socket].m_packetsReceived << "\n" <<
                          "    Bytes Received: " << m_acceptSocketMap[socket].m_bytesReceived);
             NS_LOG_DEBUG ("   " <<  GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  <<
-                          "\t  Received a " << DCAppHeader::PacketTypeToString (hdr.GetPacketType ()) << 
+                          "\t  Got " << DCAppHeader::PacketTypeToString (hdr.GetPacketType ()) << 
                           " from  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () <<
                           "   \t Time \t" << Simulator::Now() << " Delay : "
                           << Simulator::Now() - hdr.GetTimeStamp ());  
