@@ -335,7 +335,7 @@ main (int argc, char * argv[])
         params.m_nodes = receiverNodeList; 
         if (bFixedInterval && bSynchronized){
             params.m_sendPattern = DataCenterApp::FIXED_INTERVAL;
-            params.m_sendInterval = MilliSeconds (nintervalsize);
+            params.m_sendInterval = MicroSeconds (nintervalsize);
         }
         else if(bFixedInterval && !bSynchronized)
         {
@@ -345,14 +345,14 @@ main (int argc, char * argv[])
         else if(!bFixedInterval && bSynchronized)
         {
             params.m_sendPattern = DataCenterApp::RANDOM_INTERVAL;
-            params.m_maxSendInterval = MilliSeconds(nMaxinterval);
-            params.m_minSendInterval = MilliSeconds(nMininterval);
+            params.m_maxSendInterval = MicroSeconds(nMaxinterval);
+            params.m_minSendInterval = MicroSeconds(nMininterval);
         }
         else
         {
             params.m_sendPattern = DataCenterApp::RANDOM_SPORADIC;
-            params.m_maxSendInterval = MilliSeconds(nMaxinterval);
-            params.m_minSendInterval = MilliSeconds(nMininterval);
+            params.m_maxSendInterval = MicroSeconds(nMaxinterval);
+            params.m_minSendInterval = MicroSeconds(nMininterval);
         }
         params.m_packetSize = nPacketSize;
         params.m_nIterations = nIterations; 
