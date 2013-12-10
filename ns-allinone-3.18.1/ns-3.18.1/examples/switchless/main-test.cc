@@ -160,7 +160,7 @@ main (int argc, char * argv[])
     Ipv4AddressHelper nodeAddresses;
     Ipv4AddressHelper linkAddresses;
     nodeAddresses.SetBase ("0.0.0.0", "255.255.0.0");
-    linkAddresses.SetBase ("1.0.0.0", "255.255.0.0");
+    linkAddresses.SetBase ("128.0.0.0", "255.255.0.0");
     //std::cout << "Point 1\n";
     topology->AssignIpv4Addresses(nodeAddresses, linkAddresses); 
     //std::cout << "Point 2\n";
