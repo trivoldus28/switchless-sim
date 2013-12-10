@@ -334,11 +334,11 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
             switch (hdr.GetPacketType ())
             {
                 case DCAppHeader::REQUEST:
-                    SendResponsePacket (socket, from, currentSeqNum);
                     NS_LOG_DEBUG ("   " <<  GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  << 
                           "\t  Received from  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () << 
                           "   \t Time \t" << Simulator::Now() << " Delay : " 
                           << Simulator::Now() - hdr.GetTimeStamp ());
+                    SendResponsePacket (socket, from, currentSeqNum);
                     break;
                 case DCAppHeader::RESPONSE:
                     NS_LOG_DEBUG ("   " <<  GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  << 
