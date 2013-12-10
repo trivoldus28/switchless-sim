@@ -212,9 +212,9 @@ main (int argc, char * argv[])
         else{
              if (topologytype == TREE){
                 int nodeid = *it;
-                if(nodeid >= (nNeighbor/2) && nodeid <= nNodes-1-(nNeighbor/2))
+                if(nodeid >= ((nNeighbor+1)/2) && nodeid <= nNodes-1-((nNeighbor+1)/2))
                 {
-                    for(int i=1; i <= nNeighbor/2; i++)
+                    for(int i=1; i <= (nNeighbor+1)/2; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nodeid-i);
                         receiverNodeList.push_back(t);
@@ -222,40 +222,40 @@ main (int argc, char * argv[])
                         receiverNodeList.push_back(t);
                     }
                 }
-                else if(nodeid >= (nNeighbor/2) && nodeid > nNodes-1-(nNeighbor/2))
+                else if(nodeid >= ((nNeighbor+1)/2) && nodeid > nNodes-1-((nNeighbor+1)/2))
                 {
-                    int getFirst = nodeid-nNodes+1+(nNeighbor/2);
+                    int getFirst = nodeid-nNodes+1+((nNeighbor+1)/2);
                     for(int i=1; i<=getFirst; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(i);
                         receiverNodeList.push_back(t);
                     }
-                    for(int i=1; i <= nNeighbor/2; i++)
+                    for(int i=1; i <= (nNeighbor+1)/2; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nodeid-i);
                         receiverNodeList.push_back(t);
                     }
-                    for (int i=1; i<= nNeighbor/2 - getFirst ; i++)
+                    for (int i=1; i<= (nNeighbor+1)/2 - getFirst ; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nodeid+i);
                         receiverNodeList.push_back(t);   
                     }
 
                 }
-                else if(nodeid < (nNeighbor/2) && nodeid <= nNodes-1-(nNeighbor/2))
+                else if(nodeid < ((nNeighbor+1)/2) && nodeid <= nNodes-1-((nNeighbor+1)/2))
                 {
-                    int getLast = nNeighbor/2 - nodeid;
+                    int getLast = (nNeighbor+1)/2 - nodeid;
                     for(int i=1; i<=getLast; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nNodes-i);
                         receiverNodeList.push_back(t);
                     }
-                    for(int i=1; i <= nNeighbor/2; i++)
+                    for(int i=1; i <= (nNeighbor+1)/2; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nodeid+i);
                         receiverNodeList.push_back(t);
                     }
-                    for (int i=1; i<= nNeighbor/2 - getLast ; i++)
+                    for (int i=1; i<= (nNeighbor+1)/2 - getLast ; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nodeid-i);
                         receiverNodeList.push_back(t);   
@@ -358,7 +358,7 @@ main (int argc, char * argv[])
         topology->GetNode(*it)->AddApplication(app);
 
         app->SetStartTime (Seconds(0.));
-        app->SetStopTime (Seconds(100.));
+        app->SetStopTime (Seconds(100000.));
     }
 
     std::cout << "Populating routing table\n";
