@@ -17,6 +17,9 @@
 #include "ns3/internet-module.h"
 #include "ns3/applications-module.h"
 
+// Switchless Includes
+#include "dc-app-header.h"
+
 using namespace ns3;
 
 class DataCenterApp : public Application
@@ -67,7 +70,6 @@ private:
     // Constants
     static const uint16_t PORT = 8080;
     static const uint32_t MAX_PACKET_SIZE = 512;
-    static const uint32_t HEADER_SIZE = 12;
 
     // Struct to hold information to sending to a node
     typedef struct SendInfoStruct
@@ -104,13 +106,16 @@ private:
     void HandleConnectionSucceeded (Ptr<Socket>);
     void HandleConnectionFailed (Ptr<Socket>);
 
-    // Send a packet
+    // Send a request packet
     void BulkSendPackets ();
     void SendPacket (uint32_t index);
     void DoSendPacket (SendInfo& sendInfo);
     // Schedule the next packet to send
     void BulkScheduleSend ();
     void ScheduleSend (uint32_t index);
+
+    // Send response packet
+    void SendResponsePacket (Ptr<Socket> socket, uint16_t sequenceNumber);
     
     // Select random receivers
     void SelectRandomReceiverSubset (std::unordered_set<uint32_t>& subset); 

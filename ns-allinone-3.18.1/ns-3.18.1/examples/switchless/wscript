@@ -7,7 +7,8 @@ def build(bld):
         'p2p-ncube.cc',
         'p2p-2d-mesh.cc',
         'p2p-fattree.cc',
-        'data-center-app.cc'
+        'data-center-app.cc',
+        'dc-app-header.cc'
     }
    
     obj = bld.create_ns3_program('test-mesh', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
@@ -37,5 +38,6 @@ def build(bld):
     obj = bld.create_ns3_program('two-node-test', ['core', 'point-to-point', 'internet', 'applications'])
     obj.source = {
         'two-node-test.cc',
-        'data-center-app.cc'
+        'data-center-app.cc',
+        'dc-app-header.cc'
     }
