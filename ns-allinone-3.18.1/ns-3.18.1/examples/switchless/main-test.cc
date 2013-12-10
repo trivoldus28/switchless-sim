@@ -272,8 +272,8 @@ main (int argc, char * argv[])
                 std::unordered_set<unsigned> recvCoordSet;
                 unsigned mindistance =1;
                 while (recvCoordSet.size() < nNeighbor){
-                    unsigned randx = rand() % boundaryFactor;
-                    unsigned randy = rand() % boundaryFactor;
+                    unsigned randx = rand() % (boundaryFactor+1);
+                    unsigned randy = rand() % (boundaryFactor+1);
                     unsigned distance = randx + randy; 
                     unsigned coord = randy * meshNumCol + randx;
                     if(mindistance == distance)
