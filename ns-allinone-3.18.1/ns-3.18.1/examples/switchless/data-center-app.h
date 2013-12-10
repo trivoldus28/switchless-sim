@@ -10,6 +10,7 @@
 // C/C++ Includes
 #include <stdlib.h>
 #include <time.h>
+#include <unordered_set>
 
 // NS-3 Includes
 #include "ns3/core-module.h"
@@ -52,7 +53,7 @@ public:
         Time                        m_maxSendInterval;
         Time                        m_minSendInterval;
         uint32_t                    m_packetSize;
-        uint32_t                    m_nPackets;
+        uint32_t                    m_nIterations;
     } SendParams;
     static void copySendParams(SendParams& src, SendParams& dst);
 
@@ -109,11 +110,19 @@ private:
     void DoSendPacket (SendInfo& sendInfo);
     // Schedule the next packet to send
     void BulkScheduleSend ();
-    void ScheduleSend (uint32_t index); 
+    void ScheduleSend (uint32_t index);
+    
+    // Select random receivers
+    void SelectRandomReceiverSubset (std::unordered_set<uint32_t>& subset); 
+    uint32_t SelectRandomReceiver ();
+    // Select a random interval
+    Time SelectRandomInterval ();
 
     SendParams                          m_sendParams;
     bool                                m_setup;
     bool                                m_running;
+    uint32_t                            m_iterationCount;
+    uint32_t                            m_totalPacketsSent;
     std::vector<SendInfo>               m_sendInfos;
     Ptr<Socket>                         m_rxSocket;
     std::map<Ptr<Socket>, ReceiveInfo>  m_acceptSocketMap;

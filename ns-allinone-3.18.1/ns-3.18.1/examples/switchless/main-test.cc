@@ -331,7 +331,7 @@ main (int argc, char * argv[])
             params.m_minSendInterval = MilliSeconds(nMininterval);
         }
         params.m_packetSize = nPacketSize;
-        params.m_nPackets = nIterations; 
+        params.m_nIterations = nIterations; 
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
         app->Setup(params, *it, DEBUG); 
         topology->GetNode(*it)->AddApplication(app);
