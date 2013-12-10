@@ -250,10 +250,10 @@ main (int argc, char * argv[])
                 std::unordered_set<unsigned> recvCoordSet;
                 unsigned mindistance =1;
                 while (recvCoordSet.size() < nNeighbor){
-                    int randx = rand() % (boundaryFactor*2+1);
-                    int randy = rand() % (boundaryFactor*2+1);
-                    randx = randx-boundaryFactor;
-                    randy = randy-boundaryFactor;
+                    int randx = rand() % (mindistance*2+1);
+                    int randy = rand() % (mindistance*2+1);
+                    randx = randx-mindistance;
+                    randy = randy-mindistance;
                     int distance = abs(randx)+abs(randy);
                     unsigned coord = randy * meshNumCol + randx;
                     if(mindistance == distance)
