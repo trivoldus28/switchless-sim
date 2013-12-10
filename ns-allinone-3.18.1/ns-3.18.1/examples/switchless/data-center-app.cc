@@ -30,7 +30,9 @@ DataCenterApp::DataCenterApp ()
     m_running (false),
     m_iterationCount (0),
     m_totalPacketsSent (0),
+    m_responseCount (0),
     m_sendInfos (),
+    m_socketIndexMap (),
     m_rxSocket (),
     m_acceptSocketMap ()
 {
@@ -116,6 +118,7 @@ DataCenterApp::StartApplication (void)
     m_running = true;
     m_iterationCount = 0;
     m_totalPacketsSent = 0;
+    m_responseCount = 0;
 
     // Setup socket for receiving
     m_rxSocket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
@@ -144,6 +147,7 @@ DataCenterApp::StartApplication (void)
             SendInfo sendInfo;
             InitSendInfo (sendInfo, m_sendParams.m_nodes[i], socket);
             m_sendInfos.push_back (sendInfo);
+            m_socketIndexMap[socket] = m_sendInfos.size() - 1;
         }
         KickOffSending();
     }
@@ -165,6 +169,7 @@ DataCenterApp::StopApplication (void)
         m_sendInfos[i].m_socket = NULL;
     }
     m_sendInfos.clear ();
+    m_socketIndexMap.clear();
 
     // Close accepted sockets
     std::map<Ptr<Socket>, ReceiveInfo>::iterator it;
@@ -334,12 +339,36 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
                           "   \t Time \t" << Simulator::Now() << " Delay : " 
                           << Simulator::Now() - hdr.GetTimeStamp ());
 
+            // Do something with the packet depending on the type
             switch (hdr.GetPacketType ())
             {
                 case DCAppHeader::REQUEST:
                     SendResponsePacket (socket, from, currentSeqNum);
                     break;
                 case DCAppHeader::RESPONSE:
+                    switch (m_sendParams.m_sendPattern)
+                    {
+                        case FIXED_INTERVAL:
+                        case RANDOM_INTERVAL:
+                            // Increment response count
+                            m_responseCount++;
+                            // If we received all responses, can schedule another iteration
+                            if (m_responseCount == m_sendParams.m_nReceivers)
+                            {
+                                m_responseCount = 0;
+                                // If there is still an iteration, schedule a new bulk send
+                                if (m_iterationCount < m_sendParams.m_nIterations)
+                                    BulkScheduleSend();
+                            }
+                            break;
+                        case FIXED_SPORADIC:
+                        case RANDOM_SPORADIC:
+                            NS_ASSERT (m_socketIndexMap[socket] >= 0);
+                            // If there are still packets to send, schedule one
+                            if (m_totalPacketsSent < (m_sendParams.m_nIterations * m_sendParams.m_nReceivers))
+                                ScheduleSend(m_socketIndexMap[socket]);
+                            break;
+                    }
                     break;
                 default:
                     NS_LOG_ERROR ("Received packet with invalid type");
@@ -421,10 +450,6 @@ DataCenterApp::BulkSendPackets ()
 
         m_iterationCount++;
     }
-
-    // If there is still an iteration to do, schedule it
-    if (m_iterationCount < m_sendParams.m_nIterations)
-        BulkScheduleSend();
 }
 
 void
@@ -435,10 +460,6 @@ DataCenterApp::SendPacket (uint32_t index)
     // Do the actual send if we still have a packet to send
     if (m_totalPacketsSent < (m_sendParams.m_nIterations * m_sendParams.m_nReceivers))
         DoSendPacket (m_sendInfos[index]);
-
-    // Schedule the next send if there is another packkt to send
-    if (m_totalPacketsSent < (m_sendParams.m_nIterations * m_sendParams.m_nReceivers))
-        ScheduleSend(index);
 }
 
 void
@@ -595,7 +616,6 @@ DataCenterApp::SendResponsePacket (Ptr<Socket> socket, Address& to, uint16_t seq
     hdr.SetSequenceNumber (sequenceNumber);
     
     // Create a packet and add header
-    // TODO: Do we want to make response packet a certain size?
     Ptr<Packet> packet = Create<Packet> (0);
     packet->AddHeader (hdr);
     socket->Send (packet);

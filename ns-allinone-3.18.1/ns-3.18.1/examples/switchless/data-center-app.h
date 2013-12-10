@@ -98,13 +98,13 @@ private:
     void KickOffSending (void);
 
     // Callback functions
-    bool HandleConnectionRequest (Ptr<Socket>, const Address& from);
-    void HandleAccept (Ptr<Socket>, const Address& from);
-    void HandleRead (Ptr<Socket>);
-    void HandleClose (Ptr<Socket>);
-    void HandleError (Ptr<Socket>);
-    void HandleConnectionSucceeded (Ptr<Socket>);
-    void HandleConnectionFailed (Ptr<Socket>);
+    bool HandleConnectionRequest (Ptr<Socket> socket, const Address& from);
+    void HandleAccept (Ptr<Socket> socket, const Address& from);
+    void HandleRead (Ptr<Socket> socket);
+    void HandleClose (Ptr<Socket> socket);
+    void HandleError (Ptr<Socket> socket);
+    void HandleConnectionSucceeded (Ptr<Socket> socket);
+    void HandleConnectionFailed (Ptr<Socket> socket);
 
     // Send a request packet
     void BulkSendPackets ();
@@ -128,7 +128,9 @@ private:
     bool                                m_running;
     uint32_t                            m_iterationCount;
     uint32_t                            m_totalPacketsSent;
+    uint32_t                            m_responseCount;
     std::vector<SendInfo>               m_sendInfos;
+    std::map<Ptr<Socket>, uint32_t>     m_socketIndexMap;
     Ptr<Socket>                         m_rxSocket;
     std::map<Ptr<Socket>, ReceiveInfo>  m_acceptSocketMap;
 };
