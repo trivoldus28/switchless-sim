@@ -81,7 +81,7 @@ PointToPointNcubeHelper::PointToPointNcubeHelper (uint32_t nMary, unsigned nNcub
 
   // for communication between machine and "virtual hub"
   PointToPointHelper p2pbridge;
-  p2pbridge.SetDeviceAttribute ("DataRate", StringValue ("100000Mbps"));
+  p2pbridge.SetDeviceAttribute ("DataRate", StringValue ("10000Gbps"));
   p2pbridge.SetChannelAttribute ("Delay", StringValue ("0ms"));
 
   for (unsigned i = 0; i < num_nodes; i++){
