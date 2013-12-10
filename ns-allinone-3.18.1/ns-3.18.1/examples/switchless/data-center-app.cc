@@ -326,7 +326,7 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
                          "    Destination: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () 
                               << "\n" <<
                          "    Packet Size: " << bytesReceived << " bytes\n" <<
-                         "    Packet Type: " << DCAppHeader::PacketTypeToString (hdr.GetPacketType()) << "\n"
+                         "    Packet Type: " << DCAppHeader::PacketTypeToString (hdr.GetPacketType ()) << "\n"
                          "    Sequence Number: " << currentSeqNum << "\n" << 
                          "    UID: " << packet->GetUid () << "\n" <<
                          "    TXTime: " << hdr.GetTimeStamp () << "\n" <<
@@ -334,10 +334,11 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
                          "    Delay: " << Simulator::Now() - hdr.GetTimeStamp () << "\n" <<
                          "    Packets Received: " << m_acceptSocketMap[socket].m_packetsReceived << "\n" <<
                          "    Bytes Received: " << m_acceptSocketMap[socket].m_bytesReceived);
-            NS_LOG_DEBUG ("   " <<  GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  << 
-                          "\t  Received from  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () << 
-                          "   \t Time \t" << Simulator::Now() << " Delay : " 
-                          << Simulator::Now() - hdr.GetTimeStamp ());
+            NS_LOG_DEBUG ("   " <<  GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  <<
+                          "\t  Received a " << DCAppHeader::PacketTypeToString (hdr.GetPacketType ()) << 
+                          " from  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () <<
+                          "   \t Time \t" << Simulator::Now() << " Delay : "
+                          << Simulator::Now() - hdr.GetTimeStamp ());  
 
             // Do something with the packet depending on the type
             switch (hdr.GetPacketType ())
@@ -628,7 +629,7 @@ DataCenterApp::SendResponsePacket (Ptr<Socket> socket, Address& to, uint16_t seq
                  "    Sequence Number: " << hdr.GetSequenceNumber () << "\n" <<
                  "    TXTime: " << hdr.GetTimeStamp());
      NS_LOG_DEBUG ("   "<< GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  <<
-                   "\t  Sent Response Packet\t" <<
+                   "\t  Sent ACK to   \t" << InetSocketAddress::ConvertFrom (to).GetIpv4 () <<
                    "   \t Time \t" << Simulator::Now()) ; 
 }
 

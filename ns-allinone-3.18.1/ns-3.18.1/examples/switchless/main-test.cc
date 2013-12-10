@@ -133,7 +133,7 @@ main (int argc, char * argv[])
     // common variables
     PointToPointHelper pointToPoint;
     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
-    pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
+    pointToPoint.SetChannelAttribute ("Delay", StringValue ("100ns"));
 
     std::cout << "Making topology\n";
     PointToPointTopoHelper * topology;
@@ -158,7 +158,7 @@ main (int argc, char * argv[])
         return 0;
     }
 
-    Time::SetResolution (Time::MS);
+    Time::SetResolution (Time::NS);
 
     InternetStackHelper stack;
     topology->InstallStack(stack);
@@ -193,8 +193,11 @@ main (int argc, char * argv[])
         if (sReceiverChoice == "random"){
             for(int i=0;i<nNodes;i++)
             {
-                Ipv4Address t = topology->GetIpv4Address(i);
-                receiverNodeList.push_back(t);
+                if(i!=*it)
+                {
+                    Ipv4Address t = topology->GetIpv4Address(i);
+                    receiverNodeList.push_back(t);
+                }
             }
 
             params.m_nReceivers = nReceiver;
