@@ -131,6 +131,7 @@ main (int argc, char * argv[])
     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
     pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
+    std::cout << "Making topology\n";
     PointToPointTopoHelper * topology;
     // switch statements
     if (topologytype == TREE){
@@ -163,25 +164,28 @@ main (int argc, char * argv[])
     linkAddresses.SetBase ("128.0.0.0", "255.255.0.0");
     //std::cout << "Point 1\n";
     topology->AssignIpv4Addresses(nodeAddresses, linkAddresses); 
+    std::cout << "Finished assigning IP addresses\n";
     //std::cout << "Point 2\n";
     // Random Seed 
     srand(100);
     std::unordered_set<int> senderSet;
     if (sSenderChoice == "random"){
         unsigned randid = 0;
-        for (int i = 0; i < nSender; i++){
+        while (senderSet.size() < nSender){
+        // for (int i = 0; i < nSender; i++){
             randid = rand();
             randid %= nNodes;
-            if(senderSet.find(randid) != senderSet.end())
-            {
+            // if(senderSet.find(randid) != senderSet.end())
+            // {
                 senderSet.insert(randid);
-            }
-            else
-            {
-                i--;
-            }
+            // }
+            // else
+            // {
+            //     i--;
+            // }
         }
     }
+    
     /*else if (sSenderChoice == "set"){
         // For now let's just get the first n nodes
         for (int i = 0; i < nSender; i++){
@@ -189,6 +193,7 @@ main (int argc, char * argv[])
         } 
     }*/
 
+    std::cout << "Making application parameters\n";
     for (std::unordered_set<int>::iterator it = senderSet.begin(); it != senderSet.end(); it++){
         DataCenterApp::SendParams params;
         params.m_sending = true;
@@ -356,8 +361,10 @@ main (int argc, char * argv[])
         app->SetStopTime (Seconds(100.));
     }
 
+    std::cout << "Populating routing table\n";
     Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
+    std::cout << "Running simulation\n";
     Simulator::Run ();
     Simulator::Destroy ();
 
