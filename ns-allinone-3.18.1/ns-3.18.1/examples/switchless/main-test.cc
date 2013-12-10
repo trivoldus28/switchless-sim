@@ -131,6 +131,7 @@ main (int argc, char * argv[])
     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
     pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
+    std::cout << "Making topology\n";
     PointToPointTopoHelper * topology;
     // switch statements
     if (topologytype == TREE){
@@ -160,28 +161,31 @@ main (int argc, char * argv[])
     Ipv4AddressHelper nodeAddresses;
     Ipv4AddressHelper linkAddresses;
     nodeAddresses.SetBase ("0.0.0.0", "255.255.0.0");
-    linkAddresses.SetBase ("1.0.0.0", "255.255.0.0");
+    linkAddresses.SetBase ("128.0.0.0", "255.255.0.0");
     //std::cout << "Point 1\n";
     topology->AssignIpv4Addresses(nodeAddresses, linkAddresses); 
+    std::cout << "Finished assigning IP addresses\n";
     //std::cout << "Point 2\n";
     // Random Seed 
     srand(100);
     std::unordered_set<int> senderSet;
     if (sSenderChoice == "random"){
         unsigned randid = 0;
-        for (int i = 0; i < nSender; i++){
+        while (senderSet.size() < nSender){
+        // for (int i = 0; i < nSender; i++){
             randid = rand();
             randid %= nNodes;
-            if(senderSet.find(randid) != senderSet.end())
-            {
+            // if(senderSet.find(randid) != senderSet.end())
+            // {
                 senderSet.insert(randid);
-            }
-            else
-            {
-                i--;
-            }
+            // }
+            // else
+            // {
+            //     i--;
+            // }
         }
     }
+    
     /*else if (sSenderChoice == "set"){
         // For now let's just get the first n nodes
         for (int i = 0; i < nSender; i++){
@@ -189,6 +193,7 @@ main (int argc, char * argv[])
         } 
     }*/
 
+    std::cout << "Making application parameters\n";
     for (std::unordered_set<int>::iterator it = senderSet.begin(); it != senderSet.end(); it++){
         DataCenterApp::SendParams params;
         params.m_sending = true;
@@ -207,9 +212,9 @@ main (int argc, char * argv[])
         else{
              if (topologytype == TREE){
                 int nodeid = *it;
-                if(nodeid >= (nNeighbor/2) && nodeid <= nNodes-1-(nNeighbor/2))
+                if(nodeid >= ((nNeighbor+1)/2) && nodeid <= nNodes-1-((nNeighbor+1)/2))
                 {
-                    for(int i=1; i <= nNeighbor/2; i++)
+                    for(int i=1; i <= (nNeighbor+1)/2; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nodeid-i);
                         receiverNodeList.push_back(t);
@@ -217,40 +222,40 @@ main (int argc, char * argv[])
                         receiverNodeList.push_back(t);
                     }
                 }
-                else if(nodeid >= (nNeighbor/2) && nodeid > nNodes-1-(nNeighbor/2))
+                else if(nodeid >= ((nNeighbor+1)/2) && nodeid > nNodes-1-((nNeighbor+1)/2))
                 {
-                    int getFirst = nodeid-nNodes+1+(nNeighbor/2);
+                    int getFirst = nodeid-nNodes+1+((nNeighbor+1)/2);
                     for(int i=1; i<=getFirst; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(i);
                         receiverNodeList.push_back(t);
                     }
-                    for(int i=1; i <= nNeighbor/2; i++)
+                    for(int i=1; i <= (nNeighbor+1)/2; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nodeid-i);
                         receiverNodeList.push_back(t);
                     }
-                    for (int i=1; i<= nNeighbor/2 - getFirst ; i++)
+                    for (int i=1; i<= (nNeighbor+1)/2 - getFirst ; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nodeid+i);
                         receiverNodeList.push_back(t);   
                     }
 
                 }
-                else if(nodeid < (nNeighbor/2) && nodeid <= nNodes-1-(nNeighbor/2))
+                else if(nodeid < ((nNeighbor+1)/2) && nodeid <= nNodes-1-((nNeighbor+1)/2))
                 {
-                    int getLast = nNeighbor/2 - nodeid;
+                    int getLast = (nNeighbor+1)/2 - nodeid;
                     for(int i=1; i<=getLast; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nNodes-i);
                         receiverNodeList.push_back(t);
                     }
-                    for(int i=1; i <= nNeighbor/2; i++)
+                    for(int i=1; i <= (nNeighbor+1)/2; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nodeid+i);
                         receiverNodeList.push_back(t);
                     }
-                    for (int i=1; i<= nNeighbor/2 - getLast ; i++)
+                    for (int i=1; i<= (nNeighbor+1)/2 - getLast ; i++)
                     {
                         Ipv4Address t = topology->GetIpv4Address(nodeid-i);
                         receiverNodeList.push_back(t);   
@@ -262,20 +267,20 @@ main (int argc, char * argv[])
                 // Box boundaries are 1,4,9,16,25,...
                 // centered around this particular send node (*it)
                 unsigned boundaryFactor = 1;
-                while(boundaryFactor * boundaryFactor < nNeighbor)
-                    boundaryFactor++;
                 std::unordered_set<unsigned> recvCoordSet;
                 unsigned mindistance =1;
                 while (recvCoordSet.size() < nNeighbor){
-                    unsigned randx = rand() % boundaryFactor;
-                    unsigned randy = rand() % boundaryFactor;
-                    unsigned distance = randx + randy; 
+                    int randx = rand() % (boundaryFactor*2+1);
+                    int randy = rand() % (boundaryFactor*2+1);
+                    randx = randx-boundaryFactor;
+                    randy = randy-boundaryFactor;
+                    int distance = abs(randx)+abs(randy);
                     unsigned coord = randy * meshNumCol + randx;
                     if(mindistance == distance)
                     {
                         recvCoordSet.insert(coord);
                     }
-                    if(recvCoordSet.size() == mindistance+1)
+                    if(recvCoordSet.size() == 2*mindistance*(mindistance+1))
                     {
                         mindistance++;
                     }
@@ -289,7 +294,6 @@ main (int argc, char * argv[])
                 // box of 2 can be either 0 or -1. I pick 0
                 // of 4 can be -1 or -2. Just pick -1
                 // ...
-                int offset = -1 * ((boundaryFactor - 1) / 2);
 
                 // unsigned senderID = *it;
                 unsigned senderY = *it / meshNumCol;
@@ -300,8 +304,8 @@ main (int argc, char * argv[])
                     unsigned recvCoord = *it;
                     int x = recvCoord % meshNumCol;
                     int y = recvCoord / meshNumCol;
-                    x = x + senderX + offset;
-                    y = y + senderY + offset;
+                    x = x + senderX ;
+                    y = y + senderY ;
 
                     NS_ASSERT(bTorus == true);
                     if (x < 0)
@@ -321,7 +325,7 @@ main (int argc, char * argv[])
              else if(topologytype == CUBE){
                 NS_ASSERT(false);
              }
-            params.m_nReceivers = nSender * nNeighbor;
+            params.m_nReceivers = nNeighbor;
             params.m_receivers = DataCenterApp::ALL_IN_LIST;
         }
         params.m_nodes = receiverNodeList; 
@@ -353,11 +357,13 @@ main (int argc, char * argv[])
         topology->GetNode(*it)->AddApplication(app);
 
         app->SetStartTime (Seconds(0.));
-        app->SetStopTime (Seconds(100.));
+        app->SetStopTime (Seconds(100000.));
     }
 
+    std::cout << "Populating routing table\n";
     Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
+    std::cout << "Running simulation\n";
     Simulator::Run ();
     Simulator::Destroy ();
 

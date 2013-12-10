@@ -107,6 +107,46 @@ if __name__ == '__main__':
 										command = './waf --run "main-test' + args + '"'
 										print(command)
 
+	if workload == "test":
+		numberofnodes = [16]
+		topologies = ["mesh"]
+		intervaltypes = ["fixed"]
+		synctypes = [1] #synchronized or not
+		intervals = [20] # in ms 
+		intervalranges = [[5,80]] # in ms, used in sporadic interval
+
+		#minor properties
+		numberofpackets = [1]
+		packetsizes = [512]
+
+		for nNode in numberofnodes:
+			for topo in topologies:
+				for intervaltype in intervaltypes:
+					for synctype in synctypes:
+						# for interval in intervals:
+							# for intervalrange in intervalranges:
+								# for numpacket in numberofpackets: # MISSING ARGUMENT IN PROGRAM
+									for packetsize in packetsizes:
+										argdict = {}
+										argdict["nNode"] = nNode
+										argdict["topo"] = topo
+										argdict["intervaltype"] = intervaltype
+										argdict["intervals"] = intervals
+										argdict["intervalranges"] = intervalranges
+										argdict["synctype"] = synctype
+										argdict["packetsize"] = packetsize
+										args = parseStandardVariables(argdict)
+
+										#all-to-all specific parameter
+										args += " --ncount=" + `nNode`
+										args += " --scount=" + `nNode`
+										args += " --rcount=" + `nNode`
+
+										log = ""
+
+										command = './waf --run "main-test' + args + '"'
+										print(command)
+
 	if workload == "random-n-to-random-m":
 		# covers
 		# random n to m
