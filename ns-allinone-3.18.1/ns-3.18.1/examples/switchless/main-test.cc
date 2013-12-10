@@ -69,6 +69,8 @@ main (int argc, char * argv[])
     int sChoice=0;
     int rChoice=0;
     CommandLine cmd;
+    int debuglog = 0;
+    cmd.AddValue("debug", "Debug", debuglog);
     cmd.AddValue("tp", "Topology",topologytype); // 1 or 2 or 3
     cmd.AddValue("t1", "",topo_sub1); // leaf-fan-out or row or m
     cmd.AddValue("t2", "",topo_sub2);  //non-leaf-fan-out or column or n
@@ -86,6 +88,10 @@ main (int argc, char * argv[])
     cmd.AddValue("rChoice", "", rChoice); //0 for random
     cmd.AddValue("iter", "", nIterations);
     cmd.Parse (argc, argv);
+    if(debuglog==1)
+    {
+        LogComponentEnable ("DataCenterApp", LOG_INFO);
+    }
     if(sChoice != 0)
     {  
         //sSenderChoice = "set";
