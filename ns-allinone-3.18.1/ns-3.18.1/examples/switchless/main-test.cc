@@ -212,53 +212,33 @@ main (int argc, char * argv[])
         else{
              if (topologytype == TREE){
                 int nodeid = *it;
-                if(nodeid >= ((nNeighbor+1)/2) && nodeid <= nNodes-1-((nNeighbor+1)/2))
                 {
-                    for(int i=1; i <= (nNeighbor+1)/2; i++)
+                    float logval = log2(nNeighbor); // 5 
+                    int logv = ceil(logval); //3 
+                    int rem1 = nodeid % (int)(pow(2,(logv-1))); // 4
+                    int rem2 = nodeid % (int)(pow(2,(logv))); //8
+                    int base1 = nodeid- rem1;
+                    for (int i=0; i< pow(2,(logv-1)); i++)
                     {
-                        Ipv4Address t = topology->GetIpv4Address(nodeid-i);
-                        receiverNodeList.push_back(t);
-                        t= topology->GetIpv4Address(nodeid+i);
-                        receiverNodeList.push_back(t);
-                    }
-                }
-                else if(nodeid >= ((nNeighbor+1)/2) && nodeid > nNodes-1-((nNeighbor+1)/2))
-                {
-                    int getFirst = nodeid-nNodes+1+((nNeighbor+1)/2);
-                    for(int i=1; i<=getFirst; i++)
-                    {
-                        Ipv4Address t = topology->GetIpv4Address(i);
+                        Ipv4Address t = topology->GetIpv4Address(base1 + i);
                         receiverNodeList.push_back(t);
                     }
-                    for(int i=1; i <= (nNeighbor+1)/2; i++)
+                    int remainings = nNeighbor-pow(2,(logv-1));
+                    int base2;
+                    if(rem2> pow(2,(logv-1)))
                     {
-                        Ipv4Address t = topology->GetIpv4Address(nodeid-i);
+                        base2 = nodeid - rem2;
+                    }
+                    else
+                    {
+                        base2 = nodeid - rem2 + pow(2,(logv-1));
+                    }
+                    while (remainings !=0)
+                    {
+                        int randid = rand() % (int)(pow(2,(logv-1)));
+                        Ipv4Address t = topology->GetIpv4Address(base2+ randid);
                         receiverNodeList.push_back(t);
-                    }
-                    for (int i=1; i<= (nNeighbor+1)/2 - getFirst ; i++)
-                    {
-                        Ipv4Address t = topology->GetIpv4Address(nodeid+i);
-                        receiverNodeList.push_back(t);   
-                    }
-
-                }
-                else if(nodeid < ((nNeighbor+1)/2) && nodeid <= nNodes-1-((nNeighbor+1)/2))
-                {
-                    int getLast = (nNeighbor+1)/2 - nodeid;
-                    for(int i=1; i<=getLast; i++)
-                    {
-                        Ipv4Address t = topology->GetIpv4Address(nNodes-i);
-                        receiverNodeList.push_back(t);
-                    }
-                    for(int i=1; i <= (nNeighbor+1)/2; i++)
-                    {
-                        Ipv4Address t = topology->GetIpv4Address(nodeid+i);
-                        receiverNodeList.push_back(t);
-                    }
-                    for (int i=1; i<= (nNeighbor+1)/2 - getLast ; i++)
-                    {
-                        Ipv4Address t = topology->GetIpv4Address(nodeid-i);
-                        receiverNodeList.push_back(t);   
+                        remainings --;
                     }
                 }
              }
