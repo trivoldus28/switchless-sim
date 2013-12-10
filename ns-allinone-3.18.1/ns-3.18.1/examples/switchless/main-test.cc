@@ -38,7 +38,7 @@ int
 main (int argc, char * argv[])
 {
 
-    LogComponentEnable ("DataCenterApp", LOG_LEVEL_ALL);
+    LogComponentEnable ("DataCenterApp", LOG_INFO);
     unsigned nRackSize = 0;
     unsigned nTreeFanout = 0;
     bool bTorus = true; // not parsed
@@ -84,6 +84,7 @@ main (int argc, char * argv[])
     cmd.AddValue("neighborcount","",nNeighbor);
     cmd.AddValue("sChoice", "", sChoice); //0 for random
     cmd.AddValue("rChoice", "", rChoice); //0 for random
+    cmd.AddValue("iter", "", nIterations);
     cmd.Parse (argc, argv);
     if(sChoice != 0)
     {  
@@ -252,7 +253,7 @@ main (int argc, char * argv[])
                 unsigned senderX = *it % meshNumCol;
                 std::unordered_set<unsigned> recvCoordSet;
                 unsigned mindistance =1;
-                while (receiverNodeList.size() < nNeighbor){
+                while (receiverNodeList .size() < nNeighbor){
                     int randx = rand() % (mindistance*2+1);
                     int randy = rand() % (mindistance*2+1);
                     randx = randx-mindistance;
