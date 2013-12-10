@@ -88,9 +88,11 @@ main (int argc, char * argv[])
         //sSenderChoice = "set";
         //We don't support it
     }
-    if(rChoice != 0)
+    // if(rChoice != 0)
+    if (nNeighbor != 0)
     {  
         sReceiverChoice = "set";
+        NS_ASSERT(nReceiver == 0);
     }
     if(intervaltype==RANDOM)
     {
@@ -172,26 +174,13 @@ main (int argc, char * argv[])
     if (sSenderChoice == "random"){
         unsigned randid = 0;
         while (senderSet.size() < nSender){
-        // for (int i = 0; i < nSender; i++){
             randid = rand();
             randid %= nNodes;
-            // if(senderSet.find(randid) != senderSet.end())
-            // {
-                senderSet.insert(randid);
-            // }
-            // else
-            // {
-            //     i--;
-            // }
+            senderSet.insert(randid);
         }
     }
-    
-    /*else if (sSenderChoice == "set"){
-        // For now let's just get the first n nodes
-        for (int i = 0; i < nSender; i++){
-            senderSet.insert(i);
-        } 
-    }*/
+    else
+        NS_ASSERT(sSenderChoice != "random");
 
     std::cout << "Making application parameters\n";
     for (std::unordered_set<int>::iterator it = senderSet.begin(); it != senderSet.end(); it++){
@@ -267,6 +256,8 @@ main (int argc, char * argv[])
                 // Box boundaries are 1,4,9,16,25,...
                 // centered around this particular send node (*it)
                 unsigned boundaryFactor = 1;
+                // while(((boundaryFactor * boundaryFactor) - 1) < nNeighbor)
+                //     boundaryFactor++;
                 std::unordered_set<unsigned> recvCoordSet;
                 unsigned mindistance =1;
                 while (recvCoordSet.size() < nNeighbor){
@@ -323,7 +314,9 @@ main (int argc, char * argv[])
 
              }
              else if(topologytype == CUBE){
-                NS_ASSERT(false);
+                // NS_ASSERT(false);
+                unsigned boundaryFactor = 2;
+                while (pow(boundaryFactor,))
              }
             params.m_nReceivers = nNeighbor;
             params.m_receivers = DataCenterApp::ALL_IN_LIST;
