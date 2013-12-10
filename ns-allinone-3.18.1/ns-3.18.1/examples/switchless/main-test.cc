@@ -315,12 +315,67 @@ main (int argc, char * argv[])
              }
              else if(topologytype == CUBE){
                 // NS_ASSERT(false);
-                unsigned boundaryFactor = 2;
-                while (pow(boundaryFactor,))
+                unsigned maxHammingDistance = 1;
+                unsigned failSafeCounter = 0;
+                std::unordered_set<uint64_t> recvCoordSet;
+                while(recvCoordSet.size() < nNeighbor){
+                    unsigned distance = 0;
+                    uint64_t flatCoord = 0;
+                    for (int i = 0; i < n_cube; i++){
+                        int coord = rand() % (maxHammingDistance*2+1);
+                        coord -= maxHammingDistance;
+                        distance += abs(coord);
+                        if (coord < 0) coord += m_cube; // implied torus
+                        flatCoord += (pow(m_cube, i) * coord);
+                    }
+                    if (distance == 0) continue;
+                    if (distance <= maxHammingDistance)
+                        recvCoordSet.insert(flatCoord);
+                    unsigned maxCapacity = (4*pow(maxHammingDistance,n_cube-1)) + 2*(n_cube-2);
+                    if (recvCoordSet.size() >= maxCapacity){
+                        maxHammingDistance++;
+                        failSafeCounter = 0;
+                    }
+                    // std::cout << "D " << distance << std::endl;
+                    // std::cout << "H " << maxHammingDistance << std::endl;
+                    // std::cout << "S " << recvCoordSet.size() << std::endl;
+                    // std::cout << "M " << maxCapacity << std::endl;
+                    failSafeCounter++;
+                    if (failSafeCounter > 10000){
+                        maxHammingDistance++;
+                        failSafeCounter = 0;
+                    }
+                }
+
+                // get the sender coords
+                std::vector<unsigned> senderCoords;
+                uint64_t senderFlatCoord = *it;
+                for (int i = 0; i < n_cube; i++){
+                    unsigned coord = (senderFlatCoord / (unsigned)pow(m_cube,i)) % m_cube;
+                    senderCoords.push_back(coord);
+                }
+
+                // re-center the receiver coordinates and append to list
+                for (auto it = recvCoordSet.begin(); it != recvCoordSet.end(); it++){
+                    uint64_t flatCoord = *it;
+                    uint64_t adjustedFlatCoord = 0;
+                    // std::vector<unsigned> coords;
+                    for (int i = 0; i < n_cube; i++){
+                        unsigned coord = (flatCoord / (unsigned)pow(m_cube,i)) % m_cube;
+                        // coords.push_back(coord);
+                        unsigned adjustedCoord = coord + senderCoords[i];
+                        adjustedCoord %= m_cube;
+                        adjustedFlatCoord += (pow(m_cube, i) * adjustedCoord);
+                    }
+                    Ipv4Address t = topology->GetIpv4Address(adjustedFlatCoord);
+                    receiverNodeList.push_back(t);
+                }
              }
             params.m_nReceivers = nNeighbor;
             params.m_receivers = DataCenterApp::ALL_IN_LIST;
         }
+
+        // Finally putting the IP list to the parameters
         params.m_nodes = receiverNodeList; 
         if (bFixedInterval && bSynchronized){
             params.m_sendPattern = DataCenterApp::FIXED_INTERVAL;
