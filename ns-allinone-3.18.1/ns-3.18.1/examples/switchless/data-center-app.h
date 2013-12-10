@@ -43,17 +43,16 @@ public:
     // Struct to hold all sending parameters
     typedef struct  SendParamsStruct
     {
-        bool            m_sending;
-        Ipv4Address*    m_nodes;
-        uint32_t        m_nNodes;
-        RECEIVERS       m_receivers;
-        uint32_t        m_nReceivers;
-        SEND_PATTERN    m_sendPattern;
-        Time            m_sendInterval;
-        Time            m_maxSendInterval;
-        Time            m_minSendInterval;
-        uint32_t        m_packetSize;
-        uint32_t        m_nPackets;
+        bool                        m_sending;
+        std::vector<Ipv4Address>    m_nodes;
+        RECEIVERS                   m_receivers;
+        uint32_t                    m_nReceivers;
+        SEND_PATTERN                m_sendPattern;
+        Time                        m_sendInterval;
+        Time                        m_maxSendInterval;
+        Time                        m_minSendInterval;
+        uint32_t                    m_packetSize;
+        uint32_t                    m_nPackets;
     } SendParams;
     static void copySendParams(SendParams& src, SendParams& dst);
 

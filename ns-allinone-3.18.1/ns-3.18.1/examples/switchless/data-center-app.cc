@@ -13,9 +13,7 @@ void
 DataCenterApp::copySendParams (SendParams& src, SendParams& dst)
 {
     dst.m_sending = src.m_sending;
-    dst.m_nodes = new Ipv4Address[src.m_nNodes];
-    memcpy(dst.m_nodes, src.m_nodes, src.m_nNodes * sizeof(Ipv4Address));
-    dst.m_nNodes = src.m_nNodes;
+    dst.m_nodes = src.m_nodes;
     dst.m_receivers = src.m_receivers;
     dst.m_nReceivers = src.m_nReceivers;
     dst.m_sendPattern = src.m_sendPattern;
@@ -37,8 +35,6 @@ DataCenterApp::DataCenterApp ()
     NS_LOG_FUNCTION (this);
     // Default sending parameters
     m_sendParams.m_sending = false;
-    m_sendParams.m_nodes = NULL;
-    m_sendParams.m_nNodes = 0;
     m_sendParams.m_receivers = RECEIVERS_INVALID;
     m_sendParams.m_nReceivers = 0;
     m_sendParams.m_sendPattern = SEND_PATTERN_INVALID;
@@ -52,9 +48,6 @@ DataCenterApp::DataCenterApp ()
 DataCenterApp::~DataCenterApp ()
 {
     NS_LOG_FUNCTION (this);
-
-    if (m_sendParams.m_nodes != NULL)
-        delete [] m_sendParams.m_nodes;
 }
 
 bool
@@ -62,7 +55,7 @@ DataCenterApp::Setup (SendParams& sendingParams, uint32_t nodeId, bool debug)
 {
     NS_LOG_FUNCTION (this << debug);
 
-    if (sendingParams.m_nReceivers > sendingParams.m_nNodes)
+    if (sendingParams.m_nReceivers > sendingParams.m_nodes.size())
     {
         NS_LOG_ERROR ("Number of receivers is greater than number of nodes");
         return false;
@@ -139,7 +132,7 @@ DataCenterApp::StartApplication (void)
             case ALL_IN_LIST:
             {
                 // Setup socket for each node in list
-                for (uint32_t i = 0; i < m_sendParams.m_nNodes; i++)
+                for (uint32_t i = 0; i < m_sendParams.m_nodes.size(); i++)
                 {
                     Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
                     Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[i], PORT));
@@ -158,7 +151,7 @@ DataCenterApp::StartApplication (void)
             case RANDOM_SUBSET:
             {
                 // Check we will not infinite loop when picking a receiver
-                if (m_sendParams.m_nReceivers > m_sendParams.m_nNodes)
+                if (m_sendParams.m_nReceivers > m_sendParams.m_nodes.size())
                 {
                     NS_LOG_ERROR ("Number of receivers is greater than number of nodes");
                     break;
@@ -174,7 +167,7 @@ DataCenterApp::StartApplication (void)
                     int receiver = -1;
                     while (receiver == -1)
                     {
-                        int candidate = rand() % m_sendParams.m_nNodes;
+                        int candidate = rand() % m_sendParams.m_nodes.size();
                         if (pickedReceivers.find(candidate) == pickedReceivers.end())
                         {
                             pickedReceivers.insert(candidate);

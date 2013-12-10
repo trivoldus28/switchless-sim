@@ -47,9 +47,7 @@ main (int argc, char * argv[])
     Ptr<DataCenterApp> app0 = CreateObject<DataCenterApp> (); 
     DataCenterApp::SendParams app0Params;
     app0Params.m_sending = true;
-    Ipv4Address app0NodeList[] = {interfaces.GetAddress (1)};
-    app0Params.m_nodes = app0NodeList;
-    app0Params.m_nNodes = 1;
+    app0Params.m_nodes.push_back (interfaces.GetAddress (1));
     app0Params.m_receivers = DataCenterApp::ALL_IN_LIST;
     app0Params.m_nReceivers = 1;
     app0Params.m_sendPattern = DataCenterApp::FIXED_INTERVAL;
@@ -66,9 +64,7 @@ main (int argc, char * argv[])
     Ptr<DataCenterApp> app1 = CreateObject<DataCenterApp> ();
     DataCenterApp::SendParams app1Params;
     app1Params.m_sending = true;
-    Ipv4Address app1NodeList[] = {interfaces.GetAddress (0)};
-    app1Params.m_nodes = app1NodeList;
-    app1Params.m_nNodes = 1;
+    app1Params.m_nodes.push_back (interfaces.GetAddress (0));
     app1Params.m_receivers = DataCenterApp::ALL_IN_LIST;
     app1Params.m_nReceivers = 1;
     app1Params.m_sendPattern = DataCenterApp::FIXED_INTERVAL;

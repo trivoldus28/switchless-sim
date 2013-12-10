@@ -200,7 +200,6 @@ main (int argc, char * argv[])
                 receiverNodeList.push_back(t);
             }
 
-            params.m_nNodes = nNodes;
             params.m_nReceivers = nReceiver;
             params.m_receivers = DataCenterApp::RANDOM_SUBSET;
         }
@@ -322,7 +321,6 @@ main (int argc, char * argv[])
                 NS_ASSERT(false);
              }
             //params.m_nodes = &receiverNodeList; 
-            params.m_nNodes = receiverNodeList.size();
             params.m_nReceivers = nSender * nNeighbor;
             params.m_receivers = DataCenterApp::ALL_IN_LIST;
         }
