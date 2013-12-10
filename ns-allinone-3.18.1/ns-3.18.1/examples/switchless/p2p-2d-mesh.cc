@@ -51,6 +51,16 @@ PointToPoint2DMeshHelper::PointToPoint2DMeshHelper (uint32_t nRows,
   for (uint32_t y = 0; y < nRows; ++y)
     {
       NodeContainer rowNodes;
+      for (uint32_t x = 0; x < nCols; ++x)
+        {
+          rowNodes.Create(1);
+        }
+      m_nodes.push_back (rowNodes);
+    }
+
+  for (uint32_t y = 0; y < nRows; ++y)
+    {
+      NodeContainer & rowNodes = m_nodes[y];
       NodeContainer rowHubs;
       NetDeviceContainer rowDevices;
       NetDeviceContainer colDevices;
@@ -59,7 +69,6 @@ PointToPoint2DMeshHelper::PointToPoint2DMeshHelper (uint32_t nRows,
       for (uint32_t x = 0; x < nCols; ++x)
         {
           rowHubs.Create (1);
-          rowNodes.Create(1);
           hubDevices.Add (p2pHub.Install (rowNodes.Get(x), rowHubs.Get (x)));;
 
           // install p2p links across the row
@@ -93,7 +102,6 @@ PointToPoint2DMeshHelper::PointToPoint2DMeshHelper (uint32_t nRows,
         }
 
       m_hubs.push_back (rowHubs);
-      m_nodes.push_back (rowNodes);
       m_rowDevices.push_back (rowDevices);
       m_hubDevices.push_back (hubDevices);
 
