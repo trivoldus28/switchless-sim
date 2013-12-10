@@ -341,6 +341,8 @@ main (int argc, char * argv[])
         {
             params.m_sendPattern = DataCenterApp::FIXED_SPORADIC;
             params.m_sendInterval = MicroSeconds (nintervalsize);
+            params.m_maxSendInterval = MicroSeconds(nMaxinterval);
+            params.m_minSendInterval = MicroSeconds(nMininterval);
         }
         else if(!bFixedInterval && bSynchronized)
         {
