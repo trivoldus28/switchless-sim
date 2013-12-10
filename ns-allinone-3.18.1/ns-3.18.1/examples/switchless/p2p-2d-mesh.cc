@@ -45,7 +45,7 @@ PointToPoint2DMeshHelper::PointToPoint2DMeshHelper (uint32_t nRows,
 
   // for communication between machine and "virtual hub"
   PointToPointHelper p2pHub;
-  p2pHub.SetDeviceAttribute ("DataRate", StringValue ("100000Mbps"));
+  p2pHub.SetDeviceAttribute ("DataRate", StringValue ("10000000Mbps"));
   p2pHub.SetChannelAttribute ("Delay", StringValue ("0ms"));
 
   for (uint32_t y = 0; y < nRows; ++y)
