@@ -124,7 +124,7 @@ main (int argc, char * argv[])
     }
 
 
-    // LogComponentEnable ("DataCenterApp", LOG_LEVEL_ALL);
+    LogComponentEnable ("DataCenterApp", LOG_LEVEL_ALL);
 
     // common variables
     PointToPointHelper pointToPoint;
@@ -161,8 +161,9 @@ main (int argc, char * argv[])
     Ipv4AddressHelper linkAddresses;
     nodeAddresses.SetBase ("0.0.0.0", "255.255.0.0");
     linkAddresses.SetBase ("1.0.0.0", "255.255.0.0");
+    //std::cout << "Point 1\n";
     topology->AssignIpv4Addresses(nodeAddresses, linkAddresses); 
-
+    //std::cout << "Point 2\n";
     // Random Seed 
     srand(100);
     std::unordered_set<int> senderSet;
