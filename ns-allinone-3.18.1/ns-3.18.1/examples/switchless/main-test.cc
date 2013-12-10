@@ -37,6 +37,8 @@ NS_LOG_COMPONENT_DEFINE ("MainProgram");
 int
 main (int argc, char * argv[])
 {
+
+    LogComponentEnable ("DataCenterApp", LOG_INFO);
     unsigned nRackSize = 0;
     unsigned nTreeFanout = 0;
     bool bTorus = true; // not parsed
@@ -82,6 +84,7 @@ main (int argc, char * argv[])
     cmd.AddValue("neighborcount","",nNeighbor);
     cmd.AddValue("sChoice", "", sChoice); //0 for random
     cmd.AddValue("rChoice", "", rChoice); //0 for random
+    cmd.AddValue("iter", "", nIterations);
     cmd.Parse (argc, argv);
     if(sChoice != 0)
     {  
@@ -126,7 +129,6 @@ main (int argc, char * argv[])
     }
 
 
-    LogComponentEnable ("DataCenterApp", LOG_LEVEL_ALL);
 
     // common variables
     PointToPointHelper pointToPoint;
@@ -201,53 +203,33 @@ main (int argc, char * argv[])
         else{
              if (topologytype == TREE){
                 int nodeid = *it;
-                if(nodeid >= ((nNeighbor+1)/2) && nodeid <= nNodes-1-((nNeighbor+1)/2))
                 {
-                    for(int i=1; i <= (nNeighbor+1)/2; i++)
+                    float logval = log2(nNeighbor); // 5 
+                    int logv = ceil(logval); //3 
+                    int rem1 = nodeid % (int)(pow(2,(logv-1))); // 4
+                    int rem2 = nodeid % (int)(pow(2,(logv))); //8
+                    int base1 = nodeid- rem1;
+                    for (int i=0; i< pow(2,(logv-1)); i++)
                     {
-                        Ipv4Address t = topology->GetIpv4Address(nodeid-i);
-                        receiverNodeList.push_back(t);
-                        t= topology->GetIpv4Address(nodeid+i);
-                        receiverNodeList.push_back(t);
-                    }
-                }
-                else if(nodeid >= ((nNeighbor+1)/2) && nodeid > nNodes-1-((nNeighbor+1)/2))
-                {
-                    int getFirst = nodeid-nNodes+1+((nNeighbor+1)/2);
-                    for(int i=1; i<=getFirst; i++)
-                    {
-                        Ipv4Address t = topology->GetIpv4Address(i);
+                        Ipv4Address t = topology->GetIpv4Address(base1 + i);
                         receiverNodeList.push_back(t);
                     }
-                    for(int i=1; i <= (nNeighbor+1)/2; i++)
+                    int remainings = nNeighbor-pow(2,(logv-1));
+                    int base2;
+                    if(rem2> pow(2,(logv-1)))
                     {
-                        Ipv4Address t = topology->GetIpv4Address(nodeid-i);
+                        base2 = nodeid - rem2;
+                    }
+                    else
+                    {
+                        base2 = nodeid - rem2 + pow(2,(logv-1));
+                    }
+                    while (remainings !=0)
+                    {
+                        int randid = rand() % (int)(pow(2,(logv-1)));
+                        Ipv4Address t = topology->GetIpv4Address(base2+ randid);
                         receiverNodeList.push_back(t);
-                    }
-                    for (int i=1; i<= (nNeighbor+1)/2 - getFirst ; i++)
-                    {
-                        Ipv4Address t = topology->GetIpv4Address(nodeid+i);
-                        receiverNodeList.push_back(t);   
-                    }
-
-                }
-                else if(nodeid < ((nNeighbor+1)/2) && nodeid <= nNodes-1-((nNeighbor+1)/2))
-                {
-                    int getLast = (nNeighbor+1)/2 - nodeid;
-                    for(int i=1; i<=getLast; i++)
-                    {
-                        Ipv4Address t = topology->GetIpv4Address(nNodes-i);
-                        receiverNodeList.push_back(t);
-                    }
-                    for(int i=1; i <= (nNeighbor+1)/2; i++)
-                    {
-                        Ipv4Address t = topology->GetIpv4Address(nodeid+i);
-                        receiverNodeList.push_back(t);
-                    }
-                    for (int i=1; i<= (nNeighbor+1)/2 - getLast ; i++)
-                    {
-                        Ipv4Address t = topology->GetIpv4Address(nodeid-i);
-                        receiverNodeList.push_back(t);   
+                        remainings --;
                     }
                 }
              }
@@ -255,63 +237,34 @@ main (int argc, char * argv[])
                 // Basically we will have a box to draw random, clustered nodes from
                 // Box boundaries are 1,4,9,16,25,...
                 // centered around this particular send node (*it)
-                unsigned boundaryFactor = 1;
-                // while(((boundaryFactor * boundaryFactor) - 1) < nNeighbor)
-                //     boundaryFactor++;
+                unsigned senderY = *it / meshNumCol;
+                unsigned senderX = *it % meshNumCol;
                 std::unordered_set<unsigned> recvCoordSet;
                 unsigned mindistance =1;
-                while (recvCoordSet.size() < nNeighbor){
-                    int randx = rand() % (boundaryFactor*2+1);
-                    int randy = rand() % (boundaryFactor*2+1);
-                    randx = randx-boundaryFactor;
-                    randy = randy-boundaryFactor;
+                while (receiverNodeList .size() < nNeighbor){
+                    int randx = rand() % (mindistance*2+1);
+                    int randy = rand() % (mindistance*2+1);
+                    randx = randx-mindistance;
+                    randy = randy-mindistance;
                     int distance = abs(randx)+abs(randy);
-                    unsigned coord = randy * meshNumCol + randx;
                     if(mindistance == distance)
                     {
-                        recvCoordSet.insert(coord);
+                        int poty = randy + senderY;
+                        int potx = randx + senderX;
+                         NS_ASSERT(bTorus == true);
+                        if (potx < 0)
+                            potx += meshNumCol;
+                        if (poty < 0)
+                            poty += meshNumRow;
+                        unsigned coord = poty* meshNumCol + potx;
+                        Ipv4Address t = topology->GetIpv4Address(coord);
+                        receiverNodeList.push_back(t);
                     }
-                    if(recvCoordSet.size() == 2*mindistance*(mindistance+1))
+                    if(receiverNodeList.size() == 2*mindistance*(mindistance+1))
                     {
                         mindistance++;
                     }
                 }
-
-                // calculate the offset factor with regard to the sender
-                // a box of 0 will have offset 0 (only 1 point)
-                // of 3 will have -1
-                // of 5 will have -2
-                // ...
-                // box of 2 can be either 0 or -1. I pick 0
-                // of 4 can be -1 or -2. Just pick -1
-                // ...
-
-                // unsigned senderID = *it;
-                unsigned senderY = *it / meshNumCol;
-                unsigned senderX = *it % meshNumCol;
-
-                // vector <coord_t> coordList;
-                for (std::unordered_set<unsigned>::iterator it = recvCoordSet.begin(); it != recvCoordSet.end(); it++){
-                    unsigned recvCoord = *it;
-                    int x = recvCoord % meshNumCol;
-                    int y = recvCoord / meshNumCol;
-                    x = x + senderX ;
-                    y = y + senderY ;
-
-                    NS_ASSERT(bTorus == true);
-                    if (x < 0)
-                        x += meshNumCol;
-                    if (y < 0)
-                        y += meshNumRow;
-
-                    NS_ASSERT(x < meshNumCol);
-                    NS_ASSERT(y < meshNumRow);
-
-                    unsigned recvid = y * meshNumCol + x;
-                    Ipv4Address t = topology->GetIpv4Address(recvid);
-                    receiverNodeList.push_back(t);
-                }
-
              }
              else if(topologytype == CUBE){
                 // NS_ASSERT(false);

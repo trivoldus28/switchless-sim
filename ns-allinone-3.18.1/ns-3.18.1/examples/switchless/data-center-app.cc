@@ -107,6 +107,7 @@ DataCenterApp::InitReceiveInfo (ReceiveInfo& receiveInfo)
 void
 DataCenterApp::StartApplication (void)
 {
+
     NS_LOG_FUNCTION (this);
 
     if (!m_setup)
@@ -324,6 +325,8 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
                          "    Delay: " << Simulator::Now() - seqTs.GetTs () << "\n" <<
                          "    Packets Received: " << m_acceptSocketMap[socket].m_packetsReceived << "\n" <<
                          "    Bytes Received: " << m_acceptSocketMap[socket].m_bytesReceived);
+            NS_LOG_DEBUG ("Delay : " << Simulator::Now() - seqTs.GetTs () << "\n");
+            NS_LOG_DEBUG ("Time: " << Simulator::Now() << "\n");
         }
     }
 }
