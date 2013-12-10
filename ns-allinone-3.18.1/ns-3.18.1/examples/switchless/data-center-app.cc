@@ -122,7 +122,6 @@ DataCenterApp::StartApplication (void)
     Address local (InetSocketAddress (Ipv4Address::GetAny (), PORT));
     m_rxSocket->Bind (local);
     m_rxSocket->Listen ();
-    m_rxSocket->ShutdownSend ();
     m_rxSocket->SetRecvCallback (MakeCallback (&DataCenterApp::HandleRead, this));
     m_rxSocket->SetAcceptCallback (MakeCallback (&DataCenterApp::HandleConnectionRequest, this),
                                    MakeCallback (&DataCenterApp::HandleAccept, this));
@@ -141,6 +140,7 @@ DataCenterApp::StartApplication (void)
             socket->Connect (nodeAddress);
             socket->SetConnectCallback (MakeCallback (&DataCenterApp::HandleConnectionSucceeded, this),
                                         MakeCallback (&DataCenterApp::HandleConnectionFailed, this));
+            socket->SetRecvCallback (MakeCallback (&DataCenterApp::HandleRead, this));
             SendInfo sendInfo;
             InitSendInfo (sendInfo, m_sendParams.m_nodes[i], socket);
             m_sendInfos.push_back (sendInfo);
@@ -303,7 +303,10 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
     while ((packet = socket->RecvFrom (from)))
     {
         if (packet->GetSize () == 0)
+        {
+            NS_LOG_INFO ("Got Here");
             break;
+        }
         else
         {
             // Log received packet
@@ -334,7 +337,7 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
             switch (hdr.GetPacketType ())
             {
                 case DCAppHeader::REQUEST:
-                    SendResponsePacket (socket, currentSeqNum);
+                    SendResponsePacket (socket, from, currentSeqNum);
                     break;
                 case DCAppHeader::RESPONSE:
                     break;
@@ -366,6 +369,7 @@ void
 DataCenterApp::HandleConnectionSucceeded (Ptr<Socket> socket)
 {
     NS_LOG_FUNCTION (this << socket);
+    socket->SetRecvCallback (MakeCallback (&DataCenterApp::HandleRead, this));
     NS_LOG_INFO ("Node " << GetNode ()->GetId () << " Connection Successful:\n" << 
                  "    Time: " << Simulator::Now());
 }
@@ -581,7 +585,7 @@ DataCenterApp::ScheduleSend (uint32_t index)
 }
 
 void 
-DataCenterApp::SendResponsePacket (Ptr<Socket> socket, uint16_t sequenceNumber)
+DataCenterApp::SendResponsePacket (Ptr<Socket> socket, Address& to, uint16_t sequenceNumber)
 {
     NS_LOG_FUNCTION (this << socket);
 
@@ -598,7 +602,7 @@ DataCenterApp::SendResponsePacket (Ptr<Socket> socket, uint16_t sequenceNumber)
     
     NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
                  "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
-                 "    Destination: " << "TODO" << "\n" <<
+                 "    Destination: " << InetSocketAddress::ConvertFrom (to).GetIpv4 () << "\n" <<
                  "    Packet Size: " << 0 << "\n" <<
                  "    Packet Type: " <<  DCAppHeader::PacketTypeToString (hdr.GetPacketType()) << "\n" <<
                  "    Sequence Number: " << hdr.GetSequenceNumber () << "\n" <<

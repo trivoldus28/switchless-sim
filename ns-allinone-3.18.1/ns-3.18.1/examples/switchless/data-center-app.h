@@ -115,7 +115,7 @@ private:
     void ScheduleSend (uint32_t index);
 
     // Send response packet
-    void SendResponsePacket (Ptr<Socket> socket, uint16_t sequenceNumber);
+    void SendResponsePacket (Ptr<Socket> socket, Address& to, uint16_t sequenceNumber);
     
     // Select random receivers
     void SelectRandomReceiverSubset (std::unordered_set<uint32_t>& subset); 
