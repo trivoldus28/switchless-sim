@@ -47,9 +47,6 @@ main (int argc, char * argv[])
     bool bSynchronized = false;
     unsigned meshNumRow = 0;
     unsigned meshNumCol = 0;
-    unsigned senderCenterNode = 0;
-    unsigned receiverCenterNode = 0;
-
 
     int topologytype = 0;
     int topo_sub1 = 0;
@@ -67,6 +64,8 @@ main (int argc, char * argv[])
     int m_cube=0;
     int n_cube=0;
     int nNeighbor=0;
+    int sChoice=0;
+    int rChoice=0;
     CommandLine cmd;
     cmd.AddValue("tp", "Topology",topologytype); // 1 or 2 or 3
     cmd.AddValue("t1", "",topo_sub1); // leaf-fan-out or row or m
@@ -81,7 +80,18 @@ main (int argc, char * argv[])
     cmd.AddValue("maxint", "",nMaxinterval); // only for random
     cmd.AddValue("sync", "",synchronized);
     cmd.AddValue("neighborcount","",nNeighbor);
+    cmd.AddValue("sChoice", "", sChoice); //0 for random
+    cmd.AddValue("rChoice", "", rChoice); //0 for random
     cmd.Parse (argc, argv);
+    if(sChoice != 0)
+    {  
+        //sSenderChoice = "set";
+        //We don't support it
+    }
+    if(rChoice != 0)
+    {  
+        sReceiverChoice = "set";
+    }
     if(intervaltype==RANDOM)
     {
         bFixedInterval = false;
@@ -171,12 +181,12 @@ main (int argc, char * argv[])
             }
         }
     }
-    else if (sSenderChoice == "set"){
+    /*else if (sSenderChoice == "set"){
         // For now let's just get the first n nodes
         for (int i = 0; i < nSender; i++){
             senderSet.insert(i);
         } 
-    }
+    }*/
 
     for (std::unordered_set<int>::iterator it = senderSet.begin(); it != senderSet.end(); it++){
         DataCenterApp::SendParams params;
@@ -184,28 +194,17 @@ main (int argc, char * argv[])
         std::vector <Ipv4Address> receiverNodeList;
 
         if (sReceiverChoice == "random"){
-            unsigned randid=0;
-            for (int i = 0; i < nReceiver; i++){
-                randid = rand();
-                randid %= nNodes;
-                if(std::find(receiverNodeList.begin(), receiverNodeList.end(), topology->GetIpv4Address(randid))!=receiverNodeList.end())
-                {
-                     Ipv4Address t = topology->GetIpv4Address(randid);
-                     receiverNodeList.push_back(t);
-                }
-                else
-                {
-                    i--;
-                }
-              
+            for(int i=0;i<nNodes;i++)
+            {
+                Ipv4Address t = topology->GetIpv4Address(i);
+                receiverNodeList.push_back(t);
             }
-            //params.m_nodes = &receiverNodeList; // TODO: enable this when interface is changed // So who's method are we using.
+
             params.m_nNodes = nNodes;
             params.m_nReceivers = nReceiver;
             params.m_receivers = DataCenterApp::RANDOM_SUBSET;
         }
         else{
-             std::cout << "Unimplemented1\n" << std::endl; // Neighborhood Case
              if (topologytype == TREE){
                 int nodeid = *it;
                 if(nodeid >= (nNeighbor/2) && nodeid <= nNodes-1-(nNeighbor/2))
@@ -263,16 +262,23 @@ main (int argc, char * argv[])
                 // Box boundaries are 1,4,9,16,25,...
                 // centered around this particular send node (*it)
                 unsigned boundaryFactor = 1;
-                while(boundaryFactor * boundaryFactor < nReceiver)
+                while(boundaryFactor * boundaryFactor < nNeighbor)
                     boundaryFactor++;
-                // typedef std::pair<unsigned, unsigned> coord_t;
-
                 std::unordered_set<unsigned> recvCoordSet;
-                while (recvCoordSet.size() < nReceiver){
+                unsigned mindistance =1;
+                while (recvCoordSet.size() < nNeighbor){
                     unsigned randx = rand() % boundaryFactor;
                     unsigned randy = rand() % boundaryFactor;
+                    unsigned distance = randx + randy; 
                     unsigned coord = randy * meshNumCol + randx;
-                    recvCoordSet.insert(coord);
+                    if(mindistance == distance)
+                    {
+                        recvCoordSet.insert(coord);
+                    }
+                    if(recvCoordSet.size() == mindistance+1)
+                    {
+                        mindistance++;
+                    }
                 }
 
                 // calculate the offset factor with regard to the sender
@@ -290,7 +296,7 @@ main (int argc, char * argv[])
                 unsigned senderX = *it % meshNumCol;
 
                 // vector <coord_t> coordList;
-                for (auto it = recvCoordSet.begin(); it != recvCoordSet.end(); it++){
+                for (std::unordered_set<unsigned>::iterator it = recvCoordSet.begin(); it != recvCoordSet.end(); it++){
                     unsigned recvCoord = *it;
                     int x = recvCoord % meshNumCol;
                     int y = recvCoord / meshNumCol;
@@ -309,34 +315,37 @@ main (int argc, char * argv[])
                     unsigned recvid = y * meshNumCol + x;
                     Ipv4Address t = topology->GetIpv4Address(recvid);
                     receiverNodeList.push_back(t);
-                    // coordList.push_back(make_pair())
                 }
 
              }
              else if(topologytype == CUBE){
                 NS_ASSERT(false);
              }
-            //params.m_nodes = &receiverNodeList; // TODO: enable this when interface is changed // So who's method are we using.
+            //params.m_nodes = &receiverNodeList; 
             params.m_nNodes = receiverNodeList.size();
-            params.m_nReceivers = nReceiver;
+            params.m_nReceivers = nSender * nNeighbor;
             params.m_receivers = DataCenterApp::ALL_IN_LIST;
         }
-
         if (bFixedInterval && bSynchronized){
             params.m_sendPattern = DataCenterApp::FIXED_INTERVAL;
-            params.m_sendInterval = MilliSeconds (500.);
+            //params.m_sendInterval = MilliSeconds (nintervalsize);
         }
         else if(bFixedInterval && !bSynchronized)
         {
-            std::cout << "Unimplemented2\n" << std::endl; // Implement Parameter Setting
+            params.m_sendPattern = DataCenterApp::FIXED_SPORADIC;
+            //params.m_sendInterval = MilliSeconds (nintervalsize);
         }
         else if(!bFixedInterval && bSynchronized)
         {
-            std::cout << "Unimplemented2\n" << std::endl; // Implement Parameter Setting
+            params.m_sendPattern = DataCenterApp::RANDOM_INTERVAL;
+            //params.m_maxSendInterval = nMaxinterval;
+            //params.m_minSendInterval = nMininterval;
         }
         else
         {
-            std::cout << "Unimplemented2\n" << std::endl; // Implement Parameter Setting
+            params.m_sendPattern = DataCenterApp::RANDOM_SPORADIC;
+            //params.m_maxSendInterval = nMaxinterval;
+            //params.m_minSendInterval = nMininterval;
         }
         params.m_packetSize = nPacketSize;
         params.m_nPackets = nIterations; 
@@ -344,7 +353,6 @@ main (int argc, char * argv[])
         app->Setup(params, *it, DEBUG); 
         topology->GetNode(*it)->AddApplication(app);
 
-        // TODO: set time
         app->SetStartTime (Seconds(0.));
         app->SetStopTime (Seconds(100.));
     }

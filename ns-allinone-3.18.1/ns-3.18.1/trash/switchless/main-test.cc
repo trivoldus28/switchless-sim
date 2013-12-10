@@ -214,6 +214,7 @@ main (int argc, char * argv[])
                 Ipv4Address t = topology->GetIpv4Address(i);
                 receiverNodeList.push_back(t);
             }
+            // Get all and pass
             // params.m_nodes = &receiverNodeList; // TODO: enable this when interface is changed
             params.m_nNodes = nNodes;
             params.m_nReceivers = nReceiver;
