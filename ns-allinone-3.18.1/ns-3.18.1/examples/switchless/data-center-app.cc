@@ -329,17 +329,22 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
                          "    Delay: " << Simulator::Now() - hdr.GetTimeStamp () << "\n" <<
                          "    Packets Received: " << m_acceptSocketMap[socket].m_packetsReceived << "\n" <<
                          "    Bytes Received: " << m_acceptSocketMap[socket].m_bytesReceived);
-            NS_LOG_DEBUG ("   " <<  GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  << 
-                          "\t  Received from  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () << 
-                          "   \t Time \t" << Simulator::Now() << " Delay : " 
-                          << Simulator::Now() - hdr.GetTimeStamp ());
+           
 
             switch (hdr.GetPacketType ())
             {
                 case DCAppHeader::REQUEST:
                     SendResponsePacket (socket, from, currentSeqNum);
+                    NS_LOG_DEBUG ("   " <<  GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  << 
+                          "\t  Received from  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () << 
+                          "   \t Time \t" << Simulator::Now() << " Delay : " 
+                          << Simulator::Now() - hdr.GetTimeStamp ());
                     break;
                 case DCAppHeader::RESPONSE:
+                    NS_LOG_DEBUG ("   " <<  GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  << 
+                          "\t  Got ACK from  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () << 
+                          "   \t Time \t" << Simulator::Now() << " Delay : " 
+                          << Simulator::Now() - hdr.GetTimeStamp ());
                     break;
                 default:
                     NS_LOG_ERROR ("Received packet with invalid type");
@@ -608,7 +613,7 @@ DataCenterApp::SendResponsePacket (Ptr<Socket> socket, Address& to, uint16_t seq
                  "    Sequence Number: " << hdr.GetSequenceNumber () << "\n" <<
                  "    TXTime: " << hdr.GetTimeStamp());
      NS_LOG_DEBUG ("   "<< GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  <<
-                   "\t  Sent Response Packet\t" <<
+                   "\t  Sent ACK to   \t" << InetSocketAddress::ConvertFrom (to).GetIpv4 () <<
                    "   \t Time \t" << Simulator::Now()) ; 
 }
 
