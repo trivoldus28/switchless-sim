@@ -52,10 +52,10 @@ def parseStandardVariables(argdict):
 		args += " --t2=" + `n`
 
 	if argdict["intervaltype"] == "fixed":
-		args += " --itype=1"
+		args += " --itype=2"
 		args += " --isize=" + `argdict["intervals"][0]`
 	elif argdict["intervaltype"] == "random":
-		args += " --itype=2"
+		args += " --itype=1"
 		args += " --minint=" + `argdict["intervalranges"][0][0]`
 		args += " --maxint=" + `argdict["intervalranges"][0][1]`
 	args += " --sync=" + `argdict["synctype"]`
@@ -110,7 +110,7 @@ if __name__ == '__main__':
 	if workload == "test":
 		numberofnodes = [16]
 		topologies = ["mesh"]
-		intervaltypes = ["fixed"]
+		intervaltypes = ["random"]
 		synctypes = [1] #synchronized or not
 		intervals = [20] # in ms 
 		intervalranges = [[5,80]] # in ms, used in sporadic interval

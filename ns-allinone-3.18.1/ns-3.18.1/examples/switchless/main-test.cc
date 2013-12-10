@@ -204,10 +204,10 @@ main (int argc, char * argv[])
              if (topologytype == TREE){
                 int nodeid = *it;
                 {
-                    float logval = log2(nNeighbor); // 5 
-                    int logv = ceil(logval); //3 
-                    int rem1 = nodeid % (int)(pow(2,(logv-1))); // 4
-                    int rem2 = nodeid % (int)(pow(2,(logv))); //8
+                    float logval = log2(nNeighbor); // 
+                    int logv = ceil(logval); //
+                    int rem1 = nodeid % (int)(pow(2,(logv-1))); //
+                    int rem2 = nodeid % (int)(pow(2,(logv))); //
                     int base1 = nodeid- rem1;
                     for (int i=0; i< pow(2,(logv-1)); i++)
                     {
