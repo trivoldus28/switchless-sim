@@ -327,7 +327,7 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
                          "    Bytes Received: " << m_acceptSocketMap[socket].m_bytesReceived);
             //NS_LOG_DEBUG ("Delay : " << Simulator::Now() - seqTs.GetTs ());
             //NS_LOG_DEBUG ("Time: " << Simulator::Now() << "\n");
-            NS_LOG_DEBUG ("IP "<<  InetSocketAddress::ConvertFrom (from).GetIpv4 () << "  Received Packet from  " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " at Time : " << Simulator::Now()) ;
+            NS_LOG_DEBUG ("IP "<<  GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  << "  Received Packet from  " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " at Time : " << Simulator::Now()) ;
         }
     }
 }
