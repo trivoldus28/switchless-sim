@@ -38,7 +38,7 @@ int
 main (int argc, char * argv[])
 {
 
-    LogComponentEnable ("DataCenterApp", LOG_INFO);
+    LogComponentEnable ("DataCenterApp", LOG_DEBUG);
     unsigned nRackSize = 0;
     unsigned nTreeFanout = 0;
     bool bTorus = true; // not parsed
