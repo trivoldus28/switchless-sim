@@ -340,7 +340,7 @@ main (int argc, char * argv[])
         else if(bFixedInterval && !bSynchronized)
         {
             params.m_sendPattern = DataCenterApp::FIXED_SPORADIC;
-            params.m_sendInterval = MilliSeconds (nintervalsize);
+            params.m_sendInterval = MicroSeconds (nintervalsize);
         }
         else if(!bFixedInterval && bSynchronized)
         {
