@@ -28,8 +28,8 @@ main (int argc, char * argv[])
     nodes.Create (2);
 
     PointToPointHelper pointToPoint;
-    pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
-    pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
+    pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1Gbps"));
+    pointToPoint.SetChannelAttribute ("Delay", StringValue ("100ns"));
 
     NetDeviceContainer devices;
     devices = pointToPoint.Install (nodes);
@@ -51,9 +51,9 @@ main (int argc, char * argv[])
     app0Params.m_receivers = DataCenterApp::ALL_IN_LIST;
     app0Params.m_nReceivers = 1;
     app0Params.m_sendPattern = DataCenterApp::FIXED_INTERVAL;
-    app0Params.m_sendInterval = MilliSeconds (500.);
-    app0Params.m_maxSendInterval = MilliSeconds (500.);
-    app0Params.m_minSendInterval = MilliSeconds (100.);
+    app0Params.m_sendInterval = MilliSeconds (1.);
+    app0Params.m_maxSendInterval = MilliSeconds (1.);
+    app0Params.m_minSendInterval = MilliSeconds (0.5);
     app0Params.m_packetSize = 512;
     app0Params.m_nIterations = 10;    
     app0->Setup(app0Params, 0, true); 
@@ -68,9 +68,9 @@ main (int argc, char * argv[])
     app1Params.m_receivers = DataCenterApp::ALL_IN_LIST;
     app1Params.m_nReceivers = 1;
     app1Params.m_sendPattern = DataCenterApp::FIXED_INTERVAL;
-    app1Params.m_sendInterval = MilliSeconds (500.);
-    app1Params.m_maxSendInterval = MilliSeconds (500.);
-    app1Params.m_minSendInterval = MilliSeconds (100.);
+    app1Params.m_sendInterval = MilliSeconds (1.);
+    app1Params.m_maxSendInterval = MilliSeconds (1.);
+    app1Params.m_minSendInterval = MilliSeconds (0.5);
     app1Params.m_packetSize = 512;
     app1Params.m_nIterations = 10;
     app1->Setup(app1Params, 1, true);
