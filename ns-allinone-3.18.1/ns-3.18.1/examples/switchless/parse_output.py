@@ -8,6 +8,7 @@ def usage () :
 def parseCmdArgs () :
     if len(sys.argv[1:]) != 1 :
         print "Invalid number of arguents"
+        usage()
         sys.exit(1)
     else :
         return sys.argv[1]
