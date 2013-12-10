@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
 										log = ""
 
-										command = './waf --run "switchless' + args + '"'
+										command = './waf --run "main-test' + args + '"'
 										print(command)
 
 	if workload == "random-n-to-random-m":
@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
 												log = ""
 
-												command = './waf --run "switchless' + args + '"'
+												command = './waf --run "main-test' + args + '"'
 												print(command)
 
 	if workload == "random-n-to-m-neighbors":
@@ -203,7 +203,7 @@ if __name__ == '__main__':
 
 												log = ""
 
-												command = './waf --run "switchless' + args + '"'
+												command = './waf --run "main-test' + args + '"'
 												print(command)
 
 
