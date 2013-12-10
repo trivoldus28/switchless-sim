@@ -326,7 +326,7 @@ main (int argc, char * argv[])
              else if(topologytype == CUBE){
                 NS_ASSERT(false);
              }
-            params.m_nReceivers = nSender * nNeighbor;
+            params.m_nReceivers = nNeighbor;
             params.m_receivers = DataCenterApp::ALL_IN_LIST;
         }
         params.m_nodes = receiverNodeList; 
