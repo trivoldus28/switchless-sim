@@ -55,7 +55,7 @@ main (int argc, char * argv[])
     app0Params.m_maxSendInterval = MilliSeconds (500.);
     app0Params.m_minSendInterval = MilliSeconds (100.);
     app0Params.m_packetSize = 512;
-    app0Params.m_nPackets = 10;    
+    app0Params.m_nIterations = 10;    
     app0->Setup(app0Params, 0, true); 
     nodes.Get (0)->AddApplication (app0);
     app0->SetStartTime (Seconds(0.));
@@ -72,7 +72,7 @@ main (int argc, char * argv[])
     app1Params.m_maxSendInterval = MilliSeconds (500.);
     app1Params.m_minSendInterval = MilliSeconds (100.);
     app1Params.m_packetSize = 512;
-    app1Params.m_nPackets = 10;
+    app1Params.m_nIterations = 10;
     app1->Setup(app1Params, 1, true);
     nodes.Get (1)->AddApplication (app1);
     app1->SetStartTime (Seconds(0.));

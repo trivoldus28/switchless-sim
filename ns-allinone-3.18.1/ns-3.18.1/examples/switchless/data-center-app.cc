@@ -21,13 +21,15 @@ DataCenterApp::copySendParams (SendParams& src, SendParams& dst)
     dst.m_maxSendInterval = src.m_maxSendInterval;
     dst.m_minSendInterval = src.m_minSendInterval;
     dst.m_packetSize = src.m_packetSize;
-    dst.m_nPackets = src.m_nPackets;
+    dst.m_nIterations = src.m_nIterations;
 }
 
 DataCenterApp::DataCenterApp ()
   : m_sendParams (),
     m_setup (false),
     m_running (false),
+    m_iterationCount (0),
+    m_totalPacketsSent (0),
     m_sendInfos (),
     m_rxSocket (),
     m_acceptSocketMap ()
@@ -42,7 +44,7 @@ DataCenterApp::DataCenterApp ()
     m_sendParams.m_maxSendInterval = MilliSeconds (500.0);
     m_sendParams.m_minSendInterval = MilliSeconds (100.0);
     m_sendParams.m_packetSize = 1024;
-    m_sendParams.m_nPackets = 100;
+    m_sendParams.m_nIterations = 100;
 }
 
 DataCenterApp::~DataCenterApp ()
@@ -111,6 +113,8 @@ DataCenterApp::StartApplication (void)
         NS_LOG_WARN ("Application started before calling DataCenterApp::Setup. Using defaults.");
 
     m_running = true;
+    m_iterationCount = 0;
+    m_totalPacketsSent = 0;
 
     // Setup socket for receiving
     m_rxSocket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
@@ -127,72 +131,20 @@ DataCenterApp::StartApplication (void)
     // Only open sending sockets if this app is sending
     if (m_sendParams.m_sending)
     {
-        switch (m_sendParams.m_receivers)
+        // Setup socket for each node in list
+        for (uint32_t i = 0; i < m_sendParams.m_nodes.size(); i++)
         {
-            case ALL_IN_LIST:
-            {
-                // Setup socket for each node in list
-                for (uint32_t i = 0; i < m_sendParams.m_nodes.size(); i++)
-                {
-                    Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
-                    Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[i], PORT));
-                    socket->Bind ();
-                    socket->Connect (nodeAddress);
-                    socket->SetConnectCallback (MakeCallback (&DataCenterApp::HandleConnectionSucceeded, this),
-                                                MakeCallback (&DataCenterApp::HandleConnectionFailed, this));
-                    SendInfo sendInfo;
-                    InitSendInfo (sendInfo, m_sendParams.m_nodes[i], socket);
-                    m_sendInfos.push_back (sendInfo);
-                }
-                KickOffSending();
-
-                break;
-            }
-            case RANDOM_SUBSET:
-            {
-                // Check we will not infinite loop when picking a receiver
-                if (m_sendParams.m_nReceivers > m_sendParams.m_nodes.size())
-                {
-                    NS_LOG_ERROR ("Number of receivers is greater than number of nodes");
-                    break;
-                }
-
-                // Setup socket for each randomly picked receiver
-                std::set<int> pickedReceivers;
-                for (uint32_t i = 0; i < m_sendParams.m_nReceivers; i++)
-                {
-                    Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
-                    
-                    // Pick receiver
-                    int receiver = -1;
-                    while (receiver == -1)
-                    {
-                        int candidate = rand() % m_sendParams.m_nodes.size();
-                        if (pickedReceivers.find(candidate) == pickedReceivers.end())
-                        {
-                            pickedReceivers.insert(candidate);
-                            receiver = candidate;
-                            break;
-                        }
-                    }
-
-                    Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[receiver], PORT));
-                    socket->Bind ();
-                    socket->Connect (nodeAddress);
-                    socket->SetConnectCallback (MakeCallback (&DataCenterApp::HandleConnectionSucceeded, this),
-                                                MakeCallback (&DataCenterApp::HandleConnectionFailed, this));
-                    SendInfo sendInfo;
-                    InitSendInfo (sendInfo, m_sendParams.m_nodes[receiver], socket);
-                    m_sendInfos.push_back (sendInfo);
-                }
-                KickOffSending();
-
-                break;
-            }
-            default:
-                NS_LOG_ERROR ("Invalid receivers specifier");
-                break;
+            Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
+            Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[i], PORT));
+            socket->Bind ();
+            socket->Connect (nodeAddress);
+            socket->SetConnectCallback (MakeCallback (&DataCenterApp::HandleConnectionSucceeded, this),
+                                        MakeCallback (&DataCenterApp::HandleConnectionFailed, this));
+            SendInfo sendInfo;
+            InitSendInfo (sendInfo, m_sendParams.m_nodes[i], socket);
+            m_sendInfos.push_back (sendInfo);
         }
+        KickOffSending();
     }
 }
 
@@ -237,28 +189,72 @@ DataCenterApp::KickOffSending (void)
         case FIXED_INTERVAL:
         case RANDOM_INTERVAL:
         {
+            // Start first iteration
             BulkSendPackets();
             break;
         }
         case FIXED_SPORADIC:
         {
-            // This starts as random starts time but continues as a fixed interval after
-            for (uint32_t i = 0; i < m_sendInfos.size(); i++)
+            // Check we have packets to send
+            if (m_totalPacketsSent < (m_sendParams.m_nIterations * m_sendParams.m_nReceivers))
             {
-                // Choose a random interval
-                Time interval = NanoSeconds (rand () %
-                    (m_sendParams.m_maxSendInterval.GetNanoSeconds () -
-                     m_sendParams.m_minSendInterval.GetNanoSeconds () + 1) +
-                    m_sendParams.m_minSendInterval.GetNanoSeconds());
-                m_sendInfos[i].m_event =
-                    Simulator::Schedule (interval, &DataCenterApp::SendPacket, this, i); 
+                // This starts as sending at random times and then continues
+                // as a fixed interval between receivers
+                switch (m_sendParams.m_receivers)
+                {
+                    case ALL_IN_LIST:
+                    {
+                        // Schedule a send for every receiver
+                        for (uint32_t i = 0; i < m_sendInfos.size(); i++)
+                        {
+                            Time interval = SelectRandomInterval ();
+                            m_sendInfos[i].m_event =
+                                Simulator::Schedule (interval, &DataCenterApp::SendPacket, this, i); 
+                        } 
+                        break;
+                    }
+                    case RANDOM_SUBSET:
+                    {
+                        // Schedule event for random receivers
+                        for (uint32_t i = 0; i < m_sendParams.m_nReceivers; i++)
+                        {
+                            Time interval = SelectRandomInterval ();
+                            uint32_t receiver = SelectRandomReceiver ();
+                            m_sendInfos[receiver].m_event = 
+                                Simulator::Schedule (interval, &DataCenterApp::SendPacket, this, receiver);
+                        }
+                        break;
+                    }
+                    default:
+                        NS_LOG_ERROR ("Invalid receivers specifier");
+                        break;
+                }
             }
             break;
         }
         case RANDOM_SPORADIC:
         {
-            for (uint32_t i = 0; i < m_sendInfos.size(); i++)
-                ScheduleSend(i);
+            // Check we have packets to send
+            if (m_totalPacketsSent < (m_sendParams.m_nIterations * m_sendParams.m_nReceivers))
+            {
+                // This just schedules random events to start off with
+                switch (m_sendParams.m_receivers)
+                {
+                    case ALL_IN_LIST:
+                        // Schedule send for every receiver
+                        for (uint32_t i = 0; i < m_sendInfos.size(); i++)
+                            ScheduleSend (i);
+                        break;
+                    case RANDOM_SUBSET:
+                        // Schedule send for random receivers
+                        for (uint32_t i = 0; i < m_sendParams.m_nReceivers; i++)
+                            ScheduleSend (SelectRandomReceiver ());
+                        break;
+                    default:
+                        NS_LOG_ERROR ("Invalid receivers specifier");
+                        break;
+                }
+            }   
             break;
         }
         default:
@@ -369,15 +365,43 @@ DataCenterApp::BulkSendPackets ()
 {
     NS_LOG_FUNCTION (this);
     NS_ASSERT (m_sendInfos[0].m_event.IsExpired ());
-    
-    // Send a packet for all send infos
-    for (uint32_t i = 0; i < m_sendInfos.size(); i++)
-        DoSendPacket (m_sendInfos[i]);
-    
-    // Schedule next bulk send (just have to check packets sent for
-    // one send info since all are happening synchronized, they should
-    // all be the same)
-    if (m_sendInfos[0].m_packetsSent < m_sendParams.m_nPackets)
+      
+    // Send if we are still running and there is still an iteration to do 
+    if (m_running && m_iterationCount < m_sendParams.m_nIterations)
+    {
+        switch (m_sendParams.m_receivers)
+        {
+            case ALL_IN_LIST:
+            {
+                // Send a packet for all send infos
+                for (uint32_t i = 0; i < m_sendInfos.size(); i++)
+                    DoSendPacket (m_sendInfos[i]); 
+
+                break;
+            }
+            case RANDOM_SUBSET:
+            {
+                // Choose random subset of receivers
+                std::unordered_set<uint32_t> receivers;
+                SelectRandomReceiverSubset (receivers);
+
+                // Send to subset of receivers
+                std::unordered_set<uint32_t>::iterator it;
+                for (it = receivers.begin (); it != receivers.end (); it++)
+                    DoSendPacket (m_sendInfos[*it]);
+                
+                break;
+            }
+            default:
+                NS_LOG_ERROR ("Invalid receivers specifier");
+                break;
+        }
+
+        m_iterationCount++;
+    }
+
+    // If there is still an iteration to do, schedule it
+    if (m_iterationCount < m_sendParams.m_nIterations)
         BulkScheduleSend();
 }
 
@@ -385,13 +409,13 @@ void
 DataCenterApp::SendPacket (uint32_t index)
 {
     NS_LOG_FUNCTION (this);
-    NS_ASSERT (m_sendInfos[index].m_event.IsExpired ());
 
-    // Do the actual send
-    DoSendPacket (m_sendInfos[index]);
+    // Do the actual send if we still have a packet to send
+    if (m_totalPacketsSent < (m_sendParams.m_nIterations * m_sendParams.m_nReceivers))
+        DoSendPacket (m_sendInfos[index]);
 
-    // Schedule the next send if there is another packket to send
-    if (m_sendInfos[index].m_packetsSent < m_sendParams.m_nPackets)
+    // Schedule the next send if there is another packkt to send
+    if (m_totalPacketsSent < (m_sendParams.m_nIterations * m_sendParams.m_nReceivers))
         ScheduleSend(index);
 }
 
@@ -416,6 +440,7 @@ DataCenterApp::DoSendPacket (SendInfo& sendInfo)
     sendInfo.m_socket->Send (packet);
     sendInfo.m_packetsSent++;
     sendInfo.m_bytesSent += m_sendParams.m_packetSize;
+    m_totalPacketsSent++;
 
     NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
                  "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
@@ -425,47 +450,6 @@ DataCenterApp::DoSendPacket (SendInfo& sendInfo)
                  "    TXTime: " << seqTs.GetTs() << "\n" <<
                  "    Packets Sent: " << sendInfo.m_packetsSent << "\n" <<
                  "    Bytes Sent: " << sendInfo.m_bytesSent);
-
-    /*// Break up packets and send in MAX_PACKET_SIZE chunks
-    uint32_t packetsToSend = m_sendParams.m_packetSize / MAX_PACKET_SIZE;
-    for (uint32_t i = 0; i < packetsToSend; i++)
-    {
-        // Create a header with sequence number and time
-        SeqTsHeader seqTs;
-        seqTs.SetSeq (sendInfo.m_packetsSent);
-
-        // Create packet and add header
-        Ptr<Packet> packet = Create<Packet> (MAX_PACKET_SIZE);
-        packet->AddHeader (seqTs);
-        sendInfo.m_socket->Send (packet);
-    }
-
-    // Send any leftover data
-    uint32_t leftover = m_sendParams.m_packetSize % MAX_PACKET_SIZE;
-    NS_LOG_INFO ("Leftover" << leftover);
-    if (leftover > 0)
-    {
-        // Create a header with sequence number and time
-        SeqTsHeader seqTs;
-        seqTs.SetSeq (sendInfo.m_packetsSent);
-        
-        // Create packet and add header
-        Ptr<Packet> packet = Create<Packet> (leftover);
-        packet->AddHeader (seqTs);
-        sendInfo.m_socket->Send (packet);
-    }
-
-    sendInfo.m_packetsSent++;
-    sendInfo.m_bytesSent += m_sendParams.m_packetSize;
-
-    NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
-                 "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
-                 "    Destination: " << Ipv4Address::ConvertFrom (sendInfo.m_address) << "\n" <<
-                 "    Packet Size: " << m_sendParams.m_packetSize << "\n" <<
-                 "    Sequence Number: " << sendInfo.m_packetsSent - 1 << "\n" <<
-                 "    TXTime: " << Simulator::Now() << "\n" <<
-                 "    Packets Sent: " << sendInfo.m_packetsSent << "\n" <<
-                 "    Bytes Sent: " << sendInfo.m_bytesSent);*/
 }
 
 void
@@ -487,17 +471,14 @@ DataCenterApp::BulkScheduleSend ()
             case RANDOM_INTERVAL:
             {
                 // Choose a random interval
-                Time interval = NanoSeconds (rand () % 
-                    (m_sendParams.m_maxSendInterval.GetNanoSeconds () - 
-                     m_sendParams.m_minSendInterval.GetNanoSeconds () + 1) + 
-                    m_sendParams.m_minSendInterval.GetNanoSeconds());
+                Time interval = SelectRandomInterval ();
                 // Just use send event for 0th send info since we only need to schedule one event
                 m_sendInfos[0].m_event = 
                     Simulator::Schedule (interval, &DataCenterApp::BulkSendPackets, this);
                 break;
             }
             default:
-                NS_LOG_ERROR ("BulkScheduleSend called with invald send pattern");
+                NS_LOG_ERROR ("BulkScheduleSend called with invalid send pattern");
                 break;
         }
     }
@@ -508,24 +489,65 @@ DataCenterApp::ScheduleSend (uint32_t index)
 {
     NS_LOG_FUNCTION (this);
 
+    // Check we are still running
     if (m_running)
     {
         switch (m_sendParams.m_sendPattern)
         {
             case FIXED_SPORADIC:
             {
-                Simulator::Schedule (m_sendParams.m_sendInterval, &DataCenterApp::SendPacket, this, index);
+                // Send based on send interval
+                switch (m_sendParams.m_receivers)
+                {
+                    case ALL_IN_LIST:
+                    {
+                        // Schedule for index passed in
+                        m_sendInfos[index].m_event = 
+                            Simulator::Schedule (m_sendParams.m_sendInterval, &DataCenterApp::SendPacket, 
+                                                 this, index);
+                        break;
+                    }
+                    case RANDOM_SUBSET:
+                    { 
+                        // Pick a new random receiver and schedule for it
+                        uint32_t receiver = SelectRandomReceiver ();
+                        m_sendInfos[receiver].m_event =    
+                            Simulator::Schedule (m_sendParams.m_sendInterval, &DataCenterApp::SendPacket,
+                                                 this, receiver);
+                        break;
+                    }
+                    default:
+                        NS_LOG_ERROR ("Invalid receivers specifier");
+                        break;
+                }
                 break;
             }
             case RANDOM_SPORADIC:
             {
-                // Choose a random interval
-                Time interval = NanoSeconds (rand () %
-                    (m_sendParams.m_maxSendInterval.GetNanoSeconds () - 
-                     m_sendParams.m_minSendInterval.GetNanoSeconds () + 1) +   
-                    m_sendParams.m_minSendInterval.GetNanoSeconds());
-                m_sendInfos[index].m_event =
-                    Simulator::Schedule (interval, &DataCenterApp::SendPacket, this, index);
+                // Send based on random interval
+                switch (m_sendParams.m_receivers)
+                {
+                    case ALL_IN_LIST:
+                    {
+                        // Schedule for index passed in
+                        m_sendInfos[index].m_event = 
+                            Simulator::Schedule (SelectRandomInterval (), &DataCenterApp::SendPacket,
+                                                 this, index);
+                        break;
+                    }
+                    case RANDOM_SUBSET:
+                    {
+                        // Pick a new random receiver and schedule for it
+                        uint32_t receiver = SelectRandomReceiver ();
+                        m_sendInfos[receiver].m_event = 
+                            Simulator::Schedule (SelectRandomInterval (), &DataCenterApp::SendPacket,
+                                                 this, receiver);
+                        break;
+                    }
+                    default:
+                        NS_LOG_ERROR ("Invalid receivers specifier");
+                        break;
+                }
                 break;
             }
             default:
@@ -533,4 +555,53 @@ DataCenterApp::ScheduleSend (uint32_t index)
                 break;
         }
     }
+}
+
+void 
+DataCenterApp::SelectRandomReceiverSubset (std::unordered_set<uint32_t>& subset)
+{
+    NS_LOG_FUNCTION (this);
+
+    // Check we will not infinite loop when picking a receiver
+    if (m_sendParams.m_nReceivers > m_sendParams.m_nodes.size())
+    {
+        NS_LOG_ERROR ("Number of receivers is greater than number of nodes");
+        return;
+    }
+    
+    // Pick m_nReceivers unique receivers
+    for (uint32_t i = 0; i < m_sendParams.m_nReceivers; i++)
+    {
+        // Pick a unique receiver
+        while (1)
+        {
+            uint32_t candidate = SelectRandomReceiver ();
+            if (subset.find(candidate) == subset.end())
+            {
+                subset.insert(candidate);
+                break;
+            }
+        }        
+    }
+
+    NS_ASSERT (subset.size() == m_sendParams.m_nReceivers);
+}
+
+uint32_t
+DataCenterApp::SelectRandomReceiver ()
+{
+    NS_LOG_FUNCTION (this);
+
+    return (rand() % m_sendParams.m_nodes.size());
+}
+
+Time
+DataCenterApp::SelectRandomInterval ()
+{
+    NS_LOG_FUNCTION (this);
+
+    return NanoSeconds (rand () %
+                        (m_sendParams.m_maxSendInterval.GetNanoSeconds () -
+                         m_sendParams.m_minSendInterval.GetNanoSeconds () + 1) +
+                        m_sendParams.m_minSendInterval.GetNanoSeconds());
 }
