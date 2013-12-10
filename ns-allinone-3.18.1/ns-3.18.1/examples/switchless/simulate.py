@@ -2,6 +2,7 @@
 
 import sys
 import math
+import os
 
 TREE = 1
 MESH = 2
@@ -53,11 +54,13 @@ def parseStandardVariables(argdict):
 
 	if argdict["intervaltype"] == "fixed":
 		args += " --itype=2"
-		args += " --isize=" + `argdict["intervals"][0]`
+		args += " --isize=" + `argdict["interval"]`
 	elif argdict["intervaltype"] == "random":
 		args += " --itype=1"
-		args += " --minint=" + `argdict["intervalranges"][0][0]`
-		args += " --maxint=" + `argdict["intervalranges"][0][1]`
+		args += " --minint=" + `argdict["interval"][0]`
+		args += " --maxint=" + `argdict["interval"][1]`
+
+	args += " --iter=" + `argdict["numiteration"]`
 	args += " --sync=" + `argdict["synctype"]`
 	# args += " --p"=#MISSING ARGUMENT FOR NUMBER OF INTERVALS
 	args += " --psize=" + `argdict["packetsize"]`
@@ -66,188 +69,130 @@ def parseStandardVariables(argdict):
 
 
 if __name__ == '__main__':
-	workload = sys.argv[1]
+
+	#major properties, adjust them here
+	numberofnodes = [16,32,64,128,256,512,1024]
+	topologies = ["tree", "mesh", "cube"]
+	intervaltypes = ["fixed", "random"]
+	synctypes = [1,0] #synchronized or not
+	numsenders = [.2,.4,.6,.8]
+	numreceivers = [.2,.4,.6,.8] # percentage for random n to random/neighbor m
+
+	#minor properties
+	numiterations = [1,2,3]
+	intervals = [5000,10000,20000,40000,80000] # in ns 
+	intervalranges = [[5000,20000],[10000,30000]] # in ns, used in sporadic interval
+	packetsizes = [512,1024]
+
+	# OVERRIDE PARAMS HERE
+	try:
+		workload = sys.argv[1]
+	except:
+		workload = "test"
+
 	if workload == "all-to-all":
-		numberofnodes = [16,32,64,128,256,512,1024]
-		topologies = ["tree", "mesh", "cube"]
-		intervaltypes = ["fixed", "random"]
-		synctypes = [1,0] #synchronized or not
-		intervals = [5,10,20,40,80] # in ms 
-		intervalranges = [[5,80]] # in ms, used in sporadic interval
-
-		#minor properties
-		numberofpackets = [1]
-		packetsizes = [512]
-
-		for nNode in numberofnodes:
-			for topo in topologies:
-				for intervaltype in intervaltypes:
-					for synctype in synctypes:
-						# for interval in intervals:
-							# for intervalrange in intervalranges:
-								# for numpacket in numberofpackets: # MISSING ARGUMENT IN PROGRAM
-									for packetsize in packetsizes:
-										argdict = {}
-										argdict["nNode"] = nNode
-										argdict["topo"] = topo
-										argdict["intervaltype"] = intervaltype
-										argdict["intervals"] = intervals
-										argdict["intervalranges"] = intervalranges
-										argdict["synctype"] = synctype
-										argdict["packetsize"] = packetsize
-										args = parseStandardVariables(argdict)
-
-										#all-to-all specific parameter
-										args += " --ncount=" + `nNode`
-										args += " --scount=" + `nNode`
-										args += " --rcount=" + `nNode`
-
-										log = ""
-
-										command = './waf --run "main-test' + args + '"'
-										print(command)
+		numsenders = [1]
+		numreceivers = [1]
 
 	if workload == "test":
 		numberofnodes = [16]
 		topologies = ["mesh"]
-		intervaltypes = ["random"]
-		synctypes = [1] #synchronized or not
-		intervals = [20] # in ms 
-		intervalranges = [[5,80]] # in ms, used in sporadic interval
-
-		#minor properties
-		numberofpackets = [1]
-		packetsizes = [512]
-
-		for nNode in numberofnodes:
-			for topo in topologies:
-				for intervaltype in intervaltypes:
-					for synctype in synctypes:
-						# for interval in intervals:
-							# for intervalrange in intervalranges:
-								# for numpacket in numberofpackets: # MISSING ARGUMENT IN PROGRAM
-									for packetsize in packetsizes:
-										argdict = {}
-										argdict["nNode"] = nNode
-										argdict["topo"] = topo
-										argdict["intervaltype"] = intervaltype
-										argdict["intervals"] = intervals
-										argdict["intervalranges"] = intervalranges
-										argdict["synctype"] = synctype
-										argdict["packetsize"] = packetsize
-										args = parseStandardVariables(argdict)
-
-										#all-to-all specific parameter
-										args += " --ncount=" + `nNode`
-										args += " --scount=" + `nNode`
-										args += " --rcount=" + `nNode`
-
-										log = ""
-
-										command = './waf --run "main-test' + args + '"'
-										print(command)
-
-	if workload == "random-n-to-random-m":
-		# covers
-		# random n to m
-		# one to random m
-		# n to one
-		numberofnodes = [16,32,64,128,256,512,1024]
-		topologies = ["tree", "mesh", "cube"]
 		intervaltypes = ["fixed", "random"]
-		synctypes = [1,0] #synchronized or not
-		intervals = [5,10,20,40,80] # in ms 
-		intervalranges = [[5,80]] # in ms, used in sporadic interval
-		numsenders = [.2,.4,.6,.8]
-		numreceivers = [.2,.4,.6,.8] # percentage
-
-		#minor properties
-		numberofpackets = [1]
+		synctypes = [1] #synchronized or not
 		packetsizes = [512]
+		intervals = [20] # in ns 
+		intervalranges = [[5,80]] # in ns, used in sporadic interval
+		numiterations = [1]
+		numsenders = [1]
+		numreceivers = [1]
 
-		for nNode in numberofnodes:
-			for numsender in numsenders:
-				for numreceiver in numreceivers:
-					for topo in topologies:
-						for intervaltype in intervaltypes:
-							for synctype in synctypes:
-								# for interval in intervals:
-									# for intervalrange in intervalranges:
-										# for numpacket in numberofpackets: # MISSING ARGUMENT IN PROGRAM
-											for packetsize in packetsizes:
-												argdict = {}
-												argdict["nNode"] = nNode
-												argdict["topo"] = topo
-												argdict["intervaltype"] = intervaltype
-												argdict["intervals"] = intervals
-												argdict["intervalranges"] = intervalranges
-												argdict["synctype"] = synctype
-												argdict["packetsize"] = packetsize
-												args = parseStandardVariables(argdict)
+	if workload == "rnnm":
+		numreceivers = [1,2,4,8,16]
 
-												#random n to m specific parameter
+	commands = []
+	logfnames = []
+
+	for nNode in numberofnodes:
+		for numsender in numsenders:
+			for numreceiver in numreceivers:
+				for topo in topologies:
+					for synctype in synctypes:
+						for numiteration in numiterations:
+							for intervaltype in intervaltypes:
+								intervalsmux = []
+								if (intervaltype == "fixed"):
+									intervalsmux = intervals
+								elif intervaltype == "random":
+									intervalsmux = intervalranges
+								else: assert(0)
+								for interval in intervalsmux:
+										for packetsize in packetsizes:
+											argdict = {}
+											argdict["nNode"] = nNode
+											argdict["topo"] = topo
+											argdict["intervaltype"] = intervaltype
+											argdict["interval"] = interval
+											# argdict["intervalrange"] = intervalrange
+											argdict["synctype"] = synctype
+											argdict["packetsize"] = packetsize
+											argdict["numiteration"] = numiteration 
+
+											# if (intervaltype == "fixed"):
+											# 	# skip the interval ranges iterations
+											# 	if intervalrange != intervalranges[0]:
+											# 		continue
+											# elif (intervaltype == "random"):
+											# 	if interval != intervals[0]:
+											# 		continue
+
+											args = parseStandardVariables(argdict)
+
+											logfname = ""
+											intervallog = ""
+											try:
+												intervallog = `interval[0]` + "_" + `interval[1]`
+											except:
+												intervallog = `interval`
+
+											if (workload == "all-to-all" or workload == "test"):
+												args += " --ncount=" + `nNode`
+												args += " --scount=" + `nNode`
+												args += " --rcount=" + `nNode`
+												logfname = "log_alltoall_" + `nNode` + "_" + topo + "_" + intervaltype + "_" \
+													 + intervallog + "_" + `synctype` + "_" + `packetsize`
+											
+											if (workload == "rnrm"):
+												# random n, random m
 												nsender = int(numsender * nNode)
 												nreceiver = int(numreceiver * nNode)
 												args += " --scount=" + `nsender`
 												args += " --rcount=" + `nreceiver`
 												args += " --ncount=" + `nNode`
+												logfname = "log_rnrm_" + `nNode` + "_" + `nsender` + "_" + `nreceiver` + "_" + topo \
+														 + intervaltype + "_" + intervallog + "_" + `synctype` + "_" + `packetsize`
 
-												# args += " --rChoice=" + `0`
-
-												log = ""
-
-												command = './waf --run "main-test' + args + '"'
-												print(command)
-
-	if workload == "random-n-to-m-neighbors":
-		# covers
-		# all to set m
-		# n to set m
-		numberofnodes = [16,32,64,128,256,512,1024]
-		topologies = ["tree", "mesh", "cube"]
-		intervaltypes = ["fixed", "random"]
-		synctypes = [1,0] #synchronized or not
-		intervals = [5,10,20,40,80] # in ms 
-		intervalranges = [[5,80]] # in ms, used in sporadic interval
-		numsenders = [.2,.4,.6,.8,1]
-		numneighbors = [1,2,4,8,16,32] # percentage
-
-		#minor properties
-		numberofpackets = [1]
-		packetsizes = [512]
-
-		for nNode in numberofnodes:
-			for numsender in numsenders:
-				for numneighbor in numneighbors:
-					for topo in topologies:
-						for intervaltype in intervaltypes:
-							for synctype in synctypes:
-								# for interval in intervals:
-									# for intervalrange in intervalranges:
-										# for numpacket in numberofpackets: # MISSING ARGUMENT IN PROGRAM
-											for packetsize in packetsizes:
-												argdict = {}
-												argdict["nNode"] = nNode
-												argdict["topo"] = topo
-												argdict["intervaltype"] = intervaltype
-												argdict["intervals"] = intervals
-												argdict["intervalranges"] = intervalranges
-												argdict["synctype"] = synctype
-												argdict["packetsize"] = packetsize
-												args = parseStandardVariables(argdict)
-
-												#specific parameter
+											if workload == "rnnm":
+												# random n, neighbor m
 												nsender = int(numsender * nNode)
-												nneighbor = numneighbor
+												nneighbor = numreceiver
 												args += " --scount=" + `nsender`
 												args += " --neighborcount=" + `nneighbor`
 												args += " --ncount=" + `nNode`
+												logfname = "log_rnnm_" + `nNode` + "_" + `nsender` + "_" + `nneighbor` + "_" + topo + "_" \
+														 + intervaltype + "_" + intervallog + "_" + `synctype` + "_" + `packetsize`
 
-												log = ""
+											command = './waf --run "main-test' + args + '"'
+											commands.append(command)
+											logfnames.append(logfname)
+											# print(command
 
-												command = './waf --run "main-test' + args + '"'
-												print(command)
-
+	writetofile = False
+	# writetofile = True
+	for i,command in enumerate(commands):
+		if writetofile:
+			command += " &> " + logfnames[i]
+		print(command)
+		# os.system(command) # uncomment this line to execute the command)
 
 
 
