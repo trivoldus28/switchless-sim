@@ -55,7 +55,7 @@ def main () :
     colors = cm.rainbow ( np.linspace (0, 1, len (sizeValues)))
     for i in range(0, len (sizeValues)) :
         plt.scatter (sizeValues[i], delayValues[i], color=colors[i])
-    plt.yscale ('log')
+    #plt.yscale ('log')
     plt.ylim(ymin=0)
     plt.xlim(xmin=-10)
     plt.legend (resultFilenames)
