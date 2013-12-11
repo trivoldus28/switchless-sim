@@ -283,8 +283,6 @@ main (int argc, char * argv[])
                         }
                         unsigned coord = poty* meshNumCol + potx;
                         receiverSet.insert(coord);
-
-
                     }
                     if(receiverSet.size() == 2*mindistance*(mindistance+1))
                     {
@@ -293,6 +291,7 @@ main (int argc, char * argv[])
                     failSafeCounter++;
                     if(failSafeCounter==10000)
                     {
+                        failSafeCounter =0 ;
                         mindistance++;
                     }
                 }
