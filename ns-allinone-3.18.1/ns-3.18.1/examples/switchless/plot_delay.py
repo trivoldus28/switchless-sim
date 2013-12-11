@@ -56,16 +56,20 @@ def plotDelay(resultFilenames):
                 maxDelay = delayValue
 
     colors = cm.rainbow ( np.linspace (0, 1, len (delayValues)))
-    plt.hist(delayValues, 20, color=colors, label=resultFilenames)
+    shortenedfilenames = []
+    for name in resultFilenames:
+        shortenedfilenames.append(name.split('.')[0])
+    plt.hist(delayValues, 20, color=colors, label=shortenedfilenames)
     plt.legend()
     plt.xlabel ("Packet Delay (ns)")
     plt.ylabel ("Occurrences")
     plt.savefig ("delay.pdf")
+    plt.close()
 
 def main () :
     # Parse cmd line params
     resultFilenames = parseCmdArgs()
     plotDelay(resultFilenames)
-    
+
 if __name__ == "__main__" :
     main()

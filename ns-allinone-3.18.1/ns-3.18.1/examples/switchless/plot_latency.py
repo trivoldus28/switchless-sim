@@ -39,9 +39,13 @@ def plotLatency(resultFilenames):
     # Plot latencies
     x = np.arange (len (latencies))
     plt.bar (x, latencies)
-    plt.xticks (x + 0.4, resultFilenames)
+    shortenedfilenames = []
+    for name in resultFilenames:
+        shortenedfilenames.append(name.split('.')[0])
+    plt.xticks (x + 0.4, shortenedfilenames)
     plt.ylabel ("Latency (ns)")
     plt.savefig ("latency.pdf")
+    plt.close()
     
 def main () :
     # Parse cmd line params

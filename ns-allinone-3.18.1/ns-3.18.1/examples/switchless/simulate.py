@@ -36,7 +36,7 @@ def getMN(numnodes):
 def parseStandardVariables(argdict):
 	args = ""
 	if argdict["topo"] == "tree":
-		machineperrack = 8 # might want to parameterize these
+		machineperrack = 2 # might want to parameterize these
 		fanout = 2
 		args += " --tp=" + `TREE`
 		args += " --t1=" + `machineperrack`
@@ -96,21 +96,30 @@ if __name__ == '__main__':
 	except:
 		workload = "test"
 
-	if workload == "all-to-all":
-		numsenders = [1]
-		numreceivers = [1]
+	# numberofnodes = [16]
+	# numberofnodes = [64]
+	numberofnodes = [256]
+	topologies = ["mesh", "cube", "tree"]
+	intervaltypes = ["fixed"]
+	synctypes = [1] #synchronized or not
+	# intervaltypes = ["random"]
+	# synctypes = [0] #synchronized or not
+	packetsizes = [256]
+	intervals = [1] # in us 
+	# intervals = [10] # in us 
+	intervalranges = [[0,1]] # in us, used in sporadic interval
+	# intervalranges = [[1,10]] # in us, used in sporadic interval
+	numiterations = [4]
+	neighborlist = [4]
+	# numiterations = [16]
+	numsenders = [1]
+	numreceivers = [1]
 
-	if workload == "test":
-		numberofnodes = [16]
-		topologies = ["mesh", "cube"]
-		intervaltypes = ["fixed"]
-		synctypes = [0] #synchronized or not
-		packetsizes = [256]
-		intervals = [20] # in us 
-		intervalranges = [[0,1]] # in us, used in sporadic interval
-		numiterations = [3]
-		numsenders = [1]
-		numreceivers = [1]
+	namesuffix = `numberofnodes[0]` + "_neighbor"
+
+	# if workload == "all-to-all":
+	# 	numsenders = [1]
+	# 	numreceivers = [1]
 
 	if workload == "rnnm":
 		numreceivers = neighborlist
@@ -189,8 +198,10 @@ if __name__ == '__main__':
 												args += " --ncount=" + `nNode`
 												logfname = "log_rnnm_" + `nNode` + "_" + `nsender` + "_" + `nneighbor`
 
-											logfname += "_" + topo + "_" + intervaltype + "_" + intervallog + "_" + `synctype` \
-											 			 + "_" + `packetsize` + "_" + `numiteration`
+											# logfname += "_" + topo + "_" + intervaltype + "_" + intervallog + "_" + `synctype` \
+											#  			 + "_" + `packetsize` + "_" + `numiteration`
+
+											logfname = topo
 											logfname += ".log"
 
 											command = './waf --run "main-test' + args + ' --debug=1"'
@@ -227,6 +238,9 @@ if __name__ == '__main__':
 	plot_delay.plotDelay(parsedfiles)	
 	import plot_latency
 	plot_latency.plotLatency(parsedfiles)
+
+	os.system("mv delay.pdf delay" + "_" + `numberofnodes[0]` + "_" + namesuffix + "pdf")
+	os.system("mv latency.pdf latency" + "_" + `numberofnodes[0]` + "_" + namesuffix + "pdf")
 
 
 

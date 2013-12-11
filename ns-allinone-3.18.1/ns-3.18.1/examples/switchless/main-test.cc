@@ -137,7 +137,7 @@ main (int argc, char * argv[])
 
 
     Config::SetDefault ("ns3::DropTailQueue::Mode", StringValue ("QUEUE_MODE_PACKETS"));
-    Config::SetDefault ("ns3::DropTailQueue::MaxPackets", UintegerValue (500));
+    Config::SetDefault ("ns3::DropTailQueue::MaxPackets", UintegerValue (20000));
     // common variables
     PointToPointHelper pointToPoint;
 
