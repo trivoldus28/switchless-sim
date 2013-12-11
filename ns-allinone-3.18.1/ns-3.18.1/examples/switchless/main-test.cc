@@ -314,17 +314,17 @@ main (int argc, char * argv[])
                     if (distance == 0) continue;
                     if (distance <= maxHammingDistance)
                         recvCoordSet.insert(flatCoord);
-                    unsigned maxCapacity = (4*pow(maxHammingDistance,n_cube-1)) + 2*(n_cube-2);
-                    if (recvCoordSet.size() >= maxCapacity){
-                        maxHammingDistance++;
-                        failSafeCounter = 0;
-                    }
+                    // unsigned maxCapacity = (4*pow(maxHammingDistance,n_cube-1)) + 2*(n_cube-2);
+                    // if (recvCoordSet.size() >= maxCapacity){
+                    //     maxHammingDistance++;
+                    //     failSafeCounter = 0;
+                    // }
                     // std::cout << "D " << distance << std::endl;
                     // std::cout << "H " << maxHammingDistance << std::endl;
                     // std::cout << "S " << recvCoordSet.size() << std::endl;
                     // std::cout << "M " << maxCapacity << std::endl;
                     failSafeCounter++;
-                    if (failSafeCounter > 10000){
+                    if (failSafeCounter > 100000){
                         maxHammingDistance++;
                         failSafeCounter = 0;
                     }
