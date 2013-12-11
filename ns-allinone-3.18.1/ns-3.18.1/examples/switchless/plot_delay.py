@@ -52,37 +52,15 @@ def main () :
                 else :
                     inSizeDelayBlock = False
  
-    # Calculate the max and mean
-    maxDelays = []
-    means = []
+    maxDelay = 0.0
     for i in range (0, len (delayValues)) :
-        sum = 0
-        maxDelay = 0.0
         for delayValue in delayValues[i] :
-            sum += delayValue
             if delayValue > maxDelay :
                 maxDelay = delayValue
-        means.append (sum / len (delayValues[i]))
-        maxDelays.append (maxDelay)
-
-    # Calculate standard deviations
-    stdDevs = []
-    for i in range (0, len (delayValues)) :
-        differenceSumsSquared = 0
-        for delayValue in delayValues[i] :
-            difference = delatValue = means[i]
-            differenceSumsSquared += (delayValue * delayValue)
-        stdDevs.append (math.sqrt(differenceSumsSquared / len (delayValues[i])))
 
     colors = cm.rainbow ( np.linspace (0, 1, len (delayValues)))
-    for i in range (0, len (delayValues)) : 
-        n, bins, patches = plt.hist (delayValues[i], maxDelays[i]/100, color=colors[i], histtype="step")
-        #y = mlab.normpdf(bins, means[i], stdDevs[i])
-        #plt.plot(bins, y, color=colors[i])
- 
-    leg = plt.legend (resultFilenames)
-    #for l in leg.get_lines() :
-    #    l.set_alpha(0.25)
+    plt.hist(delayValues, 20, color=colors, label=resultFilenames)
+    plt.legend()
     plt.xlabel ("Packet Delay (ns)")
     plt.ylabel ("Occurrencces")
     plt.savefig ("delay.pdf")
