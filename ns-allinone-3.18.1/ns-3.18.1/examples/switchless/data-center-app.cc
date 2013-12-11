@@ -122,6 +122,9 @@ DataCenterApp::StartApplication (void)
 
     // Setup socket for receiving
     m_rxSocket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
+    m_rxSocket->SetAttribute ("SndBufSize", UintegerValue(1048576));
+    m_rxSocket->SetAttribute ("RcvBufSize", UintegerValue(1048576));
+    m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(1048576));
     Address local (InetSocketAddress (Ipv4Address::GetAny (), PORT));
     m_rxSocket->Bind (local);
     m_rxSocket->Listen ();
@@ -138,6 +141,9 @@ DataCenterApp::StartApplication (void)
         for (uint32_t i = 0; i < m_sendParams.m_nodes.size(); i++)
         {
             Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
+            socket->SetAttribute ("SndBufSize", UintegerValue(1048576));
+            socket->SetAttribute ("RcvBufSize", UintegerValue(1048576));
+            socket->SetAttribute ("SegmentSize", UintegerValue(1048576));
             Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[i], PORT));
             socket->Bind ();
             socket->Connect (nodeAddress);
@@ -277,6 +283,9 @@ DataCenterApp::HandleConnectionRequest (Ptr<Socket> socket, const Address& from)
                  "    Source: " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << "\n" <<
                  "    Destination: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
                  "    Time: " << Simulator::Now());
+    socket->SetAttribute ("SndBufSize", UintegerValue(1048576));
+    socket->SetAttribute ("RcvBufSize", UintegerValue(1048576));
+    //socket->SetAttribute ("SegmentSize", UintegerValue(1048576)); Can't do this
     // Allow the connection
     return true;
 }
@@ -287,6 +296,9 @@ DataCenterApp::HandleAccept (Ptr<Socket> socket, const Address& from)
     NS_LOG_FUNCTION (this << socket << from);
     // Setup receive callback
     socket->SetRecvCallback (MakeCallback (&DataCenterApp::HandleRead, this));
+    socket->SetAttribute ("SndBufSize", UintegerValue(1048576));
+    socket->SetAttribute ("RcvBufSize", UintegerValue(1048576));
+    //socket->SetAttribute ("SegmentSize", UintegerValue(1048576));  Can't do this
     // Add socket and info to map
     ReceiveInfo recvInfo;
     InitReceiveInfo (recvInfo);
