@@ -190,7 +190,7 @@ main (int argc, char * argv[])
         }
     }
     else
-        NS_ASSERT(sSenderChoice != "random");
+    NS_ASSERT(sSenderChoice != "random");
 
     std::cout << "Making application parameters\n";
     for (std::unordered_set<int>::iterator it = senderSet.begin(); it != senderSet.end(); it++){
@@ -268,8 +268,13 @@ main (int argc, char * argv[])
                         {
                             continue;
                         }
+                        if (potx >= meshNumCol || poty >=meshNumRow) 
+                        {
+                            continue;
+                        }
                         unsigned coord = poty* meshNumCol + potx;
                         receiverSet.insert(coord);
+
                     }
                     if(receiverSet.size() == 2*mindistance*(mindistance+1))
                     {
