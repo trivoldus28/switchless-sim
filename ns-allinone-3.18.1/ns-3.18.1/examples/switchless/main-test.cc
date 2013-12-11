@@ -38,7 +38,8 @@ int
 main (int argc, char * argv[])
 {
 
-    LogComponentEnable ("DataCenterApp", LOG_DEBUG);
+    LogComponentEnable ("DataCenterApp", LOG_LOGIC);
+    LogComponentEnable("TcpNewReno", LOG_LOGIC);
     unsigned nRackSize = 0;
     unsigned nTreeFanout = 0;
     bool bTorus = true; // not parsed
