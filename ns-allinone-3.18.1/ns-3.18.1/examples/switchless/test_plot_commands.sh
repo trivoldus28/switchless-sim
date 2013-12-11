@@ -17,3 +17,7 @@
 # Plot latency
 ./plot_latency.py test_mesh.parsed test_tree.parsed test_cube.parsed
 mv latency.pdf test_latency.pdf
+
+# Plot delay
+./plot_delay.py test_mesh.parsed test_tree.parsed test_cube.parsed
+mv delay.pdf test_delay.pdf
