@@ -220,8 +220,10 @@ if __name__ == '__main__':
 		f = open(parsedf,'w')
 		f.write(parseout.getvalue())
 		parsedfiles.append(parsedf)
+		f.close()
 
 	import plot_delay
+	# print(parsedfiles)
 	plot_delay.plotDelay(parsedfiles)	
 	import plot_latency
 	plot_latency.plotLatency(parsedfiles)
