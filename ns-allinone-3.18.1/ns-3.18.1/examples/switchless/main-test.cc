@@ -38,8 +38,7 @@ int
 main (int argc, char * argv[])
 {
 
-    LogComponentEnable ("DataCenterApp", LOG_LOGIC);
-    LogComponentEnable("TcpNewReno", LOG_LOGIC);
+    LogComponentEnable ("DataCenterApp", LOG_DEBUG);
     unsigned nRackSize = 0;
     unsigned nTreeFanout = 0;
     bool bTorus = true; // not parsed
@@ -137,9 +136,11 @@ main (int argc, char * argv[])
     }
 
 
-
+    Config::SetDefault ("ns3::DropTailQueue::Mode", StringValue ("QUEUE_MODE_PACKETS"));
+    Config::SetDefault ("ns3::DropTailQueue::MaxPackets", UintegerValue (500));
     // common variables
     PointToPointHelper pointToPoint;
+
 
     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("10Gbps"));
     pointToPoint.SetChannelAttribute ("Delay", StringValue ("100ns"));
