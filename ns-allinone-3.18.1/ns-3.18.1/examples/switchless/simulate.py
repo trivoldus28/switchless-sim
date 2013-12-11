@@ -82,12 +82,13 @@ if __name__ == '__main__':
 	synctypes = [1,0] #synchronized or not
 	numsenders = [.2,.4,.6,.8]
 	numreceivers = [.2,.4,.6,.8] # percentage for random n to random/neighbor m
+	neighborlist = [1,3,5,7,9,11,13,15]
 
 	#minor properties
 	numiterations = [1,2,3]
-	intervals = [5, 10, 20, 40, 80] # in us 
-	intervalranges = [[5,20],[10,30]] # in us, used in sporadic interval
-	packetsizes = [128,256,384]
+	intervals = [1, 5, 10, 20, 40, 80] # in us 
+	intervalranges = [[1,5],[10,50]] # in us, used in sporadic interval
+	packetsizes = [256,512]
 
 	# OVERRIDE PARAMS HERE
 	try:
@@ -105,19 +106,14 @@ if __name__ == '__main__':
 		intervaltypes = ["fixed"]
 		synctypes = [0] #synchronized or not
 		packetsizes = [256]
-<<<<<<< HEAD
 		intervals = [20] # in us 
 		intervalranges = [[0,1]] # in us, used in sporadic interval
-=======
-		intervals = [20000] # in ns 
-		intervalranges = [[10000,100000]] # in ns, used in sporadic interval
->>>>>>> 475ef1b8bc7969c7f9cbcf2cb6c715352edc6ba4
 		numiterations = [3]
 		numsenders = [1]
 		numreceivers = [1]
 
 	if workload == "rnnm":
-		numreceivers = [1,2,4,8,16]
+		numreceivers = neighborlist
 
 	commands = []
 	logfnames = []
@@ -165,7 +161,7 @@ if __name__ == '__main__':
 												intervallog = `interval[0]` + "_" + `interval[1][0]` + "_" + `interval[1][1]`
 											except:
 												try:
-													intervallog = `interval[0]` + "_" + `interval[1][0]`
+													intervallog = `interval[0]` + "_" + `interval[1]`
 												except:
 													intervallog = `interval`
 
@@ -173,8 +169,7 @@ if __name__ == '__main__':
 												args += " --ncount=" + `nNode`
 												args += " --scount=" + `nNode`
 												args += " --rcount=" + `nNode-1`
-												logfname = "log_alltoall_" + `nNode` + "_" + topo + "_" + intervaltype + "_" \
-													 + intervallog + "_" + `synctype` + "_" + `packetsize`
+												logfname = "log_alltoall_" + `nNode`
 											
 											if (workload == "rnrm"):
 												# random n, random m
@@ -183,8 +178,7 @@ if __name__ == '__main__':
 												args += " --scount=" + `nsender`
 												args += " --rcount=" + `nreceiver`
 												args += " --ncount=" + `nNode`
-												logfname = "log_rnrm_" + `nNode` + "_" + `nsender` + "_" + `nreceiver` + "_" + topo \
-														 + intervaltype + "_" + intervallog + "_" + `synctype` + "_" + `packetsize`
+												logfname = "log_rnrm_" + `nNode` + "_" + `nsender` + "_" + `nreceiver`
 
 											if workload == "rnnm":
 												# random n, neighbor m
@@ -193,25 +187,25 @@ if __name__ == '__main__':
 												args += " --scount=" + `nsender`
 												args += " --neighborcount=" + `nneighbor`
 												args += " --ncount=" + `nNode`
-												logfname = "log_rnnm_" + `nNode` + "_" + `nsender` + "_" + `nneighbor` + "_" + topo + "_" \
-														 + intervaltype + "_" + intervallog + "_" + `synctype` + "_" + `packetsize`
+												logfname = "log_rnnm_" + `nNode` + "_" + `nsender` + "_" + `nneighbor`
 
-											command = './waf --run "main-test' + args + '"'
+											logfname += "_" + topo + "_" + intervaltype + "_" + intervallog + "_" + `synctype` \
+											 			 + "_" + `packetsize` + "_" + `numiteration`
+											logfname += ".log"
+
+											command = './waf --run "main-test' + args + ' --debug=1"'
 											commands.append(command)
 											logfnames.append(logfname)
-											print(command)
+											# print(command)
 
 	writetofile = False
 	writetofile = True
 	for i,command in enumerate(commands):
 		if writetofile:
-			command += " &> " + logfnames[i]
+			command += " 2> " + logfnames[i]
 		print(command)
-<<<<<<< HEAD
-		#os.system(command) # uncomment this line to execute the command)
-=======
-		# os.system(command) # uncomment this line to execute the command)
->>>>>>> 475ef1b8bc7969c7f9cbcf2cb6c715352edc6ba4
+		# print(logfnames[i])
+		os.system(command) # uncomment this line to execute the command)
 
 
 
