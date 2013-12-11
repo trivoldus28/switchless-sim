@@ -122,9 +122,10 @@ DataCenterApp::StartApplication (void)
 
     // Setup socket for receiving
     m_rxSocket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
-    m_rxSocket->SetAttribute ("SndBufSize", UintegerValue(1048576));
-    m_rxSocket->SetAttribute ("RcvBufSize", UintegerValue(1048576));
-    m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(1048576));
+   // m_rxSocket->SetAttribute ("SndBufSize", UintegerValue(16384));
+    //m_rxSocket->SetAttribute ("RcvBufSize", UintegerValue(16384));
+    //m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(16384));
+    //m_rxSocket->SetAttribute ("ConnTimeout", UintegerValue(3));
     Address local (InetSocketAddress (Ipv4Address::GetAny (), PORT));
     m_rxSocket->Bind (local);
     m_rxSocket->Listen ();
@@ -141,9 +142,10 @@ DataCenterApp::StartApplication (void)
         for (uint32_t i = 0; i < m_sendParams.m_nodes.size(); i++)
         {
             Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
-            socket->SetAttribute ("SndBufSize", UintegerValue(1048576));
-            socket->SetAttribute ("RcvBufSize", UintegerValue(1048576));
-            socket->SetAttribute ("SegmentSize", UintegerValue(1048576));
+            //socket->SetAttribute ("SndBufSize", UintegerValue(16384));
+            //socket->SetAttribute ("RcvBufSize", UintegerValue(16384));
+            //socket->SetAttribute ("SegmentSize", UintegerValue(16384));
+            //socket->SetAttribute ("ConnTimeout", UintegerValue(3));
             Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[i], PORT));
             socket->Bind ();
             socket->Connect (nodeAddress);
