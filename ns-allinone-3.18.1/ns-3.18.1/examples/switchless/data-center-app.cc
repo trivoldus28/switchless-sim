@@ -42,11 +42,11 @@ DataCenterApp::DataCenterApp ()
     m_sendParams.m_receivers = RECEIVERS_INVALID;
     m_sendParams.m_nReceivers = 0;
     m_sendParams.m_sendPattern = SEND_PATTERN_INVALID;
-    m_sendParams.m_sendInterval = MilliSeconds (100.);
-    m_sendParams.m_maxSendInterval = MilliSeconds (500.0);
-    m_sendParams.m_minSendInterval = MilliSeconds (100.0);
+    m_sendParams.m_sendInterval = MilliSeconds (0.);
+    m_sendParams.m_maxSendInterval = MilliSeconds (0.0);
+    m_sendParams.m_minSendInterval = MilliSeconds (0.0);
     m_sendParams.m_packetSize = 1024;
-    m_sendParams.m_nIterations = 100;
+    m_sendParams.m_nIterations = 0;
 }
 
 DataCenterApp::~DataCenterApp ()
