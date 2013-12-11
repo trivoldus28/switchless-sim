@@ -212,36 +212,33 @@ main (int argc, char * argv[])
             params.m_receivers = DataCenterApp::RANDOM_SUBSET;
         }
         else{
+             std::unordered_set<int> receiverSet;
              if (topologytype == TREE){
                 int nodeid = *it;
+                float logval = log2(nNeighbor); // 
+                int logv = ceil(logval); //
+                int rem1 = nodeid % (int)(pow(2,(logv-1))); //
+                int rem2 = nodeid % (int)(pow(2,(logv))); //
+                int base1 = nodeid- rem1;
+                for (int i=0; i< pow(2,(logv-1)); i++)
                 {
-                    float logval = log2(nNeighbor); // 
-                    int logv = ceil(logval); //
-                    int rem1 = nodeid % (int)(pow(2,(logv-1))); //
-                    int rem2 = nodeid % (int)(pow(2,(logv))); //
-                    int base1 = nodeid- rem1;
-                    for (int i=0; i< pow(2,(logv-1)); i++)
-                    {
-                        Ipv4Address t = topology->GetIpv4Address(base1 + i);
-                        receiverNodeList.push_back(t);
-                    }
-                    int remainings = nNeighbor-pow(2,(logv-1));
-                    int base2;
-                    if(rem2> pow(2,(logv-1)))
-                    {
-                        base2 = nodeid - rem2;
-                    }
-                    else
-                    {
-                        base2 = nodeid - rem2 + pow(2,(logv-1));
-                    }
-                    while (remainings !=0)
-                    {
-                        int randid = rand() % (int)(pow(2,(logv-1)));
-                        Ipv4Address t = topology->GetIpv4Address(base2+ randid);
-                        receiverNodeList.push_back(t);
-                        remainings --;
-                    }
+                    receiverSet.insert(base1+i);
+                }
+                int remainings = nNeighbor-pow(2,(logv-1));
+                int base2;
+                if(rem2> pow(2,(logv-1)))
+                {
+                    base2 = nodeid - rem2;
+                }
+                else
+                {
+                    base2 = nodeid - rem2 + pow(2,(logv-1));
+                }
+                while (remainings !=0)
+                {
+                    int randid = rand() % (int)(pow(2,(logv-1)));
+                    receiverSet.insert(base2+randid);
+                    remainings --;
                 }
              }
              else if(topologytype == MESH){
@@ -250,9 +247,9 @@ main (int argc, char * argv[])
                 // centered around this particular send node (*it)
                 unsigned senderY = *it / meshNumCol;
                 unsigned senderX = *it % meshNumCol;
-                std::unordered_set<unsigned> recvCoordSet;
                 unsigned mindistance =1;
-                while (receiverNodeList .size() < nNeighbor){
+                int failSafeCounter = 0;
+                while (receiverSet .size() < nNeighbor){
                     int randx = rand() % (mindistance*2+1);
                     int randy = rand() % (mindistance*2+1);
                     randx = randx-mindistance;
@@ -262,16 +259,25 @@ main (int argc, char * argv[])
                     {
                         int poty = randy + senderY;
                         int potx = randx + senderX;
-                         NS_ASSERT(bTorus == true);
+                        NS_ASSERT(bTorus == true);
                         if (potx < 0)
                             potx += meshNumCol;
                         if (poty < 0)
                             poty += meshNumRow;
+                        if (potx ==0 && poty == 0)
+                        {
+                            continue;
+                        }
                         unsigned coord = poty* meshNumCol + potx;
-                        Ipv4Address t = topology->GetIpv4Address(coord);
-                        receiverNodeList.push_back(t);
+                        std::cout << coord << std::endl;
+                        receiverSet.insert(coord);
                     }
-                    if(receiverNodeList.size() == 2*mindistance*(mindistance+1))
+                    if(receiverSet.size() == 2*mindistance*(mindistance+1))
+                    {
+                        mindistance++;
+                    }
+                    failSafeCounter++;
+                    if(failSafeCounter==10000)
                     {
                         mindistance++;
                     }
@@ -331,9 +337,14 @@ main (int argc, char * argv[])
                         adjustedCoord %= m_cube;
                         adjustedFlatCoord += (pow(m_cube, i) * adjustedCoord);
                     }
-                    Ipv4Address t = topology->GetIpv4Address(adjustedFlatCoord);
-                    receiverNodeList.push_back(t);
+                    receiverSet.insert(adjustedFlatCoord);
                 }
+             }
+
+             for (auto it = receiverSet.begin(); it != receiverSet.end(); it++)
+             {
+                Ipv4Address t = topology->GetIpv4Address(*it);
+                receiverNodeList.push_back(t);
              }
             params.m_nReceivers = nNeighbor;
             params.m_receivers = DataCenterApp::ALL_IN_LIST;

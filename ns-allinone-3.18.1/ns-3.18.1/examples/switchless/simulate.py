@@ -71,7 +71,7 @@ def parseStandardVariables(argdict):
 if __name__ == '__main__':
 
 	#major properties, adjust them here
-	numberofnodes = [16,32,64,128,256,512,1024]
+	numberofnodes = [16,32,64,128,256,512]
 	topologies = ["tree", "mesh", "cube"]
 	intervaltypes = ["fixed", "random"]
 	synctypes = [1,0] #synchronized or not
@@ -80,9 +80,9 @@ if __name__ == '__main__':
 
 	#minor properties
 	numiterations = [1,2,3]
-	intervals = [5000,10000,20000,40000,80000] # in ns 
-	intervalranges = [[5000,20000],[10000,30000]] # in ns, used in sporadic interval
-	packetsizes = [512,1024]
+	intervals = [5, 10, 20, 40, 80] # in us 
+	intervalranges = [[5,20],[10,30]] # in us, used in sporadic interval
+	packetsizes = [128,256,384]
 
 	# OVERRIDE PARAMS HERE
 	try:
@@ -100,8 +100,8 @@ if __name__ == '__main__':
 		intervaltypes = ["random"]
 		synctypes = [0] #synchronized or not
 		packetsizes = [256]
-		intervals = [20] # in ns 
-		intervalranges = [[0,1]] # in ns, used in sporadic interval
+		intervals = [20] # in us 
+		intervalranges = [[0,1]] # in us, used in sporadic interval
 		numiterations = [3]
 		numsenders = [1]
 		numreceivers = [1]
@@ -184,7 +184,7 @@ if __name__ == '__main__':
 											command = './waf --run "main-test' + args + '"'
 											commands.append(command)
 											logfnames.append(logfname)
-											# print(command
+											print(command)
 
 	writetofile = False
 	# writetofile = True
@@ -192,7 +192,7 @@ if __name__ == '__main__':
 		if writetofile:
 			command += " &> " + logfnames[i]
 		print(command)
-		os.system(command) # uncomment this line to execute the command)
+		#os.system(command) # uncomment this line to execute the command)
 
 
 
