@@ -51,6 +51,7 @@ PointToPointFattreeHelper::recursiveMakeTree(Node * root, unsigned group_size, u
     for (unsigned i = 0; i < router_fanout; i++){
       Node * router = makeOneNode(m_routers);
       uint64_t fat_datarate = base_datarate * group_size * pow(router_fanout,tree_depth - 1);
+      //std::cout << "Data Rate: " << fat_datarate << std::endl;
       p2p_host_to_router.SetDeviceAttribute("DataRate", DataRateValue(fat_datarate));
       m_router_devices.Add(p2p_host_to_router.Install(root, router));
       recursiveMakeTree(router, group_size, router_fanout, tree_depth-1, base_datarate, p2p_host_to_router);
