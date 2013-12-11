@@ -95,13 +95,13 @@ if __name__ == '__main__':
 		numreceivers = [1]
 
 	if workload == "test":
-		numberofnodes = [32]
-		topologies = ["mesh"]
-		intervaltypes = ["fixed"]
-		synctypes = [1] #synchronized or not
-		packetsizes = [512]
+		numberofnodes = [16]
+		topologies = ["cube"]
+		intervaltypes = ["random"]
+		synctypes = [0] #synchronized or not
+		packetsizes = [256]
 		intervals = [20] # in ns 
-		intervalranges = [[5,80]] # in ns, used in sporadic interval
+		intervalranges = [[0,1]] # in ns, used in sporadic interval
 		numiterations = [3]
 		numsenders = [1]
 		numreceivers = [1]
@@ -157,7 +157,7 @@ if __name__ == '__main__':
 											if (workload == "all-to-all" or workload == "test"):
 												args += " --ncount=" + `nNode`
 												args += " --scount=" + `nNode`
-												args += " --rcount=" + `nNode`
+												args += " --rcount=" + `nNode-1`
 												logfname = "log_alltoall_" + `nNode` + "_" + topo + "_" + intervaltype + "_" \
 													 + intervallog + "_" + `synctype` + "_" + `packetsize`
 											
