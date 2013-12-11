@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 import sys
-#import matplotlib
-#matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.mlab as mlab
@@ -80,10 +80,12 @@ def main () :
         y = mlab.normpdf(bins, means[i], stdDevs[i])
         plt.plot(bins, y, color=colors[i])
  
-    plt.legend (resultFilenames)
+    leg = plt.legend (resultFilenames)
+    for l in leg.get_lines() :
+        l.set_alpha(0.25)
     plt.xlabel ("Packet Delay (ns)")
     plt.ylabel ("Occurrencces")
-    plt.show()
+    plt.savefig ("delay.pdf")
 
 
 if __name__ == "__main__" :
