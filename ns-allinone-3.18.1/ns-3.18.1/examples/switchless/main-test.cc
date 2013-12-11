@@ -181,16 +181,23 @@ main (int argc, char * argv[])
     // Random Seed 
     srand(100);
     std::unordered_set<int> senderSet;
+    std::unordered_set<int> nonsenderSet;
+    for (int i=0; i<nNodes; i++)
+    {
+        nonsenderSet.insert(i);
+    }
     if (sSenderChoice == "random"){
         unsigned randid = 0;
         while (senderSet.size() < nSender){
             randid = rand();
             randid %= nNodes;
             senderSet.insert(randid);
+            nonsenderSet.erase(randid);
         }
+
     }
     else
-    NS_ASSERT(sSenderChoice != "random");
+        NS_ASSERT(sSenderChoice != "random");
 
     std::cout << "Making application parameters\n";
     for (std::unordered_set<int>::iterator it = senderSet.begin(); it != senderSet.end(); it++){
@@ -274,6 +281,7 @@ main (int argc, char * argv[])
                         }
                         unsigned coord = poty* meshNumCol + potx;
                         receiverSet.insert(coord);
+
 
                     }
                     if(receiverSet.size() == 2*mindistance*(mindistance+1))
@@ -388,6 +396,16 @@ main (int argc, char * argv[])
         app->SetStartTime (Seconds(0.));
         app->SetStopTime (Seconds(100000.));
     }
+    for (std::unordered_set<int>::iterator it = nonsenderSet.begin(); it != nonsenderSet.end(); it++){
+        DataCenterApp::SendParams params;
+        Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
+        app->Setup(params, *it, DEBUG); 
+        topology->GetNode(*it)->AddApplication(app);
+        app->SetStartTime (Seconds(0.));
+        app->SetStopTime (Seconds(100000.));
+    }
+
+
 
     std::cout << "Populating routing table\n";
     Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
