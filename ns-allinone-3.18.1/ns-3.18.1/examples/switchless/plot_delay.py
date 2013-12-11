@@ -76,13 +76,13 @@ def main () :
 
     colors = cm.rainbow ( np.linspace (0, 1, len (delayValues)))
     for i in range (0, len (delayValues)) : 
-        n, bins, patches = plt.hist (delayValues[i], maxDelays[i]/100, color=colors[i], alpha=0.25)
-        y = mlab.normpdf(bins, means[i], stdDevs[i])
-        plt.plot(bins, y, color=colors[i])
+        n, bins, patches = plt.hist (delayValues[i], maxDelays[i]/100, color=colors[i], histtype="step")
+        #y = mlab.normpdf(bins, means[i], stdDevs[i])
+        #plt.plot(bins, y, color=colors[i])
  
     leg = plt.legend (resultFilenames)
-    for l in leg.get_lines() :
-        l.set_alpha(0.25)
+    #for l in leg.get_lines() :
+    #    l.set_alpha(0.25)
     plt.xlabel ("Packet Delay (ns)")
     plt.ylabel ("Occurrencces")
     plt.savefig ("delay.pdf")
