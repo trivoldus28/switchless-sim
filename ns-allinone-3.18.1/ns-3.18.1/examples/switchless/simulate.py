@@ -76,7 +76,7 @@ def parseStandardVariables(argdict):
 if __name__ == '__main__':
 
 	#major properties, adjust them here
-	numberofnodes = [16,32,64,128,256,512]
+	numberofnodes = [16,64,256,512]
 	topologies = ["tree", "mesh", "cube"]
 	intervaltypes = ["fixed", "random"]
 	synctypes = [1,0] #synchronized or not
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
 	#minor properties
 	numiterations = [1,2,3]
-	intervals = [1, 5, 10, 20, 40, 80] # in us 
+	intervals = [1, 5, 10, 20] # in us 
 	intervalranges = [[1,5],[10,50]] # in us, used in sporadic interval
 	packetsizes = [256,512]
 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
 
 	if workload == "test":
 		numberofnodes = [16]
-		topologies = ["cube"]
+		topologies = ["mesh", "cube"]
 		intervaltypes = ["fixed"]
 		synctypes = [0] #synchronized or not
 		packetsizes = [256]
@@ -198,14 +198,34 @@ if __name__ == '__main__':
 											logfnames.append(logfname)
 											# print(command)
 
+	import parse_output
+	from cStringIO import StringIO
+
+	parsedfiles = []
+
 	writetofile = False
 	writetofile = True
+
 	for i,command in enumerate(commands):
 		if writetofile:
 			command += " 2> " + logfnames[i]
 		print(command)
 		# print(logfnames[i])
 		os.system(command) # uncomment this line to execute the command)
+		sys.stdout = parseout = StringIO()
+		parse_output.parseOutput(logfnames[i])
+		sys.stdout = sys.__stdout__
+		print(parseout.getvalue())
+		parsedf = logfnames[i] + ".parsed"
+		f = open(parsedf,'w')
+		f.write(parseout.getvalue())
+		parsedfiles.append(parsedf)
+
+	import plot_delay
+	plot_delay.plotDelay(parsedfiles)	
+	import plot_latency
+	plot_latency.plotLatency(parsedfiles)
+
 
 
 

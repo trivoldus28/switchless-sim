@@ -16,11 +16,8 @@ def parseCmdArgs () :
         sys.exit (1)
     else :
         return sys.argv[1:]
-    
-def main () :
-    # Parse cmd line params
-    resultFilenames = parseCmdArgs()
-    
+
+def plotLatency(resultFilenames):
     # Latency values from each file
     latencies = []
 
@@ -45,6 +42,11 @@ def main () :
     plt.xticks (x + 0.4, resultFilenames)
     plt.ylabel ("Latency (ns)")
     plt.savefig ("latency.pdf")
+    
+def main () :
+    # Parse cmd line params
+    resultFilenames = parseCmdArgs()
+    plotLatency(resultFilenames)
 
 if __name__ == "__main__" :
     main()

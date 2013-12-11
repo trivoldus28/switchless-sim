@@ -19,10 +19,7 @@ def parseCmdArgs () :
     else :
         return sys.argv[1:]
     
-def main () :
-    # Parse cmd line params
-    resultFilenames = parseCmdArgs()
-    
+def plotDelay(resultFilenames):
     # Size-Delay values from each file
     sizeValues = []
     delayValues = []
@@ -62,6 +59,12 @@ def main () :
     plt.xlabel ("Packet Size (bytes)")
     plt.ylabel ("Packet Delay (ns) (Log Scale)")
     plt.savefig ("delay.pdf")
+
+def main () :
+    # Parse cmd line params
+    resultFilenames = parseCmdArgs()
+    plotDelay(resultFilenames)
+    
     
 
 if __name__ == "__main__" :

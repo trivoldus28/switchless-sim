@@ -13,10 +13,7 @@ def parseCmdArgs () :
     else :
         return sys.argv[1]
 
-def main () :
-    # Parse cmd line params
-    outputFilename = parseCmdArgs()
-    
+def parseOutput(outputFilename):
     # Open output file
     outputFile = open(outputFilename, 'r')
 
@@ -51,6 +48,12 @@ def main () :
     print "(Packet Size, Delay) Values:"
     for sizeDelayTuple in sizeDelayTuples :
         print str(sizeDelayTuple)
+
+
+def main () :
+    # Parse cmd line params
+    outputFilename = parseCmdArgs()
+    parseOutput(outputFilename)
 
 if __name__ == "__main__":
     main()
