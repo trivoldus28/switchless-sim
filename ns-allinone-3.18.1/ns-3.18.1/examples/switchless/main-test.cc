@@ -269,7 +269,6 @@ main (int argc, char * argv[])
                             continue;
                         }
                         unsigned coord = poty* meshNumCol + potx;
-                        std::cout << coord << std::endl;
                         receiverSet.insert(coord);
                     }
                     if(receiverSet.size() == 2*mindistance*(mindistance+1))
