@@ -5,8 +5,10 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import matplotlib.mlab as mlab
 import numpy as np
 import re
+import math
 
 def usage () :
     print "Usage: " + sys.argv[0] + " [list of files from parse_output.py]"
@@ -46,18 +48,18 @@ def plotDelay(resultFilenames):
                     delayValues[index].append (delay)
                 else :
                     inSizeDelayBlock = False
-                
-    
-    # Make scatter plot
-    colors = cm.rainbow ( np.linspace (0, 1, len (sizeValues)))
-    for i in range(0, len (sizeValues)) :
-        plt.scatter (sizeValues[i], delayValues[i], color=colors[i])
-    #plt.yscale ('log')
-    plt.ylim(ymin=0)
-    plt.xlim(xmin=-10)
-    plt.legend (resultFilenames)
-    plt.xlabel ("Packet Size (bytes)")
-    plt.ylabel ("Packet Delay (ns) (Log Scale)")
+ 
+    maxDelay = 0.0
+    for i in range (0, len (delayValues)) :
+        for delayValue in delayValues[i] :
+            if delayValue > maxDelay :
+                maxDelay = delayValue
+
+    colors = cm.rainbow ( np.linspace (0, 1, len (delayValues)))
+    plt.hist(delayValues, 20, color=colors, label=resultFilenames)
+    plt.legend()
+    plt.xlabel ("Packet Delay (ns)")
+    plt.ylabel ("Occurrences")
     plt.savefig ("delay.pdf")
 
 def main () :
@@ -65,7 +67,5 @@ def main () :
     resultFilenames = parseCmdArgs()
     plotDelay(resultFilenames)
     
-    
-
 if __name__ == "__main__" :
     main()

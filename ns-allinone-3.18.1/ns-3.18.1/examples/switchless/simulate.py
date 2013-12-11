@@ -215,7 +215,7 @@ if __name__ == '__main__':
 		sys.stdout = parseout = StringIO()
 		parse_output.parseOutput(logfnames[i])
 		sys.stdout = sys.__stdout__
-		print(parseout.getvalue())
+		# print(parseout.getvalue()) # UNCOMMENT TO SEE THE PARSED OUTPUT
 		parsedf = logfnames[i] + ".parsed"
 		f = open(parsedf,'w')
 		f.write(parseout.getvalue())
