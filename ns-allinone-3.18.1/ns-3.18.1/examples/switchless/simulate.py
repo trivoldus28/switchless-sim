@@ -54,7 +54,13 @@ def parseStandardVariables(argdict):
 
 	if argdict["intervaltype"] == "fixed":
 		args += " --itype=2"
-		args += " --isize=" + `argdict["interval"]`
+		if argdict["synctype"] == 1:
+			args += " --isize=" + `argdict["interval"]`
+		else:
+			args += " --isize=" + `argdict["interval"][0]`
+			args += " --minint=" + `argdict["interval"][1][0]`
+			args += " --maxint=" + `argdict["interval"][1][1]`
+
 	elif argdict["intervaltype"] == "random":
 		args += " --itype=1"
 		args += " --minint=" + `argdict["interval"][0]`
@@ -62,7 +68,6 @@ def parseStandardVariables(argdict):
 
 	args += " --iter=" + `argdict["numiteration"]`
 	args += " --sync=" + `argdict["synctype"]`
-	# args += " --p"=#MISSING ARGUMENT FOR NUMBER OF INTERVALS
 	args += " --psize=" + `argdict["packetsize"]`
 
 	return args
@@ -97,11 +102,16 @@ if __name__ == '__main__':
 	if workload == "test":
 		numberofnodes = [16]
 		topologies = ["cube"]
-		intervaltypes = ["random"]
+		intervaltypes = ["fixed"]
 		synctypes = [0] #synchronized or not
 		packetsizes = [256]
+<<<<<<< HEAD
 		intervals = [20] # in us 
 		intervalranges = [[0,1]] # in us, used in sporadic interval
+=======
+		intervals = [20000] # in ns 
+		intervalranges = [[10000,100000]] # in ns, used in sporadic interval
+>>>>>>> 475ef1b8bc7969c7f9cbcf2cb6c715352edc6ba4
 		numiterations = [3]
 		numsenders = [1]
 		numreceivers = [1]
@@ -116,12 +126,14 @@ if __name__ == '__main__':
 		for numsender in numsenders:
 			for numreceiver in numreceivers:
 				for topo in topologies:
-					for synctype in synctypes:
-						for numiteration in numiterations:
+					for numiteration in numiterations:
+						for synctype in synctypes:
 							for intervaltype in intervaltypes:
 								intervalsmux = []
-								if (intervaltype == "fixed"):
+								if (intervaltype == "fixed" and synctype == 1):
 									intervalsmux = intervals
+								elif intervaltype == "fixed" and synctype == 0:
+									intervalsmux = zip(intervals,intervalranges)
 								elif intervaltype == "random":
 									intervalsmux = intervalranges
 								else: assert(0)
@@ -150,9 +162,12 @@ if __name__ == '__main__':
 											logfname = ""
 											intervallog = ""
 											try:
-												intervallog = `interval[0]` + "_" + `interval[1]`
+												intervallog = `interval[0]` + "_" + `interval[1][0]` + "_" + `interval[1][1]`
 											except:
-												intervallog = `interval`
+												try:
+													intervallog = `interval[0]` + "_" + `interval[1][0]`
+												except:
+													intervallog = `interval`
 
 											if (workload == "all-to-all" or workload == "test"):
 												args += " --ncount=" + `nNode`
@@ -187,12 +202,16 @@ if __name__ == '__main__':
 											print(command)
 
 	writetofile = False
-	# writetofile = True
+	writetofile = True
 	for i,command in enumerate(commands):
 		if writetofile:
 			command += " &> " + logfnames[i]
 		print(command)
+<<<<<<< HEAD
 		#os.system(command) # uncomment this line to execute the command)
+=======
+		# os.system(command) # uncomment this line to execute the command)
+>>>>>>> 475ef1b8bc7969c7f9cbcf2cb6c715352edc6ba4
 
 
 

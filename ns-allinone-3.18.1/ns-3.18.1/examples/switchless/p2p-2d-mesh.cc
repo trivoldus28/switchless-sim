@@ -219,6 +219,7 @@ PointToPoint2DMeshHelper::GetIpv4Address (unsigned nodeid){
   if (row > m_nodes.size () - 1 || 
       col > m_nodes.at (row).GetN () - 1) 
     {
+      std::cout << "Requesting node "<< nodeid << ":" << row << "x" << col << std::endl;
       NS_FATAL_ERROR ("Index out of bounds in PointToPoint2DMeshHelper::GetIpv4Address.");
     }
 
