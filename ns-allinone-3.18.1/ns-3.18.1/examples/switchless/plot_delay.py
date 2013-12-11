@@ -62,7 +62,7 @@ def main () :
     plt.hist(delayValues, 20, color=colors, label=resultFilenames)
     plt.legend()
     plt.xlabel ("Packet Delay (ns)")
-    plt.ylabel ("Occurrencces")
+    plt.ylabel ("Occurrences")
     plt.savefig ("delay.pdf")
 
 
