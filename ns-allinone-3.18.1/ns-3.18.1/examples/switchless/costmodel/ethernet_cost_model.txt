@@ -1,0 +1,146 @@
+  
+  SUMMARY
+    Switchless' cost is $70 per host
+    Hierarchical cost is between $200 (cheapest) to $2000 (most expensive configuration) per host
+    Fat tree cost is between $10000 and $20000 per host, scaling from 1000 to 20000 machines (20000_linear_permachinecost.png)
+  
+  Detailed Cost Analysis
+    Assumption
+      *Hosts will use 10G ethernet, while switches can have 40G ports.
+      
+      *Connections between entities less than 15m can use copper cables, and more than 15m will need to use fiber optics. While some 10G standards allow up to 100m for copper transport, higher speed in the future will substantially shorten the allowable length of copper cabling(40G is around 15m, 100G is even less than that).
+      
+      *Copper cables are negligible in cost ($1 for 5m cable is regular).
+      
+      *Switches cost:
+        48p 10g + 4p 40g switches: $7k (Mellanox SX1012)
+          These are used as top of rack switches in hierarchy, and as "commodity" switches in fat tree.
+          Mellanox has the most competitive pricing. A ToR from Mellanox was ~$7k, from Arista it would have cost 21k or 14k (BASET version), or 12k from Brocade (VDX6740T).
+        36p 40g core: $14k (Mellanox SX1036)
+          Used as aggregation and core switches in hierarchy topo.
+          
+      *Optic cost:
+        *Optic cable cost: Usually $1 for 1m of multimode fiber
+        *Transceiver: $200 for each 10GBASE-SR (300m range) Note: a pair, one each host, is require for a connection
+        
+      *Cost related to switchless:
+        *Pin cost
+          is negligible. This is because standar RJ45 Ethernet only uses 4 pair of signals. 6 pairs requires for a cube topology needs 48 pins--substantial but not overbearing considering that a typical consumer/server CPU has ~1500 pins (LGA1567), and that a PCIE 16x requires 32 pins (and today's computer has as much as 3 PCIE 16x). Furthermore, signals can be deserialized and transmitting to the CPU through PCIE, meaning 2-4 pins per 10G lane.
+        *Power constraint
+          According to a table in "Cheap Silicon: a Myth or Reality? Picking the Right Data Plane Hardware for Software Defined Networking", a reasonable power consumption per 10G is 1W for dumb switches, 3W for programmable switches, and 3W for smart switches. 6 links would then consume from 6W to 18W of energy. Assuming that we only want to spend 50W on networking, we would only be able to support as much as 16 links.
+        *Daughterboard cost
+          Daughterboards are necessary to extend the number of Ethernet ports. We'll assume that it cost $50 (per host).
+        *Die area cost
+          We have two choices here: 1. for the CPU to be MAC address compatible or 2. to have a custom routing protocol. The first choice, MAC compatible, means that the Switchless host can be used in conjuction with today's commodity Ethernet equipments, whereas the second choice restrict Switchless' compatibility only with other Switchless hosts.
+          1. Custom
+            Essentially there is no cost with custom (eg. dimension-ordered routing) protocol.
+          2. Ethernet compatible
+            Depending on feature requirements, implementations can range from a very simple accelerator to a general purpose CPU. In this analysis we'll constraint ourselves to the area cost of the MAC address in a very simple switch accelerator.
+            Basically, for any given destination MAC, the switch must copy the packet to one of the other ports: three in a mesh, or five in a cube; with 4 bits we can encode up to 8 destinations. Each MAC address is 48 bits, making the total bit per entry 52 bits. A 16k entry table is sufficient to cover all destination in a small-medium sized data center, and that's roughly 100KB, easily fit into an SRAM structure and a fraction of the CPU's silicon estate. However, all 16k entries need to be CAMable, which is an impossible task. More efficient architecture would probably require a CPU core or two and custom software to maintain a more tractable hash-table.
+            We'll assume that the CPU has a dedicated RISC processor with 256KB of private L2 cache can switch 8 Ethernet links without loss of performance. The calculation is as follow:
+              - 1 frame is 1500 bytes or 12000 bits. This means that in a second, for a 10G link, the switch will have to handle as much as 10,000,000 / 12,000 frames, or 833 frames. For 2 links, 1666 frames, 4 3333 frames, and so on. 8 links is 6666 frames per second. A single 2GHz co-processor can afford to spend 300k cycles to process 6666 transactions per second, probably more than enough time to look up the hash table.
+              - In other words, if a CPU can look up MAC hashtable within 100k cycles, it can support 24 concurrent 10G Ethernet links.
+            Considering the cost of such a processor in today's commodity products (BeagleBone), we'll assume that the silicon cost is a few dollars. Of course, for SDN applications a more sophisticated design is needed
+            
+    SWITCHLESS
+      Summary
+        In a switchless network, we only have to worry about silicon cost as the number of ports increase (buffer, crossbar, switching logic, pin). Cable cost are negligible with regular cable costing less than $1 each, and off-chip bandwidth is also presumed to be negligible (up to ~100 pins)
+      Cost model
+        Given N as the number of hosts, and P as the number of Ethernet ports,
+          total_cost_ethernet_compatible(N,P) = N * (port_expander(P) + silicon_cost(P)), and
+          total_cost_custom(N,P) = N * (port_expander(P))
+          
+        The port expander is likely to be a fixed cost; we'll assume it to be $50 for any number of ports less than 24.
+        The silicon cost, as analyzed previously, is likely to be constant for switching up to 8 or more Ethernet ports. We'll assume $20. Intel or AMD or Tilera might charge more to enable the feature, but fundamentally the silicon cost is low.
+        Therefore, the cost equations are:
+          total_cost_ethernet_compatible(N,P) = N * (50 + 20), and
+          total_cost_custom(N,P) = N * (50)
+          
+    TRADITIONAL HIERARCHY
+      Summary
+        Is a basic hierarchy network; with 48p top of rack switches and 36p aggregating switches, a two-level one can support up to 1728 hosts, and a three-level one can do up to 32k hosts. Its main drawback is that it has a rather high oversubsciption ratio at the top level, even with replication at the aggregation and the core level.
+      Topology
+        Two-level topology has the a number of core routers, which has 36-way fan out, and each ToR router can have 48 machines. It supports up to 1728 hosts (36*48). The basic configuration has only 1 core router, and each ToR only uses one 40G uplink. To decrease oversubscription, we can use more uplinks by replicating the core router, up to 4 times. Without replicating the oversubscription ratio is 1:(40G / 10G / # of host per edge router[up to 48]).
+        Three-level topology supports a lot more hosts, but has even less overall bandwidth per host at the top level. Without replicating, the oversubscription ratio is 1:(40G / 10G / # of host per aggregate router[up to 1728]).
+      Cost model
+        Note: Replication_1 is replication at the aggregation level and will affect both agg and core switches; ranges between 1x and 4x. Repl_2 only replicates core switches; no limit.
+        H = number of host
+        
+        Between 1 - 48 nodes:
+          All the nodes will be in a single rack, connected to a top of rack switch
+            Total = 7k (1 ToR)
+          
+        Between 49 - 2304 (48*48) nodes:
+          There are three designs: low-cost, balanced, and balanced-replicated
+            The generic equation is Total = ntor * 7k + nagg * 14k + nlink * 50 + ntransceiver * 200
+          Low-cost: there will be 2 to 32 racks that can connect to a single agg switch. The links between ToR and Agg are likely to be optic (50m long).
+            ntor = (N / 48)
+            nagg: 1
+            nlink: ntor
+            ntransceiver = nlink * 2
+          Balanced: number of "racks" is equal to the number of machine per rack to minimize oversubscription (multiple "racks" can be co-located in the same physical rank)
+            ntor = root(N)
+            nagg = 1
+            nlink: root(N)
+            ntransceiver = nlink * 2
+          Balanced-replicated: like "balanced" but with the top aggregator replicated for more top-level bandwidth
+            ntor = root(N)
+            nagg = 1-4
+            nlink: root(N) * (1-4) 
+            ntransceiver = nlink * 2
+          
+        Over 2304 (up to 32k hosts):
+          To minimize oversubscription, we will only use the balanced and balanced-replicated designs.
+            The generic equation is Total = ntor * 7k + nagg * 14k + nlink50 * 50 + nlink100 * 100 + ntransceiver * 200
+          Balanced:
+            ntor = N^(2/3)
+            nagg = N^(1/3)
+            ncore = 1
+            nlink100: ncore * nagg
+            nlink50: nagg * ntor
+            ntransceiver = (nlink100 + nlink50) * 2
+          Balanced-replicated:
+            Note: there are two replication parameters. At the Agg level we can replicate up to 4 times. At the Core level we can replicate up to a few times again.
+            ntor = N^(2/3)
+            nagg = N^(1/3) * aggrepl
+            ncore = 1 * aggrepl * corerepl
+            nlink100: ncore * nagg
+            nlink50: nagg * ntor
+            ntransceiver = (nlink100 + nlink50) * 2
+        
+    FAT TREE
+      Summary
+        Fat tree's special characteristics are that it has low oversubscription ratio (1:1 in the default topo), and low hop count between any two hosts (2-6 hops). However, it has rather high switch count; the least expensive hierarchical topo is almost always less expensive.
+      Topo
+        Fat tree, as proposed in "A Scalable, Commodity Data Center Network Architecture," can be configured by a K value, called a k-ary fat tree. Basically, there are k pods (cluster), each with k switches; the switches has to have at least k outputs. There are k^2/4 hosts per pod, totals to k^3/4 hosts per topo. There are also k^2/4 top level switches, which are the same as pod switches (commodity switches).
+      Cost
+        Commodity switches: 48p 10g switches: $7k
+        Cable cost between host and pod switches (within rack): copper: negligible.
+        Cable cost between pod switches (within cluster, between racks): copper: negligible.
+          Assumption: diameter of a cluster of 24 racks max is within 15m.
+        Cable cost between pod switches and top level switches (from cluster to center): optic 100m: $100
+          Assumption: clusters are no more than 15m wide, and there are maximum 48 clusters.
+        Cable cost between top level switches: copper: neglibile
+          Note: all top level switches are in the center right next to each other.
+      Cost model
+        Note: there is no knobs to turn in the proposed fat tree model. I don't know if there are other worthwhile, configurable topo.
+        k == 4: 1 - 16 hosts
+        k == 6: up to 54
+        k == 8: up to 54
+        k == 10: up to 250
+        k == 12: up to 435
+        k == 14: up to 686
+        16:1024
+        18:1458
+        20:2000
+        22:2662
+        24:3456
+        26:4394
+        28:5488
+        30:6750
+        
+        Cost = cost of pod switches + of top level switches + cable
+          Cost of pod switches: 7k * k^2
+          Cost of top level switches: 7k * k^2 / 4
+          Cost of fiber/transceiver between b/w pod & top: ($100 + $400) * (k^2 * k^2 / 4)
+      
