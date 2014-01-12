@@ -46,18 +46,9 @@ public:
 
   ~PointToPointNcubeHelper ();
 
-  // Ptr<Node> GetNode (vector<unsigned> nodeidvector);
   Ptr<Node> GetNode (unsigned nodeid);
-
   Ipv4Address GetIpv4Address (unsigned nodeid);
-  // Ipv4Address GetIpv4Address (vector<unsigned> nodeidvector);
-
-  /**
-   * \param stack an InternetStackHelper which is used to install 
-   *              on every node in the grid
-   */
   void InstallStack (InternetStackHelper stack);
-
   void AssignIpv4Addresses (Ipv4AddressHelper ip, Ipv4AddressHelper link_ip);
 
 private:

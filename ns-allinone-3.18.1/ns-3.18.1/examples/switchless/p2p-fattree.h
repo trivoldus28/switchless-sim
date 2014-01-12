@@ -35,7 +35,7 @@ namespace ns3 {
 class PointToPointFattreeHelper  : public PointToPointTopoHelper 
 {
 public: 
-  PointToPointFattreeHelper (unsigned group_size, unsigned router_fanout, unsigned tree_depth, uint64_t base_datarate,
+  PointToPointFattreeHelper (unsigned num_node, 
                           PointToPointHelper p2p_host_to_router);
 
   ~PointToPointFattreeHelper ();
@@ -51,12 +51,21 @@ public:
 private:
   void recursiveMakeTree(Node * root, unsigned group_size, unsigned router_fanout, unsigned tree_depth, uint64_t base_datarate,
                           PointToPointHelper p2p_host_to_router);
+  void AssignIP (Ptr<NetDevice> c, uint32_t address, Ipv4InterfaceContainer &con);
 
-  NodeContainer m_nodes;
-  NodeContainer m_routers;
+  NodeContainer m_node;
+  NodeContainer m_edge;
+  NodeContainer m_aggr;
+  NodeContainer m_core;
+  NodeContainer m_host;
   NetDeviceContainer m_node_devices;
   NetDeviceContainer m_router_devices;
-  Ipv4InterfaceContainer m_interfaces;
+  Ipv4InterfaceContainer m_hostIface;
+  Ipv4InterfaceContainer m_edgeIface;
+  Ipv4InterfaceContainer m_aggrIface;
+  Ipv4InterfaceContainer m_coreIface;
+
+  unsigned m_num_node;
 };
 
 } // namespace ns3

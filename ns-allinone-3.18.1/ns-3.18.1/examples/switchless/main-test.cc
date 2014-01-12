@@ -26,7 +26,7 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("MainProgram");
 
 #define DEBUG (true)
-#define TREE 1
+#define FATTREE 1
 #define MESH 2
 #define CUBE 3
 #define NO_TOPO 4
@@ -39,7 +39,7 @@ main (int argc, char * argv[])
 {
 
     LogComponentEnable ("DataCenterApp", LOG_DEBUG);
-    unsigned nRackSize = 0;
+    // unsigned nRackSize = 0;
     unsigned nTreeFanout = 0;
     bool bTorus = true; // not parsed
     std::string sSenderChoice = "random";  // not parsed
@@ -120,11 +120,11 @@ main (int argc, char * argv[])
         meshNumRow = topo_sub1;
         meshNumCol = topo_sub2;
     }
-    else if (topologytype == TREE)
-    {   
-        nRackSize = topo_sub1;
-        nTreeFanout = topo_sub2;
-    }
+    // else if (topologytype == FATTREE)
+    // {   
+    //     nRackSize = topo_sub1;
+    //     nTreeFanout = topo_sub2;
+    // }
     else if (topologytype == CUBE)
     {
         m_cube= topo_sub1;
@@ -148,12 +148,11 @@ main (int argc, char * argv[])
     std::cout << "Making topology\n";
     PointToPointTopoHelper * topology;
     // switch statements
-    if (topologytype == TREE){
-        NS_ASSERT(nNodes % nRackSize == 0);
-        unsigned depth = log(nNodes / nRackSize) / log(nTreeFanout);
-        NS_ASSERT(nNodes/nRackSize == pow(nTreeFanout, depth));
-        uint64_t linkDataRate = 1000LL*1000*1000*10; // 1Gbps
-        topology = new PointToPointFattreeHelper(nRackSize, nTreeFanout, depth, linkDataRate, pointToPoint);
+    if (topologytype == FATTREE){
+        // NS_ASSERT(nNodes % nRackSize == 0);
+        // unsigned depth = log(nNodes / nRackSize) / log(nTreeFanout);
+        // NS_ASSERT(nNodes/nRackSize == pow(nTreeFanout, depth));
+        topology = new PointToPointFattreeHelper(nNodes, pointToPoint);
     }
     else if (topologytype == MESH){
         NS_ASSERT(nNodes == (meshNumRow * meshNumCol));
@@ -222,7 +221,7 @@ main (int argc, char * argv[])
         }
         else{
              std::unordered_set<int> receiverSet;
-             if (topologytype == TREE){
+             if (topologytype == FATTREE){
                 int nodeid = *it;
                 float logval = log2(nNeighbor); // 
                 int logv = ceil(logval); //
