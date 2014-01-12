@@ -21,7 +21,7 @@
 #include "ns3/applications-module.h"
 #include "ns3/ipv4-global-routing-helper.h"
 
-#include "p2p-ncube.h"
+#include "p2p-cube.h"
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("SecondScriptExample");
@@ -30,13 +30,16 @@ int
 main (int argc, char *argv[])
 {
   bool verbose = true;
-  unsigned nMary = 2;
-  unsigned nNcube = 9;
+  // unsigned nMary = 2;
+  // unsigned nNcube = 9;
   bool isTorus = false;
+  unsigned nXdim = 3;
+  unsigned nYdim = 4;
+  unsigned nZdim = 5;
 
   CommandLine cmd;
-  cmd.AddValue ("nMary", "Number of nodes in one dimension", nMary);
-  cmd.AddValue ("nNcube", "Number of dimensions", nNcube);
+  // cmd.AddValue ("nMary", "Number of nodes in one dimension", nMary);
+  // cmd.AddValue ("nNcube", "Number of dimensions", nNcube);
   cmd.AddValue ("verbose", "Tell echo applications to log if true", verbose);
   cmd.AddValue ("isTorus", "Whether the topology is torus", isTorus);
 
@@ -54,7 +57,7 @@ main (int argc, char *argv[])
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
-  PointToPointNcubeHelper grid(nMary, nNcube, isTorus, pointToPoint);
+  PointToPointCubeHelper grid(nXdim, nYdim, nZdim, isTorus, pointToPoint);
 
 
   InternetStackHelper stack;
@@ -77,7 +80,7 @@ main (int argc, char *argv[])
   echoClient.SetAttribute ("Interval", TimeValue (Seconds (1.0)));
   echoClient.SetAttribute ("PacketSize", UintegerValue (1024));
 
-  unsigned max_id = pow(nMary,nNcube);
+  unsigned max_id = nXdim * nYdim * nZdim;
   std::cout << "max_id " << max_id << std::endl;
   max_id -= 1;
   ApplicationContainer clientApps = echoClient.Install (grid.GetNode(max_id));

@@ -1,49 +1,26 @@
 switchless-sim
 ==============
-
 Simulator for switchless project
 
 SETUP
-`
-cd ns-*/
-./build.py
-CXXFLAGS='-O2 --std=gnu++0x -g -I../examples/HadoopSim' ./waf configure -d debug --enable-examples
-./waf
-`
+=====
+`cd ns-*/;`
+`./build.py`
+`CXXFLAGS='-O2 --std=gnu++0x -g -I../examples/HadoopSim' ./waf configure -d debug --enable-examples`
+`./waf`
 
 RUN
-`
-./waf --run "HadoopSim 0 0 0 1 examples/HadoopSim/bench-trace/star.nettopo examples/HadoopSim/bench-trace/bayes/Trace 11 0 examples/HadoopSim/debug-output/ 10 10 1000 1000 0"
-`
+===
+Use simulate.py to generate run commands.
+Eg. For the "test" configuration, just run
+`python simulate.py test`
 
-The different parameters are, in order and cannot be omitted
-
-jobSubmitTYpe[0-replay, 1-serial, 2-stress] 
-
-schedType[0-default, 1-netOpt] 
-
-topoType[0-star, 1-rackrow, 2-fattree] 
-
-nodesPerRack (1 is probably not right)
-
-topologyFile 
-
-traceFilePrefix 
-
-numTraceFiles 
-
-needDebug 
-
-debugDir 
-
-scaledMapCPUTime(ms) (10ms is probably not right)
-
-scaledDownRatioForReduce (10ms is probably not right)
-
-customMapNum (1000 is probably not right)
-
-customReduceNum (1000 is probably not right)
-
-needDataImport (1 causes error?)
-
-
+Here are some sample command line commands for the lazies (all are around 256 nodes):
+**Mesh** *16x16*
+`./waf --run "main-test --tp=2 --t1=16 --t2=16 --itype=2 --isize=1 --iter=1 --sync=1 --psize=256 --ncount=256 --scount=256 --rcount=255 --debug=1"`
+**Cube** *7x6x7*
+`./waf --run "main-test --tp=3 --t1=7 --t2=6 --t3=7 --itype=2 --isize=1 --iter=1 --sync=1 --psize=256 --ncount=256 --scount=256 --rcount=255 --debug=1"`
+**Fat-tree**
+`./waf --run "main-test --tp=1 --itype=2 --isize=1 --iter=1 --sync=1 --psize=256 --ncount=256 --scount=256 --rcount=255 --debug=1"`
+**Hierarchical** *low-cost*
+`./waf --run "main-test --tp=4 --t1=6 --t2=1 --t3=0 --t4=0 --itype=2 --isize=1 --iter=1 --sync=1 --psize=256 --ncount=256 --scount=256 --rcount=255 --debug=1"`

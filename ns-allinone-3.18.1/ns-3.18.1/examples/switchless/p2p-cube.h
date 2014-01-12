@@ -38,13 +38,13 @@ namespace ns3 {
  * \brief A helper to make it easier to create a grid topology
  * with p2p links
  */
-class PointToPointNcubeHelper : public PointToPointTopoHelper
+class PointToPointCubeHelper : public PointToPointTopoHelper
 {
 public: 
-  PointToPointNcubeHelper (uint32_t nMary, unsigned nNcube, bool isTorus,
+  PointToPointCubeHelper (unsigned x, unsigned y, unsigned z, bool isTorus,
                           PointToPointHelper pointToPoint);
 
-  ~PointToPointNcubeHelper ();
+  ~PointToPointCubeHelper ();
 
   Ptr<Node> GetNode (unsigned nodeid);
   Ipv4Address GetIpv4Address (unsigned nodeid);
