@@ -4,9 +4,10 @@ import sys
 import math
 import os
 
-TREE = 1
+FATTREE = 1
 MESH = 2
 CUBE = 3
+HIERARCHICAL = 4
 
 def getXY(numnodes):
 	if (math.sqrt(numnodes) % 1):
@@ -33,14 +34,49 @@ def getMN(numnodes):
 	elif numnodes == 4096: return (8,4)
 	else: assert(0)
 
+FANOUT = 48
+
+def getHierarhicalValues(n, t):
+	e = 0
+	a = 0
+	m1 = 0
+	m2 = 0
+	if t == "lowcost":
+	  if n <= FANOUT:
+	    e = 1
+	  elif n <= FANOUT * FANOUT:
+	    e = math.ceil(float(n) / FANOUT);
+	    a = 1
+	  else:
+	    e = math.ceil(float(n) / FANOUT);
+	    a = math.ceil(float(e) / FANOUT);
+	elif t == "balanced":
+	  if n <= FANOUT:
+	    e = 1
+	  elif n <= FANOUT * FANOUT:
+	    e = math.ceil(pow(n,.5));
+	    a = 1
+	  else:
+	    e = math.ceil(pow(n,.66666));
+	    a = math.ceil(pow(n,.33333));
+	elif t == "replicated":
+		m1 = 4
+		m2 = 4
+	  if n <= FANOUT:
+	  	e = 1
+	  elif n <= FANOUT * FANOUT:
+	    e = math.ceil(pow(n,.5));
+	    a = n1
+	  else:
+	    e = math.ceil(pow(n,.66666));
+	    a = math.ceil(pow(n,.33333)) * n1;
+
+	return (e,a,m1,m2)
+
 def parseStandardVariables(argdict):
 	args = ""
-	if argdict["topo"] == "tree":
-		machineperrack = 2 # might want to parameterize these
-		fanout = 2
-		args += " --tp=" + `TREE`
-		args += " --t1=" + `machineperrack`
-		args += " --t2=" + `fanout`
+	if argdict["topo"] == "fattree":
+		args += " --tp=" + `FATTREE`
 	elif argdict["topo"] == "mesh":
 		x,y = getXY(argdict["nNode"])
 		args += " --tp=" + `MESH`
@@ -51,6 +87,13 @@ def parseStandardVariables(argdict):
 		args += " --tp=" + `CUBE`
 		args += " --t1=" + `m`
 		args += " --t2=" + `n`
+	elif argdict["topo"] == "hierarchical"
+		e,a,m1,m2 = getHierarhicalValues(argdict["nNode"])
+		args += " --tp=" + `HIERARCHICAL`
+		args += " --t1=" + `e`
+		args += " --t2=" + `a`
+		args += " --t3=" + `m1`
+		args += " --t4=" + `m2`
 
 	if argdict["intervaltype"] == "fixed":
 		args += " --itype=2"
@@ -77,7 +120,7 @@ if __name__ == '__main__':
 
 	#major properties, adjust them here
 	numberofnodes = [16,64,256,512]
-	topologies = ["tree", "mesh", "cube"]
+	topologies = ["fattree", "mesh", "cube"]
 	intervaltypes = ["fixed", "random"]
 	synctypes = [1,0] #synchronized or not
 	numsenders = [.2,.4,.6,.8]
@@ -99,7 +142,7 @@ if __name__ == '__main__':
 	# numberofnodes = [16]
 	# numberofnodes = [64]
 	numberofnodes = [256]
-	topologies = ["mesh", "cube", "tree"]
+	topologies = ["mesh", "cube", "fattree"]
 	intervaltypes = ["fixed"]
 	synctypes = [1] #synchronized or not
 	# intervaltypes = ["random"]

@@ -17,6 +17,7 @@
 #include "p2p-2d-mesh.h"
 #include "p2p-fattree.h"
 #include "p2p-ncube.h"
+#include "p2p-hierarchical.h"
 
 #include <unordered_set>
 #include <utility> // std::pair, std::make_pair
@@ -29,7 +30,8 @@ NS_LOG_COMPONENT_DEFINE ("MainProgram");
 #define FATTREE 1
 #define MESH 2
 #define CUBE 3
-#define NO_TOPO 4
+#define HIERARCHICAL 4
+#define NO_TOPO 5
 #define RANDOM 1
 #define FIXED 2
 
@@ -50,9 +52,18 @@ main (int argc, char * argv[])
     unsigned meshNumRow = 0;
     unsigned meshNumCol = 0;
 
+    // parameters for hierarchical
+    unsigned nEdge = 0;
+    unsigned nAgg = 0;
+    unsigned nRepl1 = 0;
+    unsigned nRepl2 = 0;
+    //unsigned nCore = 1; // always 1
+
     int topologytype = 0;
     int topo_sub1 = 0;
     int topo_sub2 = 0;
+    int topo_sub3 = 0;
+    int topo_sub4 = 0;
     int nNodes = 0;
     int nIterations = 0;
     int nPacketSize = 0;
@@ -74,6 +85,8 @@ main (int argc, char * argv[])
     cmd.AddValue("tp", "Topology",topologytype); // 1 or 2 or 3
     cmd.AddValue("t1", "",topo_sub1); // leaf-fan-out or row or m
     cmd.AddValue("t2", "",topo_sub2);  //non-leaf-fan-out or column or n
+    cmd.AddValue("t3", "",topo_sub3); // leaf-fan-out or row or m
+    cmd.AddValue("t4", "",topo_sub4);  //non-leaf-fan-out or column or n
     cmd.AddValue("ncount", "", nNodes);
     cmd.AddValue("psize", "", nPacketSize);
     cmd.AddValue("scount", "",nSender);
@@ -120,11 +133,13 @@ main (int argc, char * argv[])
         meshNumRow = topo_sub1;
         meshNumCol = topo_sub2;
     }
-    // else if (topologytype == FATTREE)
-    // {   
-    //     nRackSize = topo_sub1;
-    //     nTreeFanout = topo_sub2;
-    // }
+    else if (topologytype == HIERARCHICAL)
+    {   
+        nEdge = topo_sub1;
+        nAgg = topo_sub2;
+        nRepl1 = topo_sub3;
+        nRepl2 = topo_sub4;
+    }
     else if (topologytype == CUBE)
     {
         m_cube= topo_sub1;
@@ -161,6 +176,9 @@ main (int argc, char * argv[])
     else if (topologytype == CUBE){
         NS_ASSERT(nNodes == pow(m_cube, n_cube));
         topology = new PointToPointNcubeHelper(m_cube, n_cube, bTorus, pointToPoint);
+    }
+    else if (topologytype == HIERARCHICAL){
+        topology = new PointToPointHierarchicalHelper(nNodes, nEdge, nAgg, nRepl1, nRepl2, pointToPoint);
     }
     else{
         std::cout << "Invalid topo\n";
