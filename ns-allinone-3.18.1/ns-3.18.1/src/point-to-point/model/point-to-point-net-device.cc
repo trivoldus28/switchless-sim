@@ -607,6 +607,7 @@ PointToPointNetDevice::PppToEther (uint16_t proto)
     {
     case 0x0021: return 0x0800;   //IPv4
     case 0x0057: return 0x86DD;   //IPv6
+    case 0x0022: return 0x0900;   //DimensionOrdered
     default: NS_ASSERT_MSG (false, "PPP Protocol number not defined!");
     }
   return 0;
@@ -619,6 +620,7 @@ PointToPointNetDevice::EtherToPpp (uint16_t proto)
     {
     case 0x0800: return 0x0021;   //IPv4
     case 0x86DD: return 0x0057;   //IPv6
+    case 0x0900: return 0x0022;   //DimensionOrdered
     default: NS_ASSERT_MSG (false, "PPP Protocol number not defined!");
     }
   return 0;

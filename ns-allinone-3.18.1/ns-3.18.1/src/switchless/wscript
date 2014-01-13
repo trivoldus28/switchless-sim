@@ -1,0 +1,53 @@
+# -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+# def options(opt):
+#     pass
+
+# def configure(conf):
+#     conf.check_nonfatal(header_name='stdint.h', define_name='HAVE_STDINT_H')
+
+def build(bld):
+    module = bld.create_ns3_module('switchless', ['core', 'network', 'internet'])
+    module.source = [
+        'model/dim-ordered-address.cc',
+        'model/dim-ordered-interface-address.cc',
+        'helper/dim-ordered-address-helper.cc',
+        'model/dim-ordered-interface.cc',
+        'helper/dim-ordered-interface-container.cc',
+        'model/dim-ordered-header.cc',
+        'model/dim-ordered.cc',
+        'model/dim-ordered-l3-protocol.cc',
+        'model/dim-ordered-l4-protocol.cc',
+        'model/dim-ordered-socket-address.cc',
+        'model/dim-ordered-raw-socket-impl.cc',
+        'model/dim-ordered-raw-socket-factory.cc',
+        'model/dim-ordered-raw-socket-factory-impl.cc'
+        ]
+
+    module_test = bld.create_ns3_module_test_library('switchless')
+    module_test.source = [
+        ]
+
+    headers = bld(features='ns3header')
+    headers.module = 'switchless'
+    headers.source = [
+        'model/dim-ordered-address.h',
+        'model/dim-ordered-interface-address.h',
+        'helper/dim-ordered-address-helper.h',
+        'model/dim-ordered-interface.h',
+        'helper/dim-ordered-interface-container.h',
+        'model/dim-ordered-header.h',
+        'model/dim-ordered.h',
+        'model/dim-ordered-l3-protocol.h',
+        'model/dim-ordered-l4-protocol.h',
+        'model/dim-ordered-socket-address.h',
+        'model/dim-ordered-raw-socket-impl.h',
+        'model/dim-ordered-raw-socket-factory.h',
+        'model/dim-ordered-raw-socket-factory-impl.h'
+        ]
+
+    if bld.env.ENABLE_EXAMPLES:
+        bld.recurse('examples')
+
+    # bld.ns3_python_bindings()
+
