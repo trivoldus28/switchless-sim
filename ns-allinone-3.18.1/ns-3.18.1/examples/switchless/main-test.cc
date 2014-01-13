@@ -42,7 +42,7 @@ main (int argc, char * argv[])
 
     LogComponentEnable ("DataCenterApp", LOG_DEBUG);
     // unsigned nRackSize = 0;
-    unsigned nTreeFanout = 0;
+    // unsigned nTreeFanout = 0;
     bool bTorus = true; // not parsed
     std::string sSenderChoice = "random";  // not parsed
     std::string sReceiverChoice = "random"; // not parsed
@@ -374,7 +374,7 @@ main (int argc, char * argv[])
                 }
              }
 
-             for (auto it = receiverSet.begin(); it != receiverSet.end(); it++)
+             for (std::unordered_set<int>::iterator it = receiverSet.begin(); it != receiverSet.end(); it++)
              {
                 Ipv4Address t = topology->GetIpv4Address(*it);
                 receiverNodeList.push_back(t);
@@ -427,7 +427,7 @@ main (int argc, char * argv[])
     }
 
 
-
+    //Config::SetDefault ("ns3::ArpCache::PendingQueueSize", UintegerValue (MAX_BURST_SIZE/L2MTU*3));
     std::cout << "Populating routing table\n";
     Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 

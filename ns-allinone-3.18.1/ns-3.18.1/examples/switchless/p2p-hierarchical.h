@@ -61,7 +61,7 @@ private:
   // Ipv4InterfaceContainer m_coreIface;
   // Ipv4InterfaceContainer m_otherIface;
 
-  unsigned m_num_node;
+  //unsigned m_num_node;
 };
 
 } // namespace ns3
