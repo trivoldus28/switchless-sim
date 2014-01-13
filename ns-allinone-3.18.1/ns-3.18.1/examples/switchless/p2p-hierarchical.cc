@@ -56,6 +56,10 @@ PointToPointHierarchicalHelper::PointToPointHierarchicalHelper(unsigned num_node
   m_edge.Create(num_edge);
   m_agg.Create(num_agg * num_repl1);
   m_core.Create(num_core * num_repl1 * num_repl2);
+  std::cout << "num_node: " << num_node << std::endl;
+  std::cout << "num_edge: " << num_edge << std::endl;
+  std::cout << "num_agg: " << num_agg * num_repl1 << std::endl;
+  std::cout << "num_core: " << num_core * num_repl1 * num_repl2 << std::endl;
 
   // connect host to edge
   for(int i = 0; i < num_node; i++){
@@ -69,16 +73,17 @@ PointToPointHierarchicalHelper::PointToPointHierarchicalHelper(unsigned num_node
     }
   }
   // connect agg to core
-  for (int i = 0; i < num_agg; i++){
-    for (int repl1 = 0; repl1 < num_repl1; repl1++){
-      unsigned offsetagg = num_agg * repl1;
-      for (int repl2 = 0; repl2 < num_repl2; repl2++){
-        unsigned offsetcore = num_repl2 * repl1 + repl2;
-        // std::cout << 
-        m_router_devices.Add(p2phelper.Install(m_agg.Get(i + offsetagg), m_core.Get(offsetcore)));
+  if (num_core != 0)
+    for (int i = 0; i < num_agg; i++){
+      for (int repl1 = 0; repl1 < num_repl1; repl1++){
+        unsigned offsetagg = num_agg * repl1;
+        for (int repl2 = 0; repl2 < num_repl2; repl2++){
+          unsigned offsetcore = num_repl2 * repl1 + repl2;
+          std::cout << "Connecting agg " << i + offsetagg << " to core " << offsetcore << std::endl;
+          m_router_devices.Add(p2phelper.Install(m_agg.Get(i + offsetagg), m_core.Get(offsetcore)));
+        }
       }
     }
-  }
 }
 
 PointToPointHierarchicalHelper::~PointToPointHierarchicalHelper ()

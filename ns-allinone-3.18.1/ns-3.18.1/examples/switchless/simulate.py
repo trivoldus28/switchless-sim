@@ -43,8 +43,8 @@ def getXYZ(numnodes):
 def getHierarhicalValues(n, t):
   e = 0
   a = 0
-  m1 = 0
-  m2 = 0
+  m1 = 1
+  m2 = 1
   if t == "lowcost":
     if n <= FANOUT:
       e = 1
