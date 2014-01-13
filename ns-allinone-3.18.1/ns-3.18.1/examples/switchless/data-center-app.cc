@@ -744,7 +744,7 @@ DataCenterApp::SendResponsePacket (Ptr<Socket> socket, Address& to, uint16_t seq
     // Create a packet and add header
     Ptr<Packet> packet = Create<Packet> (0);
     packet->AddHeader (hdr);
-    socket->Send (packet);
+    socket->SendTo (packet, 0, to);
     
     NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
                  "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
