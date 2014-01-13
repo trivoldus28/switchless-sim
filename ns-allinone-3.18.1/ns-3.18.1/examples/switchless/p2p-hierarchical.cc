@@ -46,7 +46,7 @@ PointToPointHierarchicalHelper::PointToPointHierarchicalHelper(unsigned num_node
   if (num_node % num_edge) num_node_per_edge++;
   unsigned num_edge_per_agg = num_edge / num_agg;
   if (num_edge % num_agg) num_edge_per_agg++;
-  unsigned num_agg_per_core = num_agg;
+  //unsigned num_agg_per_core = num_agg;
   unsigned num_core = (num_agg == 1) ? 0 : 1;
 
   // num_core *= num_repl1 * num_repl2;

@@ -57,7 +57,7 @@ main (int argc, char *argv[])
   pointToPoint.SetDeviceAttribute ("DataRate", DataRateValue(datarate));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
-  bool isTorus = false;
+  //bool isTorus = false;
   PointToPointFattreeHelper fattree(nTotalNode, pointToPoint);
 
   // NetDeviceContainer p2pDevices;

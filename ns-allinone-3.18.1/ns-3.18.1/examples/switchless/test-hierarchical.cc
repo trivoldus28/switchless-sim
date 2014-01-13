@@ -62,7 +62,7 @@ main (int argc, char *argv[])
   pointToPoint.SetDeviceAttribute ("DataRate", DataRateValue(datarate));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
-  bool isTorus = false;
+  //bool isTorus = false;
   PointToPointHierarchicalHelper hierarchical(nTotalNode, num_edge, num_agg, repl1, repl2, pointToPoint);
 
   // NetDeviceContainer p2pDevices;

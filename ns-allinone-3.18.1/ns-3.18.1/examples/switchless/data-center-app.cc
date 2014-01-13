@@ -385,6 +385,8 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
                             if (m_totalPacketsSent < (m_sendParams.m_nIterations * m_sendParams.m_nReceivers))
                                 ScheduleSend(m_socketIndexMap[socket]);
                             break;
+                        case SEND_PATTERN_INVALID:
+                            break;
                     }
                     break;
                 default:
