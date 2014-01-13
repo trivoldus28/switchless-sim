@@ -43,7 +43,7 @@ DimensionOrderedRawServer::StartApplication (void)
     m_rxSocket = Socket::CreateSocket (GetNode (), DimensionOrderedRawSocketFactory::GetTypeId ());
     Address local (DimensionOrderedSocketAddress (dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal (), PORT));
     m_rxSocket->Bind (local);
-    m_rxSocket->Listen ();
+    //m_rxSocket->Listen ();
     m_rxSocket->SetRecvCallback (MakeCallback (&DimensionOrderedRawServer::HandleRead, this));
     m_rxSocket->SetAcceptCallback (MakeCallback (&DimensionOrderedRawServer::HandleConnectionRequest, this),
                                    MakeCallback (&DimensionOrderedRawServer::HandleAccept, this));

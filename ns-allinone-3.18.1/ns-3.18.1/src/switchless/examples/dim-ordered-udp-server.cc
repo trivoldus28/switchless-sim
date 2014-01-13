@@ -41,9 +41,8 @@ DimensionOrderedUdpServer::StartApplication (void)
     Ptr<DimensionOrdered> dimOrdered = GetNode ()->GetObject<DimensionOrdered> ();
     NS_ASSERT_MSG (dimOrdered, "Application started without a DimensionOrdered stack installed on the node");
     m_rxSocket = Socket::CreateSocket (GetNode (), DoUdpSocketFactory::GetTypeId ());
-    Address local (DimensionOrderedSocketAddress (dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal (), PORT));
+    DimensionOrderedSocketAddress local = DimensionOrderedSocketAddress (DimensionOrderedAddress::GetAny (), PORT);
     m_rxSocket->Bind (local);
-    m_rxSocket->Listen ();
     m_rxSocket->SetRecvCallback (MakeCallback (&DimensionOrderedUdpServer::HandleRead, this));
     m_rxSocket->SetAcceptCallback (MakeCallback (&DimensionOrderedUdpServer::HandleConnectionRequest, this),
                                    MakeCallback (&DimensionOrderedUdpServer::HandleAccept, this));

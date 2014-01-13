@@ -216,6 +216,9 @@ DimensionOrderedRawSocketImpl::SendTo (Ptr<Packet> p, uint32_t flags, const Addr
         NS_LOG_LOGIC ("Set index " << oif << " from source " << src);
     }
 
+    // Get address of this node
+    Ptr<DimensionOrdered> dimOrdered = m_node->GetObject<DimensionOrdered> ();
+    src = dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal ();
     if (!m_dohdrincl)
         dimordered->Send (p, src, dst, m_protocol);
     else

@@ -411,7 +411,7 @@ DoUdpSocketImpl::DoSendTo (Ptr<Packet> p, DimensionOrderedAddress dest, uint16_t
       NS_LOG_LOGIC ("Limited broadcast end.");
       return p->GetSize ();
     }
-  else /*if (m_endPoint->GetLocalAddress () != DimensionOrderedAddress::GetAny ())*/
+  else if (m_endPoint->GetLocalAddress () != DimensionOrderedAddress::GetAny ())
     {
       m_udp->Send (p->Copy (), m_endPoint->GetLocalAddress (), dest,
                    m_endPoint->GetLocalPort (), port);
@@ -419,19 +419,20 @@ DoUdpSocketImpl::DoSendTo (Ptr<Packet> p, DimensionOrderedAddress dest, uint16_t
       NotifySend (GetTxAvailable ());
       return p->GetSize ();
     }
-  /*else
+  else
     {
       DimensionOrderedHeader header;
       header.SetDestination (dest);
       header.SetProtocol (DoUdpL4Protocol::PROT_NUMBER);
-      Socket::SocketErrno errno_;
-      Ptr<NetDevice> oif = m_boundnetdevice; //specify non-zero if bound to a specific device
-      header.SetSource (m_endPoint->GetLocalAddress ());
+      // Get the address for this node
+      Ptr<DimensionOrdered> dimOrdered = m_node->GetObject<DimensionOrdered> ();
+      DimensionOrderedAddress src = dimOrdered->GetAddress(DimensionOrdered::X_POS).GetLocal ();
+      header.SetSource (src);
       m_udp->Send (p->Copy (), header.GetSource (), header.GetDestination (),
                    m_endPoint->GetLocalPort (), port);
       NotifyDataSent (p->GetSize ());
       return p->GetSize ();
-    }*/
+    }
 
   return 0;
 }

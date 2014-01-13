@@ -44,10 +44,10 @@ DimensionOrderedUdpClient::StartApplication (void)
     NS_ASSERT_MSG (dimOrdered, "Application started without a DimensionOrdered stack installed on the node");
     m_txSocket = Socket::CreateSocket (GetNode (), DoUdpSocketFactory::GetTypeId ());
     Address txAddress (DimensionOrderedSocketAddress (DimensionOrderedAddress::ConvertFrom(m_txAddress), PORT));
-    m_txSocket->Bind (DimensionOrderedSocketAddress(dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal (), PORT));
+    //m_txSocket->Bind (DimensionOrderedSocketAddress(dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal (), PORT));
+    m_txSocket->Bind ();
     NS_LOG_INFO ("Connecting to server address " << DimensionOrderedSocketAddress::ConvertFrom (txAddress).GetDimensionOrderedAddress ());
-    if (m_txSocket->Connect (txAddress) == -1)
-        NS_LOG_ERROR ("Socket connect failed");
+    m_txSocket->Connect (DimensionOrderedSocketAddress::ConvertFrom (txAddress));
     m_txSocket->SetConnectCallback (MakeCallback (&DimensionOrderedUdpClient::HandleConnectionSucceeded, this),
                                 MakeCallback (&DimensionOrderedUdpClient::HandleConnectionFailed, this));
     m_txSocket->SetRecvCallback (MakeCallback (&DimensionOrderedUdpClient::HandleRead, this));
