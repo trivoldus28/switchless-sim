@@ -31,9 +31,9 @@ NS_LOG_COMPONENT_DEFINE ("MainProgram");
 #define MESH 2
 #define CUBE 3
 #define HIERARCHICAL 4
-#define NO_TOPO 5
 #define RANDOM 1
 #define FIXED 2
+#define NO_TOPO 8
 
 
 int
