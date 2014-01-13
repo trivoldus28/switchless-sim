@@ -16,8 +16,8 @@
  * Author: Josh Pelkey <jpelkey@gatech.edu>
  */
 
-#ifndef POINT_TO_POINT_FATTREE_HELPER_H
-#define POINT_TO_POINT_FATTREE_HELPER_H
+#ifndef POINT_TO_POINT_NCUBE_HELPER_H
+#define POINT_TO_POINT_NCUBE_HELPER_H
 
 #include <vector>
 
@@ -32,42 +32,35 @@
 #include "p2p-topology-interface.h"
 namespace ns3 {
 
-class PointToPointFattreeHelper  : public PointToPointTopoHelper 
+/**
+ * \ingroup pointtopointlayout
+ *
+ * \brief A helper to make it easier to create a grid topology
+ * with p2p links
+ */
+class PointToPointCubeHelper : public PointToPointTopoHelper
 {
 public: 
-  PointToPointFattreeHelper (unsigned num_node, 
-                          PointToPointHelper p2p_host_to_router);
+  PointToPointCubeHelper (unsigned x, unsigned y, unsigned z, bool isTorus,
+                          PointToPointHelper pointToPoint);
 
-  ~PointToPointFattreeHelper ();
+  ~PointToPointCubeHelper ();
 
   Ptr<Node> GetNode (unsigned nodeid);
-
   Ipv4Address GetIpv4Address (unsigned nodeid);
-
   void InstallStack (InternetStackHelper stack);
-
-  void AssignIpv4Addresses (Ipv4AddressHelper ip, Ipv4AddressHelper router_ip);
+  void AssignIpv4Addresses (Ipv4AddressHelper ip, Ipv4AddressHelper link_ip);
 
 private:
-  void recursiveMakeTree(Node * root, unsigned group_size, unsigned router_fanout, unsigned tree_depth, uint64_t base_datarate,
-                          PointToPointHelper p2p_host_to_router);
-  void AssignIP (Ptr<NetDevice> c, uint32_t address, Ipv4InterfaceContainer &con);
+  unsigned m_total_nodes;
 
-  NodeContainer m_node;
-  NodeContainer m_edge;
-  NodeContainer m_aggr;
-  NodeContainer m_core;
-  NodeContainer m_host;
-  NetDeviceContainer m_node_devices;
-  NetDeviceContainer m_router_devices;
-  Ipv4InterfaceContainer m_hostIface;
-  Ipv4InterfaceContainer m_edgeIface;
-  Ipv4InterfaceContainer m_aggrIface;
-  Ipv4InterfaceContainer m_coreIface;
-
-  unsigned m_num_node;
+  NodeContainer m_nodes;
+  NodeContainer m_hubs;
+  NetDeviceContainer m_devices;
+  NetDeviceContainer m_hub_bridge_devs;
+  Ipv4InterfaceContainer m_Interfaces;
 };
 
 } // namespace ns3
 
-#endif /* POINT_TO_POINT_FATTREE_HELPER_H */
+#endif /* POINT_TO_POINT_NCUBE_HELPER_H */

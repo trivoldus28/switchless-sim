@@ -16,7 +16,8 @@
 #include "p2p-topology-interface.h"
 #include "p2p-2d-mesh.h"
 #include "p2p-fattree.h"
-#include "p2p-ncube.h"
+#include "p2p-cube.h"
+#include "p2p-hierarchical.h"
 
 #include <unordered_set>
 #include <utility> // std::pair, std::make_pair
@@ -26,10 +27,11 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("MainProgram");
 
 #define DEBUG (true)
-#define TREE 1
+#define FATTREE 1
 #define MESH 2
 #define CUBE 3
-#define NO_TOPO 4
+#define HIERARCHICAL 4
+#define NO_TOPO 5
 #define RANDOM 1
 #define FIXED 2
 
@@ -39,7 +41,7 @@ main (int argc, char * argv[])
 {
 
     LogComponentEnable ("DataCenterApp", LOG_DEBUG);
-    unsigned nRackSize = 0;
+    // unsigned nRackSize = 0;
     unsigned nTreeFanout = 0;
     bool bTorus = true; // not parsed
     std::string sSenderChoice = "random";  // not parsed
@@ -50,9 +52,24 @@ main (int argc, char * argv[])
     unsigned meshNumRow = 0;
     unsigned meshNumCol = 0;
 
+    // parameters for hierarchical
+    unsigned nEdge = 0;
+    unsigned nAgg = 0;
+    unsigned nRepl1 = 0;
+    unsigned nRepl2 = 0;
+    //unsigned nCore = 1; // always 1
+
+    // parameters for cube
+    unsigned nXdim;
+    unsigned nYdim;
+    unsigned nZdim;
+    nXdim = nYdim = nZdim = 0;
+
     int topologytype = 0;
     int topo_sub1 = 0;
     int topo_sub2 = 0;
+    int topo_sub3 = 0;
+    int topo_sub4 = 0;
     int nNodes = 0;
     int nIterations = 0;
     int nPacketSize = 0;
@@ -63,8 +80,8 @@ main (int argc, char * argv[])
     int nMininterval = 0;
     int nMaxinterval = 0;
     int synchronized = 0;
-    int m_cube=0;
-    int n_cube=0;
+    // int m_cube=0;
+    // int n_cube=0;
     int nNeighbor=0;
     int sChoice=0;
     int rChoice=0;
@@ -74,6 +91,8 @@ main (int argc, char * argv[])
     cmd.AddValue("tp", "Topology",topologytype); // 1 or 2 or 3
     cmd.AddValue("t1", "",topo_sub1); // leaf-fan-out or row or m
     cmd.AddValue("t2", "",topo_sub2);  //non-leaf-fan-out or column or n
+    cmd.AddValue("t3", "",topo_sub3); // leaf-fan-out or row or m
+    cmd.AddValue("t4", "",topo_sub4);  //non-leaf-fan-out or column or n
     cmd.AddValue("ncount", "", nNodes);
     cmd.AddValue("psize", "", nPacketSize);
     cmd.AddValue("scount", "",nSender);
@@ -115,20 +134,27 @@ main (int argc, char * argv[])
         bRandomInterval = false;
     }
     bSynchronized = synchronized;
+
     if(topologytype == MESH)
     {
         meshNumRow = topo_sub1;
         meshNumCol = topo_sub2;
     }
-    else if (topologytype == TREE)
+    else if (topologytype == HIERARCHICAL)
     {   
-        nRackSize = topo_sub1;
-        nTreeFanout = topo_sub2;
+        nEdge = topo_sub1;
+        nAgg = topo_sub2;
+        nRepl1 = topo_sub3;
+        nRepl2 = topo_sub4;
     }
     else if (topologytype == CUBE)
     {
-        m_cube= topo_sub1;
-        n_cube= topo_sub2;
+        nXdim= topo_sub1;
+        nYdim= topo_sub2;
+        nZdim= topo_sub3;
+    }
+    else if (topologytype == FATTREE)
+    {
     }
     else{
         std::cout << "Invalid topo\n";
@@ -143,25 +169,27 @@ main (int argc, char * argv[])
 
 
     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("10Gbps"));
-    pointToPoint.SetChannelAttribute ("Delay", StringValue ("100ns"));
+    pointToPoint.SetChannelAttribute ("Delay", StringValue ("500ns")); // .5us
 
     std::cout << "Making topology\n";
     PointToPointTopoHelper * topology;
     // switch statements
-    if (topologytype == TREE){
-        NS_ASSERT(nNodes % nRackSize == 0);
-        unsigned depth = log(nNodes / nRackSize) / log(nTreeFanout);
-        NS_ASSERT(nNodes/nRackSize == pow(nTreeFanout, depth));
-        uint64_t linkDataRate = 1000LL*1000*1000*10; // 1Gbps
-        topology = new PointToPointFattreeHelper(nRackSize, nTreeFanout, depth, linkDataRate, pointToPoint);
+    if (topologytype == FATTREE){
+        // NS_ASSERT(nNodes % nRackSize == 0);
+        // unsigned depth = log(nNodes / nRackSize) / log(nTreeFanout);
+        // NS_ASSERT(nNodes/nRackSize == pow(nTreeFanout, depth));
+        topology = new PointToPointFattreeHelper(nNodes, pointToPoint);
     }
     else if (topologytype == MESH){
-        NS_ASSERT(nNodes == (meshNumRow * meshNumCol));
+        NS_ASSERT(nNodes <= (meshNumRow * meshNumCol));
         topology = new PointToPoint2DMeshHelper(meshNumRow, meshNumCol, bTorus, pointToPoint);
     }
     else if (topologytype == CUBE){
-        NS_ASSERT(nNodes == pow(m_cube, n_cube));
-        topology = new PointToPointNcubeHelper(m_cube, n_cube, bTorus, pointToPoint);
+        NS_ASSERT(nNodes <= (nXdim * nYdim * nZdim));
+        topology = new PointToPointCubeHelper(nXdim, nYdim, nZdim, bTorus, pointToPoint);
+    }
+    else if (topologytype == HIERARCHICAL){
+        topology = new PointToPointHierarchicalHelper(nNodes, nEdge, nAgg, nRepl1, nRepl2, pointToPoint);
     }
     else{
         std::cout << "Invalid topo\n";
@@ -222,7 +250,7 @@ main (int argc, char * argv[])
         }
         else{
              std::unordered_set<int> receiverSet;
-             if (topologytype == TREE){
+             if (topologytype == FATTREE){
                 int nodeid = *it;
                 float logval = log2(nNeighbor); // 
                 int logv = ceil(logval); //
@@ -297,60 +325,52 @@ main (int argc, char * argv[])
                 }
              }
              else if(topologytype == CUBE){
-                // NS_ASSERT(false);
-                unsigned maxHammingDistance = 1;
-                unsigned failSafeCounter = 0;
-                std::unordered_set<uint64_t> recvCoordSet;
-                while(recvCoordSet.size() < nNeighbor){
-                    unsigned distance = 0;
-                    uint64_t flatCoord = 0;
-                    for (int i = 0; i < n_cube; i++){
-                        int coord = rand() % (maxHammingDistance*2+1);
-                        coord -= maxHammingDistance;
-                        distance += abs(coord);
-                        if (coord < 0) coord += m_cube; // implied torus
-                        flatCoord += (pow(m_cube, i) * coord);
+                unsigned senderZ = *it / (nXdim * nYdim);
+                unsigned senderY = *it / nXdim;
+                unsigned senderX = *it % nXdim;
+                unsigned mindistance =1;
+                int failSafeCounter = 0;
+                while (receiverSet .size() < nNeighbor){
+                    int randx = rand() % (mindistance*2+1);
+                    int randy = rand() % (mindistance*2+1);
+                    int randz = rand() % (mindistance*2+1);
+                    randx = randx-mindistance;
+                    randy = randy-mindistance;
+                    randz = randz-mindistance;
+                    int distance = abs(randx)+abs(randy)+abs(randz);
+                    if(distance <= mindistance && distance != 0)
+                    {
+                        int potz = randz + senderZ;
+                        int poty = randy + senderY;
+                        int potx = randx + senderX;
+                        NS_ASSERT(bTorus == true);
+                        if (potx < 0)
+                            potx += nXdim;
+                        if (poty < 0)
+                            poty += nYdim;
+                        if (potz < 0)
+                            potz += nZdim;
+                        if (potx ==0 && poty == 0 && potz == 0)
+                        {
+                            continue;
+                        }
+                        if (potx >= nXdim || poty >=nYdim || potz >= nZdim) 
+                        {
+                            continue;
+                        }
+                        unsigned coord = (potz * nYdim * nXdim) + (poty * nXdim) + potx;
+                        receiverSet.insert(coord);
                     }
-                    if (distance == 0) continue;
-                    if (distance <= maxHammingDistance)
-                        recvCoordSet.insert(flatCoord);
-                    // unsigned maxCapacity = (4*pow(maxHammingDistance,n_cube-1)) + 2*(n_cube-2);
-                    // if (recvCoordSet.size() >= maxCapacity){
-                    //     maxHammingDistance++;
-                    //     failSafeCounter = 0;
-                    // }
-                    // std::cout << "D " << distance << std::endl;
-                    // std::cout << "H " << maxHammingDistance << std::endl;
-                    // std::cout << "S " << recvCoordSet.size() << std::endl;
-                    // std::cout << "M " << maxCapacity << std::endl;
+                    if(receiverSet.size() == 2*mindistance*(mindistance+1))
+                    {
+                        mindistance++;
+                    }
                     failSafeCounter++;
-                    if (failSafeCounter > 100000){
-                        maxHammingDistance++;
-                        failSafeCounter = 0;
+                    if(failSafeCounter==10000)
+                    {
+                        failSafeCounter =0 ;
+                        mindistance++;
                     }
-                }
-
-                // get the sender coords
-                std::vector<unsigned> senderCoords;
-                uint64_t senderFlatCoord = *it;
-                for (int i = 0; i < n_cube; i++){
-                    unsigned coord = (senderFlatCoord / (unsigned)pow(m_cube,i)) % m_cube;
-                    senderCoords.push_back(coord);
-                }
-
-                // re-center the receiver coordinates and append to list
-                for (auto it = recvCoordSet.begin(); it != recvCoordSet.end(); it++){
-                    uint64_t flatCoord = *it;
-                    uint64_t adjustedFlatCoord = 0;
-                    // std::vector<unsigned> coords;
-                    for (int i = 0; i < n_cube; i++){
-                        unsigned coord = (flatCoord / (unsigned)pow(m_cube,i)) % m_cube;
-                        // coords.push_back(coord);
-                        unsigned adjustedCoord = coord + senderCoords[i];
-                        adjustedCoord %= m_cube;
-                        adjustedFlatCoord += (pow(m_cube, i) * adjustedCoord);
-                    }
-                    receiverSet.insert(adjustedFlatCoord);
                 }
              }
 

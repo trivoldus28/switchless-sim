@@ -29,15 +29,16 @@ int
 main (int argc, char *argv[])
 {
   bool verbose = true;
-  unsigned nDimensionLength = 8;
-  unsigned nGroupSize = 8;
-  unsigned nRouterFanout = 2;
-  unsigned nTreeDepth = 4;
+  // unsigned nDimensionLength = 8;
+  // unsigned nGroupSize = 8;
+  // unsigned nRouterFanout = 2;
+  // unsigned nTreeDepth = 4;
   // 16 * 8 machines total
-  unsigned nTotalNode = nGroupSize * (pow(nRouterFanout,nTreeDepth));
+  // unsigned nTotalNode = nGroupSize * (pow(nRouterFanout,nTreeDepth));
+  unsigned nTotalNode = 16;
 
   CommandLine cmd;
-  cmd.AddValue ("nDimensionLength", "Number of nodes in one dimension", nDimensionLength);
+  // cmd.AddValue ("nDimensionLength", "Number of nodes in one dimension", nDimensionLength);
   cmd.AddValue ("verbose", "Tell echo applications to log if true", verbose);
 
   cmd.Parse (argc,argv);
@@ -52,12 +53,12 @@ main (int argc, char *argv[])
   // p2pNodes.Create (nDimensionLength);
 
   PointToPointHelper pointToPoint;
-  uint64_t datarate = 1024 * 1024 * 1024;
+  uint64_t datarate = 1024LL * 1024 * 1024 * 10;
   pointToPoint.SetDeviceAttribute ("DataRate", DataRateValue(datarate));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
   bool isTorus = false;
-  PointToPointFattreeHelper fattree(nGroupSize, nRouterFanout, nTreeDepth, datarate, pointToPoint);
+  PointToPointFattreeHelper fattree(nTotalNode, pointToPoint);
 
   // NetDeviceContainer p2pDevices;
   // p2pDevices = pointToPoint.Install (p2pNodes);
@@ -88,7 +89,7 @@ main (int argc, char *argv[])
   echoClient.SetAttribute ("PacketSize", UintegerValue (1024));
 
   // ApplicationContainer clientApps = echoClient.Install (fattree.GetNode(nTotalNode-1));
-  ApplicationContainer clientApps = echoClient.Install (fattree.GetNode(1));
+  ApplicationContainer clientApps = echoClient.Install (fattree.GetNode(nTotalNode - 1));
   clientApps.Start (Seconds (2.0));
   clientApps.Stop (Seconds (10.0));
 
