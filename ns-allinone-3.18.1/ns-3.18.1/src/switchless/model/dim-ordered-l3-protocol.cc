@@ -226,13 +226,7 @@ uint32_t
 DimensionOrderedL3Protocol::GetNInterfaces (void) const
 {
     NS_LOG_FUNCTION (this);
-    uint32_t numInterfaces = 0;
-    for (uint32_t i = 0; i < NUM_DIRS; i++)
-    {
-        if (m_interfaces[i])
-            numInterfaces++;
-    }
-    return numInterfaces;
+    return NUM_DIRS;
 }
 
 DimensionOrdered::InterfaceDirection

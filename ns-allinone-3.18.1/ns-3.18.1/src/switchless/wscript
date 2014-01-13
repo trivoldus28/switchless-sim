@@ -21,7 +21,16 @@ def build(bld):
         'model/dim-ordered-socket-address.cc',
         'model/dim-ordered-raw-socket-impl.cc',
         'model/dim-ordered-raw-socket-factory.cc',
-        'model/dim-ordered-raw-socket-factory-impl.cc'
+        'model/dim-ordered-raw-socket-factory-impl.cc',
+        'model/dim-ordered-end-point.cc',
+        'model/dim-ordered-end-point-demux.cc',
+        'model/do-udp-header.cc',
+        'model/do-udp-socket.cc',
+        'model/do-udp-socket-impl.cc',
+        'model/do-udp-socket-factory.cc',
+        'model/do-udp-socket-factory-impl.cc',
+        'model/do-udp-l4-protocol.cc',
+        'helper/dim-ordered-stack-helper.cc'
         ]
 
     module_test = bld.create_ns3_module_test_library('switchless')
@@ -43,7 +52,16 @@ def build(bld):
         'model/dim-ordered-socket-address.h',
         'model/dim-ordered-raw-socket-impl.h',
         'model/dim-ordered-raw-socket-factory.h',
-        'model/dim-ordered-raw-socket-factory-impl.h'
+        'model/dim-ordered-raw-socket-factory-impl.h',
+        'model/dim-ordered-end-point.h',
+        'model/dim-ordered-end-point-demux.h',
+        'model/do-udp-header.h',
+        'model/do-udp-socket.h',
+        'model/do-udp-socket-impl.h',
+        'model/do-udp-socket-factory.h',
+        'model/do-udp-socket-factory-impl.h',
+        'model/do-udp-l4-protocol.h',
+        'helper/dim-ordered-stack-helper.h'
         ]
 
     if bld.env.ENABLE_EXAMPLES:

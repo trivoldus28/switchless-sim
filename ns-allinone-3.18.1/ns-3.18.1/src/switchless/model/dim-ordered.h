@@ -78,6 +78,11 @@ public:
   virtual void AddInterface (Ptr<NetDevice> device, InterfaceDirection dir) = 0;
 
   /**
+   * \returns the interface for direction dir
+   */
+  virtual Ptr<DimensionOrderedInterface> GetInterface (InterfaceDirection dir) const = 0;
+
+  /**
    * \returns the number of interfaces added by the user
    */
   virtual uint32_t GetNInterfaces (void) const = 0;
