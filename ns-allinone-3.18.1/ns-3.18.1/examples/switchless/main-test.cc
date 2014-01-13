@@ -45,7 +45,10 @@ int
 main (int argc, char * argv[])
 {
 
+    // LogComponentEnable ("DataCenterApp", LOG_LEVEL_ALL);
+    // LogComponentEnable ("DimensionOrderedL3Protocol", LOG_LEVEL_ALL);
     LogComponentEnable ("DataCenterApp", LOG_DEBUG);
+    // LogComponentEnable ("DimensionOrderedL3Protocol", LOG_LEVEL_ALL);
     // unsigned nRackSize = 0;
     // unsigned nTreeFanout = 0;
     bool bTorus = true; // not parsed
@@ -193,7 +196,7 @@ main (int argc, char * argv[])
         if (l4_type == L4_UDP)
             network_stack_type = DataCenterApp::UDP_IP_STACK;
         else
-            network_stack_type = DataCenterApp::UDP_IP_STACK;
+            network_stack_type = DataCenterApp::TCP_IP_STACK;
     }
     // else if (topologytype == MESH){
     //     NS_ASSERT(nNodes <= (nYdim * nXdim));
@@ -206,14 +209,14 @@ main (int argc, char * argv[])
             if (l4_type == L4_UDP)
                 network_stack_type = DataCenterApp::UDP_IP_STACK;
             else
-                network_stack_type = DataCenterApp::UDP_IP_STACK;
+                network_stack_type = DataCenterApp::TCP_IP_STACK;
         }
         else{
             topology = new PointToPointCubeDimorderedHelper(nXdim, nYdim, nZdim, bTorus, pointToPoint);
             if (l4_type == L4_UDP)
                 network_stack_type = DataCenterApp::UDP_DO_STACK;
             else
-                network_stack_type = DataCenterApp::UDP_DO_STACK;
+                network_stack_type = DataCenterApp::TCP_DO_STACK;
         }
     }
     else if (topologytype == HIERARCHICAL){
@@ -221,7 +224,7 @@ main (int argc, char * argv[])
         if (l4_type == L4_UDP)
             network_stack_type = DataCenterApp::UDP_IP_STACK;
         else
-            network_stack_type = DataCenterApp::UDP_IP_STACK;
+            network_stack_type = DataCenterApp::TCP_IP_STACK;
     }
     else{
         std::cout << "Invalid topo\n";
@@ -443,7 +446,11 @@ main (int argc, char * argv[])
         params.m_packetSize = nPacketSize;
         params.m_nIterations = nIterations; 
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
-        app->Setup(params, *it, network_stack_type, DEBUG); 
+        bool ret = app->Setup(params, *it, network_stack_type, DEBUG);
+        if (!ret){
+            std::cout << "Setup failed" << std::endl;
+            exit(1);
+        }
         topology->GetNode(*it)->AddApplication(app);
 
         app->SetStartTime (Seconds(0.));
@@ -451,8 +458,13 @@ main (int argc, char * argv[])
     }
     for (std::unordered_set<int>::iterator it = nonsenderSet.begin(); it != nonsenderSet.end(); it++){
         DataCenterApp::SendParams params;
+        params.m_sending = false;
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
-        app->Setup(params, *it, network_stack_type, DEBUG); 
+        bool ret = app->Setup(params, *it, network_stack_type, DEBUG); 
+        if (!ret){
+            std::cout << "Setup failed" << std::endl;
+            exit(1);
+        }
         topology->GetNode(*it)->AddApplication(app);
         app->SetStartTime (Seconds(0.));
         app->SetStopTime (Seconds(100000.));
