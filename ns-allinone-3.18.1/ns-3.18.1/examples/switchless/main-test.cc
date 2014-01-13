@@ -233,7 +233,7 @@ main (int argc, char * argv[])
     for (std::unordered_set<int>::iterator it = senderSet.begin(); it != senderSet.end(); it++){
         DataCenterApp::SendParams params;
         params.m_sending = true;
-        std::vector <Ipv4Address> receiverNodeList;
+        std::vector <Address> receiverNodeList;
 
         if (sReceiverChoice == "random"){
             for(int i=0;i<nNodes;i++)
@@ -411,7 +411,7 @@ main (int argc, char * argv[])
         params.m_packetSize = nPacketSize;
         params.m_nIterations = nIterations; 
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
-        app->Setup(params, *it, DEBUG); 
+        app->Setup(params, *it, DataCenterApp::TCP_IP_STACK, DEBUG); 
         topology->GetNode(*it)->AddApplication(app);
 
         app->SetStartTime (Seconds(0.));
@@ -420,7 +420,7 @@ main (int argc, char * argv[])
     for (std::unordered_set<int>::iterator it = nonsenderSet.begin(); it != nonsenderSet.end(); it++){
         DataCenterApp::SendParams params;
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
-        app->Setup(params, *it, DEBUG); 
+        app->Setup(params, *it, DataCenterApp::TCP_IP_STACK, DEBUG); 
         topology->GetNode(*it)->AddApplication(app);
         app->SetStartTime (Seconds(0.));
         app->SetStopTime (Seconds(100000.));
