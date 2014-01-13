@@ -444,24 +444,59 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
             uint32_t bytesReceived = packet->GetSize ();
             m_acceptSocketMap[socket].m_packetsReceived++;
             m_acceptSocketMap[socket].m_bytesReceived += bytesReceived;
-            NS_LOG_INFO ("Node " << GetNode ()->GetId () << " RX:\n" <<
-                         "    Source: " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << "\n" <<
-                         "    Destination: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () 
-                              << "\n" <<
-                         "    Packet Size: " << bytesReceived << " bytes\n" <<
-                         "    Packet Type: " << DCAppHeader::PacketTypeToString (hdr.GetPacketType ()) << "\n"
-                         "    Sequence Number: " << currentSeqNum << "\n" << 
-                         "    UID: " << packet->GetUid () << "\n" <<
-                         "    TXTime: " << hdr.GetTimeStamp () << "\n" <<
-                         "    RXTime: " << Simulator::Now() << "\n" <<
-                         "    Delay: " << Simulator::Now() - hdr.GetTimeStamp () << "\n" <<
-                         "    Packets Received: " << m_acceptSocketMap[socket].m_packetsReceived << "\n" <<
-                         "    Bytes Received: " << m_acceptSocketMap[socket].m_bytesReceived);
-            NS_LOG_DEBUG ("   " <<  GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  <<
-                          "\t  Got " << DCAppHeader::PacketTypeToString (hdr.GetPacketType ()) << 
-                          " from  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () <<
-                          "   \t Time \t" << Simulator::Now() << " Delay : "
-                          << Simulator::Now() - hdr.GetTimeStamp ());  
+
+            if (InetSocketAddress::IsMatchingType (from))
+            {
+                NS_LOG_INFO ("Node " << GetNode ()->GetId () << " RX:\n" <<
+                             "    Source: " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << "\n" <<
+                             "    Destination: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()
+                                    << "\n" <<
+                             "    Packet Size: " << bytesReceived << " bytes\n" <<
+                             "    Packet Type: " << DCAppHeader::PacketTypeToString (hdr.GetPacketType ()) 
+                                << "\n"
+                             "    Sequence Number: " << currentSeqNum << "\n" << 
+                             "    UID: " << packet->GetUid () << "\n" <<
+                             "    TXTime: " << hdr.GetTimeStamp () << "\n" <<
+                             "    RXTime: " << Simulator::Now() << "\n" <<
+                             "    Delay: " << Simulator::Now() - hdr.GetTimeStamp () << "\n" <<
+                             "    Packets Received: " << m_acceptSocketMap[socket].m_packetsReceived << "\n" <<
+                             "    Bytes Received: " << m_acceptSocketMap[socket].m_bytesReceived);
+                NS_LOG_DEBUG ("   " <<  GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  <<
+                              "\t  Got " << DCAppHeader::PacketTypeToString (hdr.GetPacketType ()) << 
+                              " from  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () <<
+                              "   \t Time \t" << Simulator::Now() << " Delay : "
+                              << Simulator::Now() - hdr.GetTimeStamp ());  
+            }
+            else if (DimensionOrderedSocketAddress::IsMatchingType (from))
+            {
+                // Determine destination
+                Ptr<DimensionOrdered> dimOrdered = GetNode ()->GetObject<DimensionOrdered> ();
+                DimensionOrderedAddress dst = dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal ();
+                if (dst == DimensionOrderedAddress::GetZero ())
+                    dst = dimOrdered->GetAddress (DimensionOrdered::X_NEG).GetLocal ();
+                NS_ASSERT (dst != DimensionOrderedAddress::GetZero ());
+
+                NS_LOG_INFO ("Node " << GetNode ()->GetId () << " RX:\n" <<
+                             "    Source: " << DimensionOrderedSocketAddress::ConvertFrom (from)
+                                                    .GetDimensionOrderedAddress () << "\n" <<
+                             "    Destination: " << dst << "\n" <<
+                             "    Packet Size: " << bytesReceived << " bytes\n" <<
+                             "    Packet Type: " << DCAppHeader::PacketTypeToString (hdr.GetPacketType ()) 
+                                << "\n"
+                             "    Sequence Number: " << currentSeqNum << "\n" <<
+                             "    UID: " << packet->GetUid () << "\n" <<
+                             "    TXTime: " << hdr.GetTimeStamp () << "\n" <<
+                             "    RXTime: " << Simulator::Now() << "\n" <<
+                             "    Delay: " << Simulator::Now() - hdr.GetTimeStamp () << "\n" <<
+                             "    Packets Received: " << m_acceptSocketMap[socket].m_packetsReceived << "\n" <<
+                             "    Bytes Received: " << m_acceptSocketMap[socket].m_bytesReceived);
+                NS_LOG_DEBUG ("   " <<  dst  <<
+                              "\t  Got " << DCAppHeader::PacketTypeToString (hdr.GetPacketType ()) <<
+                              " from  \t" << DimensionOrderedSocketAddress::ConvertFrom (from)
+                                                .GetDimensionOrderedAddress () <<
+                              "   \t Time \t" << Simulator::Now() << " Delay : "
+                              << Simulator::Now() - hdr.GetTimeStamp ()); 
+            }
 
             // Do something with the packet depending on the type
             switch (hdr.GetPacketType ())
@@ -542,7 +577,7 @@ DataCenterApp::BulkSendPackets ()
 {
     NS_LOG_FUNCTION (this);
     NS_ASSERT (m_sendInfos[0].m_event.IsExpired ());
-      
+
     // Send if we are still running and there is still an iteration to do 
     if (m_running && m_iterationCount < m_sendParams.m_nIterations)
     {
@@ -612,18 +647,43 @@ DataCenterApp::DoSendPacket (SendInfo& sendInfo)
     sendInfo.m_bytesSent += m_sendParams.m_packetSize;
     m_totalPacketsSent++;
 
-    NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
-                 "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
-                 "    Destination: " << Ipv4Address::ConvertFrom (sendInfo.m_address) << "\n" <<
-                 "    Packet Size: " << m_sendParams.m_packetSize << "\n" <<
-                 "    Packet Type: " <<  DCAppHeader::PacketTypeToString (hdr.GetPacketType()) << "\n" <<
-                 "    Sequence Number: " << hdr.GetSequenceNumber () << "\n" <<
-                 "    TXTime: " << hdr.GetTimeStamp() << "\n" <<
-                 "    Packets Sent: " << sendInfo.m_packetsSent << "\n" <<
-                 "    Bytes Sent: " << sendInfo.m_bytesSent);
-     NS_LOG_DEBUG ("   "<< GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  << 
-                   "\t  Sent to \t\t" << Ipv4Address::ConvertFrom (sendInfo.m_address) << 
-                   "   \t Time \t" << Simulator::Now()) ;
+    if (Ipv4Address::IsMatchingType (sendInfo.m_address))
+    {
+        NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
+                     "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
+                     "    Destination: " << Ipv4Address::ConvertFrom (sendInfo.m_address) << "\n" <<
+                     "    Packet Size: " << m_sendParams.m_packetSize << "\n" <<
+                     "    Packet Type: " <<  DCAppHeader::PacketTypeToString (hdr.GetPacketType()) << "\n" <<
+                     "    Sequence Number: " << hdr.GetSequenceNumber () << "\n" <<
+                     "    TXTime: " << hdr.GetTimeStamp() << "\n" <<
+                     "    Packets Sent: " << sendInfo.m_packetsSent << "\n" <<
+                     "    Bytes Sent: " << sendInfo.m_bytesSent);
+        NS_LOG_DEBUG ("   "<< GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  << 
+                      "\t  Sent to \t\t" << Ipv4Address::ConvertFrom (sendInfo.m_address) << 
+                      "   \t Time \t" << Simulator::Now()) ;
+    }
+    else if (DimensionOrderedAddress::IsMatchingType (sendInfo.m_address))
+    {
+        // Src address
+        Ptr<DimensionOrdered> dimOrdered = GetNode ()->GetObject <DimensionOrdered> ();
+        DimensionOrderedAddress src = dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal ();
+        if (src == DimensionOrderedAddress::GetZero ())
+            src = dimOrdered->GetAddress (DimensionOrdered::X_NEG).GetLocal ();
+        NS_ASSERT (src != DimensionOrderedAddress::GetZero ());
+
+        NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
+                     "    Source: " << src << "\n" <<
+                     "    Destination: " << DimensionOrderedAddress::ConvertFrom (sendInfo.m_address) << "\n" <<
+                     "    Packet Size: " << m_sendParams.m_packetSize << "\n" <<
+                     "    Packet Type: " <<  DCAppHeader::PacketTypeToString (hdr.GetPacketType()) << "\n" <<
+                     "    Sequence Number: " << hdr.GetSequenceNumber () << "\n" <<
+                     "    TXTime: " << hdr.GetTimeStamp() << "\n" <<
+                     "    Packets Sent: " << sendInfo.m_packetsSent << "\n" <<
+                     "    Bytes Sent: " << sendInfo.m_bytesSent);
+        NS_LOG_DEBUG ("   "<< src  <<
+                      "\t  Sent to \t\t" << DimensionOrderedAddress::ConvertFrom (sendInfo.m_address) << 
+                      "   \t Time \t" << Simulator::Now()) ; 
+    }
 }
 
 void
@@ -745,17 +805,42 @@ DataCenterApp::SendResponsePacket (Ptr<Socket> socket, Address& to, uint16_t seq
     Ptr<Packet> packet = Create<Packet> (0);
     packet->AddHeader (hdr);
     socket->SendTo (packet, 0, to);
-    
-    NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
-                 "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
-                 "    Destination: " << InetSocketAddress::ConvertFrom (to).GetIpv4 () << "\n" <<
-                 "    Packet Size: " << 0 << "\n" <<
-                 "    Packet Type: " <<  DCAppHeader::PacketTypeToString (hdr.GetPacketType()) << "\n" <<
-                 "    Sequence Number: " << hdr.GetSequenceNumber () << "\n" <<
-                 "    TXTime: " << hdr.GetTimeStamp());
-     NS_LOG_DEBUG ("   "<< GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  <<
-                   "\t  Sent ACK to   \t" << InetSocketAddress::ConvertFrom (to).GetIpv4 () <<
-                   "   \t Time \t" << Simulator::Now()) ; 
+   
+    if (InetSocketAddress::IsMatchingType (to))
+    { 
+        NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
+                     "    Source: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
+                     "    Destination: " << InetSocketAddress::ConvertFrom (to).GetIpv4 () << "\n" <<
+                     "    Packet Size: " << 0 << "\n" <<
+                     "    Packet Type: " <<  DCAppHeader::PacketTypeToString (hdr.GetPacketType()) << "\n" <<
+                     "    Sequence Number: " << hdr.GetSequenceNumber () << "\n" <<
+                     "    TXTime: " << hdr.GetTimeStamp());
+        NS_LOG_DEBUG ("   "<< GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()  <<
+                      "\t  Sent ACK to   \t" << InetSocketAddress::ConvertFrom (to).GetIpv4 () <<
+                      "   \t Time \t" << Simulator::Now()) ; 
+    }
+    else if (DimensionOrderedSocketAddress::IsMatchingType (to))
+    {
+        // Determine src
+        Ptr<DimensionOrdered> dimOrdered = GetNode ()->GetObject<DimensionOrdered> ();
+        DimensionOrderedAddress src = dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal ();
+        if (src == DimensionOrderedAddress::GetZero ())
+            src = dimOrdered->GetAddress (DimensionOrdered::X_NEG).GetLocal ();
+        NS_ASSERT (src != DimensionOrderedAddress::GetZero ());
+
+        NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<
+                     "    Source: " << src << "\n" <<
+                     "    Destination: " << DimensionOrderedSocketAddress::ConvertFrom (to)
+                                                .GetDimensionOrderedAddress () << "\n" <<
+                     "    Packet Size: " << 0 << "\n" <<
+                     "    Packet Type: " <<  DCAppHeader::PacketTypeToString (hdr.GetPacketType()) << "\n" <<
+                     "    Sequence Number: " << hdr.GetSequenceNumber () << "\n" <<
+                     "    TXTime: " << hdr.GetTimeStamp());
+        NS_LOG_DEBUG ("   "<< src  <<
+                      "\t  Sent ACK to   \t" << DimensionOrderedSocketAddress::ConvertFrom (to)
+                                                    .GetDimensionOrderedAddress () <<
+                      "   \t Time \t" << Simulator::Now()) ;
+    }
 }
 
 void 

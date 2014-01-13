@@ -421,13 +421,27 @@ DoUdpSocketImpl::DoSendTo (Ptr<Packet> p, DimensionOrderedAddress dest, uint16_t
     }
   else
     {
+        NS_LOG_INFO("Got here!");
       DimensionOrderedHeader header;
       header.SetDestination (dest);
       header.SetProtocol (DoUdpL4Protocol::PROT_NUMBER);
+      
       // Get the address for this node
       Ptr<DimensionOrdered> dimOrdered = m_node->GetObject<DimensionOrdered> ();
       DimensionOrderedAddress src = dimOrdered->GetAddress(DimensionOrdered::X_POS).GetLocal ();
+      if (src == DimensionOrderedAddress::GetZero ())
+          src = dimOrdered->GetAddress (DimensionOrdered::X_NEG).GetLocal ();
+      if (src == DimensionOrderedAddress::GetZero ())
+          src = dimOrdered->GetAddress (DimensionOrdered::Y_POS).GetLocal ();
+      if (src == DimensionOrderedAddress::GetZero ())
+          src = dimOrdered->GetAddress (DimensionOrdered::Y_NEG).GetLocal ();
+      if (src == DimensionOrderedAddress::GetZero ())
+          src = dimOrdered->GetAddress (DimensionOrdered::Z_POS).GetLocal ();
+      if (src == DimensionOrderedAddress::GetZero ())
+          src = dimOrdered->GetAddress (DimensionOrdered::Z_NEG).GetLocal ();
+      NS_ASSERT (src != DimensionOrderedAddress::GetZero ());
       header.SetSource (src);
+
       m_udp->Send (p->Copy (), header.GetSource (), header.GetDestination (),
                    m_endPoint->GetLocalPort (), port);
       NotifyDataSent (p->GetSize ());
