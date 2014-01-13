@@ -18,6 +18,7 @@
 #include "ns3/applications-module.h"
 
 // Switchless Includes
+#include "ns3/switchless-module.h"
 #include "dc-app-header.h"
 
 using namespace ns3;
@@ -44,28 +45,39 @@ public:
         FIXED_SPORADIC,
         RANDOM_SPORADIC
     } SEND_PATTERN;
+
+    // Enumeration to specify the stack to use
+    typedef enum NETWORK_STACK_ENUM
+    {
+        INVALID_STACK = 0,
+        UDP_IP_STACK,
+        TCP_IP_STACK,
+        UDP_DO_STACK,
+        TCP_DO_STACK
+    } NETWORK_STACK;
     // Struct to hold all sending parameters
     typedef struct  SendParamsStruct
     {
-        bool                        m_sending;
-        std::vector<Ipv4Address>    m_nodes;
-        RECEIVERS                   m_receivers;
-        uint32_t                    m_nReceivers;
-        SEND_PATTERN                m_sendPattern;
-        Time                        m_sendInterval;
-        Time                        m_maxSendInterval;
-        Time                        m_minSendInterval;
-        uint32_t                    m_packetSize;
-        uint32_t                    m_nIterations;
+        bool                                    m_sending;
+        std::vector<Address>                    m_nodes;
+        RECEIVERS                               m_receivers;
+        uint32_t                                m_nReceivers;
+        SEND_PATTERN                            m_sendPattern;
+        Time                                    m_sendInterval;
+        Time                                    m_maxSendInterval;
+        Time                                    m_minSendInterval;
+        uint32_t                                m_packetSize;
+        uint32_t                                m_nIterations;
     } SendParams;
     static void copySendParams(SendParams& src, SendParams& dst);
+
 
     // Constructor/Destructor
     DataCenterApp ();
     virtual ~DataCenterApp ();
 
     // Function to setup app
-    bool Setup (SendParams& sendingParams, uint32_t nodeId, bool debug);  
+    bool Setup (SendParams& sendingParams, uint32_t nodeId, NETWORK_STACK stack, bool debug);  
 private:
     // Constants
     static const uint16_t PORT = 8080;
@@ -89,6 +101,9 @@ private:
         uint32_t        m_bytesReceived;
     } ReceiveInfo;
     static void InitReceiveInfo (ReceiveInfo& receiveInfo);
+
+    void SetupRXSocket (void);
+    void SetupTXSocket (uint32_t sendParamsNodeIndex);
 
     // Overridden methods called when app starts and stops
     virtual void StartApplication (void);
@@ -126,6 +141,7 @@ private:
     SendParams                          m_sendParams;
     bool                                m_setup;
     bool                                m_running;
+    NETWORK_STACK                       m_stack;
     uint32_t                            m_iterationCount;
     uint32_t                            m_totalPacketsSent;
     uint32_t                            m_responseCount;

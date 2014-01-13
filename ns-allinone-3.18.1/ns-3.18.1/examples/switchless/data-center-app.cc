@@ -28,6 +28,7 @@ DataCenterApp::DataCenterApp ()
   : m_sendParams (),
     m_setup (false),
     m_running (false),
+    m_stack (INVALID_STACK),
     m_iterationCount (0),
     m_totalPacketsSent (0),
     m_responseCount (0),
@@ -55,9 +56,15 @@ DataCenterApp::~DataCenterApp ()
 }
 
 bool
-DataCenterApp::Setup (SendParams& sendingParams, uint32_t nodeId, bool debug)
+DataCenterApp::Setup (SendParams& sendingParams, uint32_t nodeId, NETWORK_STACK stack, bool debug)
 {
     NS_LOG_FUNCTION (this << debug);
+
+    if (stack == INVALID_STACK)
+    {
+        NS_LOG_ERROR ("Invalid stack specified in DataCenterApp::Setup()");
+        return false;
+    } 
 
     if (sendingParams.m_nReceivers > sendingParams.m_nodes.size())
     {
@@ -77,6 +84,7 @@ DataCenterApp::Setup (SendParams& sendingParams, uint32_t nodeId, bool debug)
         return false;
     }
 
+    m_stack = stack;
     copySendParams(sendingParams, m_sendParams);
 
     // When debugging make packets deterministic
@@ -106,6 +114,136 @@ DataCenterApp::InitReceiveInfo (ReceiveInfo& receiveInfo)
     receiveInfo.m_bytesReceived = 0;
 }
 
+void 
+DataCenterApp::SetupRXSocket (void)
+{
+    NS_LOG_FUNCTION (this);
+
+    switch (m_stack)
+    {
+        case UDP_IP_STACK:
+        {
+            m_rxSocket = Socket::CreateSocket (GetNode (), UdpSocketFactory::GetTypeId ());
+            //m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(m_sendParams.m_packetSize+11));
+            //m_rxSocket->SetAttribute ("SndBufSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("RcvBufSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("ConnTimeout", UintegerValue(3)); 
+            Address local (InetSocketAddress (Ipv4Address::GetAny (), PORT));
+            m_rxSocket->Bind (local);
+            break;
+        }
+        case TCP_IP_STACK:
+        {
+            m_rxSocket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
+            m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(m_sendParams.m_packetSize+11));
+            //m_rxSocket->SetAttribute ("SndBufSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("RcvBufSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("ConnTimeout", UintegerValue(3)); 
+            Address local (InetSocketAddress(Ipv4Address::GetAny (), PORT));
+            m_rxSocket->Bind (local);
+            m_rxSocket->Listen ();
+            break;
+        }
+        case UDP_DO_STACK:
+        {
+            m_rxSocket = Socket::CreateSocket (GetNode (), DoUdpSocketFactory::GetTypeId ());
+            //m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(m_sendParams.m_packetSize+11));
+            //m_rxSocket->SetAttribute ("SndBufSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("RcvBufSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("ConnTimeout", UintegerValue(3));
+            Address local (DimensionOrderedSocketAddress (DimensionOrderedAddress::GetAny (), PORT));
+            m_rxSocket->Bind (local); 
+            break;
+        }
+        case TCP_DO_STACK:
+            NS_LOG_WARN ("DimensionOrdered TCP Stack not yet supported");
+            return;
+            break;
+        default:
+            NS_LOG_ERROR ("Invalid network stack specified, did you call DataCenterApp::Setup()??");
+            return;
+            break;
+    }
+
+    m_rxSocket->SetRecvCallback (MakeCallback (&DataCenterApp::HandleRead, this));
+    m_rxSocket->SetAcceptCallback (MakeCallback (&DataCenterApp::HandleConnectionRequest, this),
+                                   MakeCallback (&DataCenterApp::HandleAccept, this));
+    m_rxSocket->SetCloseCallbacks (MakeCallback (&DataCenterApp::HandleClose, this),
+                                   MakeCallback (&DataCenterApp::HandleError, this)); 
+}
+
+void
+DataCenterApp::SetupTXSocket (uint32_t sendParamsNodeIndex)
+{
+    NS_LOG_FUNCTION (this);
+    
+    Ptr<Socket> socket = 0;
+    switch (m_stack)
+    {
+        case UDP_IP_STACK:
+        {
+            socket = Socket::CreateSocket (GetNode (), UdpSocketFactory::GetTypeId ());
+            //socket->SetAttribute ("SegmentSize", UintegerValue(m_sendParams.m_packetSize+11));
+            //socket->SetAttribute ("SndBufSize", UintegerValue(16384));
+            //socket->SetAttribute ("RcvBufSize", UintegerValue(16384));
+            //socket->SetAttribute ("SegmentSize", UintegerValue(16384));
+            //socket->SetAttribute ("ConnTimeout", UintegerValue(3));
+            Ipv4Address addr = Ipv4Address::ConvertFrom (m_sendParams.m_nodes[sendParamsNodeIndex]);
+            Address nodeAddress (InetSocketAddress (addr, PORT));
+            socket->Bind ();
+            socket->Connect (nodeAddress);
+            break;
+        }
+        case TCP_IP_STACK:
+        {
+            socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
+            socket->SetAttribute ("SegmentSize", UintegerValue(m_sendParams.m_packetSize+11));
+            //socket->SetAttribute ("SndBufSize", UintegerValue(16384));
+            //socket->SetAttribute ("RcvBufSize", UintegerValue(16384));
+            //socket->SetAttribute ("SegmentSize", UintegerValue(16384));
+            //socket->SetAttribute ("ConnTimeout", UintegerValue(3));
+            Ipv4Address addr = Ipv4Address::ConvertFrom (m_sendParams.m_nodes[sendParamsNodeIndex]);
+            Address nodeAddress (InetSocketAddress (addr, PORT));
+            socket->Bind ();
+            socket->Connect (nodeAddress);
+            break;
+        }
+        case UDP_DO_STACK:
+        {
+            socket = Socket::CreateSocket (GetNode (), DoUdpSocketFactory::GetTypeId ());
+            //socket->SetAttribute ("SegmentSize", UintegerValue(m_sendParams.m_packetSize+11));
+            //socket->SetAttribute ("SndBufSize", UintegerValue(16384));
+            //socket->SetAttribute ("RcvBufSize", UintegerValue(16384));
+            //socket->SetAttribute ("SegmentSize", UintegerValue(16384));
+            //socket->SetAttribute ("ConnTimeout", UintegerValue(3));
+            DimensionOrderedAddress addr = DimensionOrderedAddress::ConvertFrom (m_sendParams.m_nodes[sendParamsNodeIndex]);
+            Address nodeAddress (DimensionOrderedSocketAddress (addr, PORT));
+            socket->Bind ();
+            socket->Connect (nodeAddress);
+            break;
+        }
+        case TCP_DO_STACK:
+            NS_LOG_WARN ("DimensionOrdered TCP Stack not yet supported");
+            return;
+            break;
+        default:
+            NS_LOG_ERROR ("Invalid network stack specified, did you call DataCenterApp::Setup()??");
+            return;
+            break;
+    }
+
+    socket->SetConnectCallback (MakeCallback (&DataCenterApp::HandleConnectionSucceeded, this),
+                                MakeCallback (&DataCenterApp::HandleConnectionFailed, this));
+    socket->SetRecvCallback (MakeCallback (&DataCenterApp::HandleRead, this));
+    SendInfo sendInfo;
+    InitSendInfo (sendInfo, m_sendParams.m_nodes[sendParamsNodeIndex], socket);
+    m_sendInfos.push_back (sendInfo);
+    m_socketIndexMap[socket] = m_sendInfos.size() - 1;
+}
+
 void
 DataCenterApp::StartApplication (void)
 {
@@ -120,45 +258,14 @@ DataCenterApp::StartApplication (void)
     m_totalPacketsSent = 0;
     m_responseCount = 0;
 
-    // Setup socket for receiving
-    m_rxSocket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
-    m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(m_sendParams.m_packetSize+11));
-   // m_rxSocket->SetAttribute ("SndBufSize", UintegerValue(16384));
-    //m_rxSocket->SetAttribute ("RcvBufSize", UintegerValue(16384));
-    //m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(16384));
-    //m_rxSocket->SetAttribute ("ConnTimeout", UintegerValue(3));
-    Address local (InetSocketAddress (Ipv4Address::GetAny (), PORT));
-    m_rxSocket->Bind (local);
-    m_rxSocket->Listen ();
-    m_rxSocket->SetRecvCallback (MakeCallback (&DataCenterApp::HandleRead, this));
-    m_rxSocket->SetAcceptCallback (MakeCallback (&DataCenterApp::HandleConnectionRequest, this),
-                                   MakeCallback (&DataCenterApp::HandleAccept, this));
-    m_rxSocket->SetCloseCallbacks (MakeCallback (&DataCenterApp::HandleClose, this),
-                                   MakeCallback (&DataCenterApp::HandleError, this));
+    SetupRXSocket ();
 
     // Only open sending sockets if this app is sending
     if (m_sendParams.m_sending)
     {
         // Setup socket for each node in list
         for (uint32_t i = 0; i < m_sendParams.m_nodes.size(); i++)
-        {
-            Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId ());
-            socket->SetAttribute ("SegmentSize", UintegerValue(m_sendParams.m_packetSize+11));
-            //socket->SetAttribute ("SndBufSize", UintegerValue(16384));
-            //socket->SetAttribute ("RcvBufSize", UintegerValue(16384));
-            //socket->SetAttribute ("SegmentSize", UintegerValue(16384));
-            //socket->SetAttribute ("ConnTimeout", UintegerValue(3));
-            Address nodeAddress (InetSocketAddress (m_sendParams.m_nodes[i], PORT));
-            socket->Bind ();
-            socket->Connect (nodeAddress);
-            socket->SetConnectCallback (MakeCallback (&DataCenterApp::HandleConnectionSucceeded, this),
-                                        MakeCallback (&DataCenterApp::HandleConnectionFailed, this));
-            socket->SetRecvCallback (MakeCallback (&DataCenterApp::HandleRead, this));
-            SendInfo sendInfo;
-            InitSendInfo (sendInfo, m_sendParams.m_nodes[i], socket);
-            m_sendInfos.push_back (sendInfo);
-            m_socketIndexMap[socket] = m_sendInfos.size() - 1;
-        }
+            SetupTXSocket (i);
         KickOffSending();
     }
 }
