@@ -56,7 +56,7 @@ main (int argc, char * argv[])
     app0Params.m_minSendInterval = MilliSeconds (100.);
     app0Params.m_packetSize = 512;
     app0Params.m_nIterations = 10;    
-    app0->Setup(app0Params, 0, DataCenterApp::UDP_IP_STACK, true); 
+    app0->Setup(app0Params, 0, DataCenterApp::TCP_IP_STACK, true); 
     nodes.Get (0)->AddApplication (app0);
     app0->SetStartTime (Seconds(0.));
     app0->SetStopTime (Seconds(20.));
@@ -73,7 +73,7 @@ main (int argc, char * argv[])
     app1Params.m_minSendInterval = MilliSeconds (100.);
     app1Params.m_packetSize = 512;
     app1Params.m_nIterations = 10;
-    app1->Setup(app1Params, 1, DataCenterApp::UDP_IP_STACK, true);
+    app1->Setup(app1Params, 1, DataCenterApp::TCP_IP_STACK, true);
     nodes.Get (1)->AddApplication (app1);
     app1->SetStartTime (Seconds(0.));
     app1->SetStopTime (Seconds(20.));
