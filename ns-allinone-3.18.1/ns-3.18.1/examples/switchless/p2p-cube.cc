@@ -166,4 +166,10 @@ PointToPointCubeHelper::GetIpv4Address (unsigned nodeid)
   return (m_Interfaces.GetAddress(nodeid*2));
 }
 
+Address
+PointToPointCubeHelper::GetAddress (unsigned nodeid)
+{
+  return (m_Interfaces.GetAddress(nodeid*2));
+}
+
 } // namespace ns3

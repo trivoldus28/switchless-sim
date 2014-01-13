@@ -7,7 +7,11 @@ import os
 FATTREE = 1
 MESH = 2
 CUBE = 3
+CUBEDO = 5
 HIERARCHICAL = 4
+
+L4_TCP = 1
+L4_UDP = 2
 
 def getXY(numnodes):
   x = math.ceil(math.sqrt(numnodes))
@@ -78,12 +82,19 @@ def parseStandardVariables(argdict):
     args += " --tp=" + `FATTREE`
   elif argdict["topo"] == "mesh":
     x,y = getXY(argdict["nNode"])
-    args += " --tp=" + `MESH`
-    args += " --t1=" + `y`
-    args += " --t2=" + `x`
+    args += " --tp=" + `CUBE`
+    args += " --t1=" + `x`
+    args += " --t2=" + `y`
+    args += " --t3=1"
   elif argdict["topo"] == "cube":
     x,y,z = getXYZ(argdict["nNode"])
     args += " --tp=" + `CUBE`
+    args += " --t1=" + `x`
+    args += " --t2=" + `y`
+    args += " --t3=" + `z`
+  elif argdict["topo"] == "cube-dimordered":
+    x,y,z = getXYZ(argdict["nNode"])
+    args += " --tp=" + `CUBEDO`
     args += " --t1=" + `x`
     args += " --t2=" + `y`
     args += " --t3=" + `z`
@@ -114,6 +125,13 @@ def parseStandardVariables(argdict):
   args += " --sync=" + `argdict["synctype"]`
   args += " --psize=" + `argdict["packetsize"]`
 
+  if argdict["l4type"] == "TCP":
+    args += " --l4type=" + `L4_TCP`
+  elif argdict["l4type"] == "UDP":
+    args += " --l4type=" + `L4_UDP`
+  else:
+    args += " --l4type=0"
+
   return args
 
 
@@ -133,13 +151,14 @@ if __name__ == '__main__':
 
 	#major properties, adjust them here
 	numberofnodes = [16,64,256,512]
-	topologies = ["fattree", "mesh", "cube", "hierarchical"]
+	topologies = ["fattree", "mesh", "cube", "hierarchical", "cube-dimordered"]
 	hierarchical_type = "lowcost"
 	intervaltypes = ["fixed", "random"]
 	synctypes = [1,0] #synchronized or not
 	numsenders = [.2,.4,.6,.8]
 	numreceivers = [.2,.4,.6,.8] # percentage for random n to random/neighbor m
 	neighborlist = [1,3,5,7,9,11,13,15]
+	l4types = ["UDP", "TCP"]
 
 	#minor properties
 	numiterations = [1,2,3]
@@ -155,7 +174,7 @@ if __name__ == '__main__':
 	# numberofnodes = [16]
 	# numberofnodes = [64]
 	numberofnodes = [256]
-	topologies = ["mesh", "cube", "fattree", "hierarchical"]
+	topologies = ["mesh", "cube", "fattree", "hierarchical", "cube-dimordered"]
 	intervaltypes = ["fixed"]
 	synctypes = [1] #synchronized or not
 	# intervaltypes = ["random"]
@@ -170,6 +189,7 @@ if __name__ == '__main__':
 	# numiterations = [16]
 	numsenders = [1]
 	numreceivers = [1]
+	l4types = ["TCP"]
 
 	namesuffix = `numberofnodes[0]` + "_neighbor"
 
@@ -200,71 +220,73 @@ if __name__ == '__main__':
 								else: assert(0)
 								for interval in intervalsmux:
 										for packetsize in packetsizes:
-											argdict = {}
-											argdict["nNode"] = nNode
-											argdict["topo"] = topo
-											argdict["hierarchical_type"] = hierarchical_type
-											argdict["intervaltype"] = intervaltype
-											argdict["interval"] = interval
-											# argdict["intervalrange"] = intervalrange
-											argdict["synctype"] = synctype
-											argdict["packetsize"] = packetsize
-											argdict["numiteration"] = numiteration 
+											for l4type in l4types:
+												argdict = {}
+												argdict["nNode"] = nNode
+												argdict["topo"] = topo
+												argdict["hierarchical_type"] = hierarchical_type
+												argdict["intervaltype"] = intervaltype
+												argdict["interval"] = interval
+												# argdict["intervalrange"] = intervalrange
+												argdict["synctype"] = synctype
+												argdict["packetsize"] = packetsize
+												argdict["numiteration"] = numiteration 
+												argdict["l4type"] = l4type
 
-											# if (intervaltype == "fixed"):
-											# 	# skip the interval ranges iterations
-											# 	if intervalrange != intervalranges[0]:
-											# 		continue
-											# elif (intervaltype == "random"):
-											# 	if interval != intervals[0]:
-											# 		continue
+												# if (intervaltype == "fixed"):
+												# 	# skip the interval ranges iterations
+												# 	if intervalrange != intervalranges[0]:
+												# 		continue
+												# elif (intervaltype == "random"):
+												# 	if interval != intervals[0]:
+												# 		continue
 
-											args = parseStandardVariables(argdict)
+												args = parseStandardVariables(argdict)
 
-											logfname = ""
-											intervallog = ""
-											try:
-												intervallog = `interval[0]` + "_" + `interval[1][0]` + "_" + `interval[1][1]`
-											except:
+												logfname = ""
+												intervallog = ""
 												try:
-													intervallog = `interval[0]` + "_" + `interval[1]`
+													intervallog = `interval[0]` + "_" + `interval[1][0]` + "_" + `interval[1][1]`
 												except:
-													intervallog = `interval`
+													try:
+														intervallog = `interval[0]` + "_" + `interval[1]`
+													except:
+														intervallog = `interval`
 
-											if (workload == "all-to-all" or workload == "test"):
-												args += " --ncount=" + `nNode`
-												args += " --scount=" + `nNode`
-												args += " --rcount=" + `nNode-1`
-												logfname = "log_alltoall_" + `nNode`
-											
-											if (workload == "rnrm"):
-												# random n, random m
-												nsender = int(numsender * nNode)
-												nreceiver = int(numreceiver * nNode)
-												args += " --scount=" + `nsender`
-												args += " --rcount=" + `nreceiver`
-												args += " --ncount=" + `nNode`
-												logfname = "log_rnrm_" + `nNode` + "_" + `nsender` + "_" + `nreceiver`
+												if (workload == "all-to-all" or workload == "test"):
+													args += " --ncount=" + `nNode`
+													args += " --scount=" + `nNode`
+													args += " --rcount=" + `nNode-1`
+													logfname = "log_alltoall_" + `nNode`
+												
+												if (workload == "rnrm"):
+													# random n, random m
+													nsender = int(numsender * nNode)
+													nreceiver = int(numreceiver * nNode)
+													args += " --scount=" + `nsender`
+													args += " --rcount=" + `nreceiver`
+													args += " --ncount=" + `nNode`
+													logfname = "log_rnrm_" + `nNode` + "_" + `nsender` + "_" + `nreceiver`
 
-											if workload == "rnnm":
-												# random n, neighbor m
-												nsender = int(numsender * nNode)
-												nneighbor = numreceiver
-												args += " --scount=" + `nsender`
-												args += " --neighborcount=" + `nneighbor`
-												args += " --ncount=" + `nNode`
-												logfname = "log_rnnm_" + `nNode` + "_" + `nsender` + "_" + `nneighbor`
+												if workload == "rnnm":
+													# random n, neighbor m
+													nsender = int(numsender * nNode)
+													nneighbor = numreceiver
+													args += " --scount=" + `nsender`
+													args += " --neighborcount=" + `nneighbor`
+													args += " --ncount=" + `nNode`
+													logfname = "log_rnnm_" + `nNode` + "_" + `nsender` + "_" + `nneighbor`
 
-											# logfname += "_" + topo + "_" + intervaltype + "_" + intervallog + "_" + `synctype` \
-											#  			 + "_" + `packetsize` + "_" + `numiteration`
+												# logfname += "_" + topo + "_" + intervaltype + "_" + intervallog + "_" + `synctype` \
+												#  			 + "_" + `packetsize` + "_" + `numiteration`
 
-											logfname = topo
-											logfname += ".log"
+												logfname = topo
+												logfname += ".log"
 
-											command = './waf --run "main-test' + args + ' --debug=1"'
-											commands.append(command)
-											logfnames.append(logfname)
-											# print(command)
+												command = './waf --run "main-test' + args + ' --debug=1"'
+												commands.append(command)
+												logfnames.append(logfname)
+												# print(command)
 
 	import parse_output
 	from cStringIO import StringIO

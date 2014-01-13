@@ -14,10 +14,11 @@
 // Switchless Includes
 #include "data-center-app.h"
 #include "p2p-topology-interface.h"
-#include "p2p-2d-mesh.h"
+// #include "p2p-2d-mesh.h"
 #include "p2p-fattree.h"
 #include "p2p-cube.h"
 #include "p2p-hierarchical.h"
+#include "p2p-cube-dimordered.h"
 
 #include <unordered_set>
 #include <utility> // std::pair, std::make_pair
@@ -28,12 +29,16 @@ NS_LOG_COMPONENT_DEFINE ("MainProgram");
 
 #define DEBUG (true)
 #define FATTREE 1
-#define MESH 2
+#define MESH_DEPRECATED 2
 #define CUBE 3
 #define HIERARCHICAL 4
-#define NO_TOPO 5
 #define RANDOM 1
 #define FIXED 2
+#define CUBE_DIMORDERED 5
+#define NO_TOPO 8
+
+#define L4_TCP 1
+#define L4_UDP 2
 
 
 int
@@ -49,8 +54,10 @@ main (int argc, char * argv[])
     bool bFixedInterval = false;
     bool bRandomInterval = false;
     bool bSynchronized = false;
-    unsigned meshNumRow = 0;
-    unsigned meshNumCol = 0;
+    // unsigned nYdim = 0;
+    // unsigned nXdim = 0;
+    DataCenterApp::NETWORK_STACK network_stack_type = DataCenterApp::INVALID_STACK;
+    unsigned l4_type = 0;
 
     // parameters for hierarchical
     unsigned nEdge = 0;
@@ -106,6 +113,7 @@ main (int argc, char * argv[])
     cmd.AddValue("sChoice", "", sChoice); //0 for random
     cmd.AddValue("rChoice", "", rChoice); //0 for random
     cmd.AddValue("iter", "", nIterations);
+    cmd.AddValue("l4type", "", l4_type);
     cmd.Parse (argc, argv);
     if(debuglog==1)
     {
@@ -135,19 +143,20 @@ main (int argc, char * argv[])
     }
     bSynchronized = synchronized;
 
-    if(topologytype == MESH)
-    {
-        meshNumRow = topo_sub1;
-        meshNumCol = topo_sub2;
-    }
-    else if (topologytype == HIERARCHICAL)
+    // if(topologytype == MESH)
+    // {
+    //     nXdim = topo_sub1;
+    //     nYdim = topo_sub2;
+    // }
+    //else 
+    if (topologytype == HIERARCHICAL)
     {   
         nEdge = topo_sub1;
         nAgg = topo_sub2;
         nRepl1 = topo_sub3;
         nRepl2 = topo_sub4;
     }
-    else if (topologytype == CUBE)
+    else if (topologytype == CUBE || topologytype == CUBE_DIMORDERED)
     {
         nXdim= topo_sub1;
         nYdim= topo_sub2;
@@ -160,6 +169,8 @@ main (int argc, char * argv[])
         std::cout << "Invalid topo\n";
         NS_ASSERT(false);
     }
+
+    NS_ASSERT(l4_type != 0);
 
 
     Config::SetDefault ("ns3::DropTailQueue::Mode", StringValue ("QUEUE_MODE_PACKETS"));
@@ -179,17 +190,38 @@ main (int argc, char * argv[])
         // unsigned depth = log(nNodes / nRackSize) / log(nTreeFanout);
         // NS_ASSERT(nNodes/nRackSize == pow(nTreeFanout, depth));
         topology = new PointToPointFattreeHelper(nNodes, pointToPoint);
+        if (l4_type == L4_UDP)
+            network_stack_type = DataCenterApp::UDP_IP_STACK;
+        else
+            network_stack_type = DataCenterApp::UDP_IP_STACK;
     }
-    else if (topologytype == MESH){
-        NS_ASSERT(nNodes <= (meshNumRow * meshNumCol));
-        topology = new PointToPoint2DMeshHelper(meshNumRow, meshNumCol, bTorus, pointToPoint);
-    }
-    else if (topologytype == CUBE){
+    // else if (topologytype == MESH){
+    //     NS_ASSERT(nNodes <= (nYdim * nXdim));
+    //     topology = new PointToPoint2DMeshHelper(nYdim, nXdim, bTorus, pointToPoint);
+    // }
+    else if (topologytype == CUBE || topologytype == CUBE_DIMORDERED){
         NS_ASSERT(nNodes <= (nXdim * nYdim * nZdim));
-        topology = new PointToPointCubeHelper(nXdim, nYdim, nZdim, bTorus, pointToPoint);
+        if (topologytype == CUBE){
+            topology = new PointToPointCubeHelper(nXdim, nYdim, nZdim, bTorus, pointToPoint);
+            if (l4_type == L4_UDP)
+                network_stack_type = DataCenterApp::UDP_IP_STACK;
+            else
+                network_stack_type = DataCenterApp::UDP_IP_STACK;
+        }
+        else{
+            topology = new PointToPointCubeDimorderedHelper(nXdim, nYdim, nZdim, bTorus, pointToPoint);
+            if (l4_type == L4_UDP)
+                network_stack_type = DataCenterApp::UDP_DO_STACK;
+            else
+                network_stack_type = DataCenterApp::UDP_DO_STACK;
+        }
     }
     else if (topologytype == HIERARCHICAL){
         topology = new PointToPointHierarchicalHelper(nNodes, nEdge, nAgg, nRepl1, nRepl2, pointToPoint);
+        if (l4_type == L4_UDP)
+            network_stack_type = DataCenterApp::UDP_IP_STACK;
+        else
+            network_stack_type = DataCenterApp::UDP_IP_STACK;
     }
     else{
         std::cout << "Invalid topo\n";
@@ -240,7 +272,7 @@ main (int argc, char * argv[])
             {
                 if(i!=*it)
                 {
-                    Ipv4Address t = topology->GetIpv4Address(i);
+                    Address t = topology->GetAddress(i);
                     receiverNodeList.push_back(t);
                 }
             }
@@ -278,52 +310,52 @@ main (int argc, char * argv[])
                     remainings --;
                 }
              }
-             else if(topologytype == MESH){
-                // Basically we will have a box to draw random, clustered nodes from
-                // Box boundaries are 1,4,9,16,25,...
-                // centered around this particular send node (*it)
-                unsigned senderY = *it / meshNumCol;
-                unsigned senderX = *it % meshNumCol;
-                unsigned mindistance =1;
-                int failSafeCounter = 0;
-                while (receiverSet .size() < nNeighbor){
-                    int randx = rand() % (mindistance*2+1);
-                    int randy = rand() % (mindistance*2+1);
-                    randx = randx-mindistance;
-                    randy = randy-mindistance;
-                    int distance = abs(randx)+abs(randy);
-                    if(mindistance == distance)
-                    {
-                        int poty = randy + senderY;
-                        int potx = randx + senderX;
-                        NS_ASSERT(bTorus == true);
-                        if (potx < 0)
-                            potx += meshNumCol;
-                        if (poty < 0)
-                            poty += meshNumRow;
-                        if (potx ==0 && poty == 0)
-                        {
-                            continue;
-                        }
-                        if (potx >= meshNumCol || poty >=meshNumRow) 
-                        {
-                            continue;
-                        }
-                        unsigned coord = poty* meshNumCol + potx;
-                        receiverSet.insert(coord);
-                    }
-                    if(receiverSet.size() == 2*mindistance*(mindistance+1))
-                    {
-                        mindistance++;
-                    }
-                    failSafeCounter++;
-                    if(failSafeCounter==10000)
-                    {
-                        failSafeCounter =0 ;
-                        mindistance++;
-                    }
-                }
-             }
+             // else if(topologytype == MESH){
+             //    // Basically we will have a box to draw random, clustered nodes from
+             //    // Box boundaries are 1,4,9,16,25,...
+             //    // centered around this particular send node (*it)
+             //    unsigned senderY = *it / nXdim;
+             //    unsigned senderX = *it % nXdim;
+             //    unsigned mindistance =1;
+             //    int failSafeCounter = 0;
+             //    while (receiverSet .size() < nNeighbor){
+             //        int randx = rand() % (mindistance*2+1);
+             //        int randy = rand() % (mindistance*2+1);
+             //        randx = randx-mindistance;
+             //        randy = randy-mindistance;
+             //        int distance = abs(randx)+abs(randy);
+             //        if(mindistance == distance)
+             //        {
+             //            int poty = randy + senderY;
+             //            int potx = randx + senderX;
+             //            NS_ASSERT(bTorus == true);
+             //            if (potx < 0)
+             //                potx += nXdim;
+             //            if (poty < 0)
+             //                poty += nYdim;
+             //            if (potx ==0 && poty == 0)
+             //            {
+             //                continue;
+             //            }
+             //            if (potx >= nXdim || poty >=nYdim) 
+             //            {
+             //                continue;
+             //            }
+             //            unsigned coord = poty* nXdim + potx;
+             //            receiverSet.insert(coord);
+             //        }
+             //        if(receiverSet.size() == 2*mindistance*(mindistance+1))
+             //        {
+             //            mindistance++;
+             //        }
+             //        failSafeCounter++;
+             //        if(failSafeCounter==10000)
+             //        {
+             //            failSafeCounter =0 ;
+             //            mindistance++;
+             //        }
+             //    }
+             // }
              else if(topologytype == CUBE){
                 unsigned senderZ = *it / (nXdim * nYdim);
                 unsigned senderY = *it / nXdim;
@@ -376,7 +408,7 @@ main (int argc, char * argv[])
 
              for (std::unordered_set<int>::iterator it = receiverSet.begin(); it != receiverSet.end(); it++)
              {
-                Ipv4Address t = topology->GetIpv4Address(*it);
+                Address t = topology->GetAddress(*it);
                 receiverNodeList.push_back(t);
              }
             params.m_nReceivers = nNeighbor;
@@ -411,7 +443,7 @@ main (int argc, char * argv[])
         params.m_packetSize = nPacketSize;
         params.m_nIterations = nIterations; 
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
-        app->Setup(params, *it, DataCenterApp::TCP_IP_STACK, DEBUG); 
+        app->Setup(params, *it, network_stack_type, DEBUG); 
         topology->GetNode(*it)->AddApplication(app);
 
         app->SetStartTime (Seconds(0.));
@@ -420,7 +452,7 @@ main (int argc, char * argv[])
     for (std::unordered_set<int>::iterator it = nonsenderSet.begin(); it != nonsenderSet.end(); it++){
         DataCenterApp::SendParams params;
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
-        app->Setup(params, *it, DataCenterApp::TCP_IP_STACK, DEBUG); 
+        app->Setup(params, *it, network_stack_type, DEBUG); 
         topology->GetNode(*it)->AddApplication(app);
         app->SetStartTime (Seconds(0.));
         app->SetStopTime (Seconds(100000.));
@@ -428,8 +460,10 @@ main (int argc, char * argv[])
 
 
     //Config::SetDefault ("ns3::ArpCache::PendingQueueSize", UintegerValue (MAX_BURST_SIZE/L2MTU*3));
-    std::cout << "Populating routing table\n";
-    Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+    if (network_stack_type == DataCenterApp::UDP_IP_STACK || network_stack_type == DataCenterApp::TCP_IP_STACK){
+        std::cout << "Populating routing table\n";
+        Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+    }
 
     std::cout << "Running simulation\n";
     Simulator::Run ();

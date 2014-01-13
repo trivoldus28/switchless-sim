@@ -47,6 +47,7 @@ public:
   void InstallStack (InternetStackHelper stack);
 
   void AssignIpv4Addresses (Ipv4AddressHelper ip, Ipv4AddressHelper router_ip);
+  Address GetAddress(unsigned nodeid);
 
 private:
   void recursiveMakeTree(Node * root, unsigned group_size, unsigned router_fanout, unsigned tree_depth, uint64_t base_datarate,

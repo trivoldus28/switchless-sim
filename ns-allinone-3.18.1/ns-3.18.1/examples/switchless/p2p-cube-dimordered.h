@@ -16,8 +16,8 @@
  * Author: Josh Pelkey <jpelkey@gatech.edu>
  */
 
-#ifndef POINT_TO_POINT_NCUBE_HELPER_H
-#define POINT_TO_POINT_NCUBE_HELPER_H
+#ifndef POINT_TO_POINT_NCUBE_DIMORDERED_HELPER_H
+#define POINT_TO_POINT_NCUBE_DIMORDERED_HELPER_H
 
 #include <vector>
 
@@ -38,13 +38,13 @@ namespace ns3 {
  * \brief A helper to make it easier to create a grid topology
  * with p2p links
  */
-class PointToPointCubeHelper : public PointToPointTopoHelper
+class PointToPointCubeDimorderedHelper : public PointToPointTopoHelper
 {
 public: 
-  PointToPointCubeHelper (unsigned x, unsigned y, unsigned z, bool isTorus,
+  PointToPointCubeDimorderedHelper (unsigned x, unsigned y, unsigned z, bool isTorus,
                           PointToPointHelper pointToPoint);
 
-  ~PointToPointCubeHelper ();
+  ~PointToPointCubeDimorderedHelper ();
 
   Ptr<Node> GetNode (unsigned nodeid);
   Ipv4Address GetIpv4Address (unsigned nodeid);
@@ -56,12 +56,12 @@ private:
   unsigned m_total_nodes;
 
   NodeContainer m_nodes;
-  NodeContainer m_hubs;
   NetDeviceContainer m_devices;
   NetDeviceContainer m_hub_bridge_devs;
   Ipv4InterfaceContainer m_Interfaces;
+  DimensionOrderedInterfaceContainer m_diminterfaces;
 };
 
 } // namespace ns3
 
-#endif /* POINT_TO_POINT_NCUBE_HELPER_H */
+#endif /* POINT_TO_POINT_NCUBE_DIMORDERED_HELPER_H */

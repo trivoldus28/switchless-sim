@@ -9,7 +9,8 @@ def build(bld):
         'p2p-fattree.cc',
         'p2p-hierarchical.cc',
         'data-center-app.cc',
-        'dc-app-header.cc'
+        'dc-app-header.cc',
+        'p2p-cube-dimordered.cc'
     }
    
     obj = bld.create_ns3_program('test-mesh', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])
@@ -28,6 +29,14 @@ def build(bld):
     obj.source = {
         'test-ncube.cc',
         'p2p-cube.cc'
+    } 
+   
+    obj = bld.create_ns3_program('test-cube-dimordered', ['core', 'point-to-point', 'internet', 'applications', 'mobility', 'switchless'])
+    obj.source = {
+        'dim-ordered-udp-client.cc',
+        'dim-ordered-udp-server.cc',
+        'test-cube-dimordered.cc',
+        'p2p-cube-dimordered.cc'
     } 
    
     obj = bld.create_ns3_program('test-fattree', ['core', 'point-to-point', 'internet', 'applications', 'mobility'])

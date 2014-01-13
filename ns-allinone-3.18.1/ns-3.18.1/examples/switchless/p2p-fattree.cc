@@ -221,6 +221,12 @@ PointToPointFattreeHelper::GetNode (unsigned nodeid)
   return (m_host.Get(nodeid));
 }
 
+Address
+PointToPointFattreeHelper::GetAddress (unsigned nodeid)
+{
+  return (m_hostIface.GetAddress(nodeid));
+}
+
 Ipv4Address
 PointToPointFattreeHelper::GetIpv4Address (unsigned nodeid)
 {

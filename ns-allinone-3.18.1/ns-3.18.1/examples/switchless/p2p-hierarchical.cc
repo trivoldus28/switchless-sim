@@ -114,6 +114,12 @@ PointToPointHierarchicalHelper::GetNode (unsigned nodeid)
   return (m_host.Get(nodeid));
 }
 
+Address
+PointToPointHierarchicalHelper::GetAddress (unsigned nodeid)
+{
+  return (m_interfaces.GetAddress(nodeid * 2));
+}
+
 Ipv4Address
 PointToPointHierarchicalHelper::GetIpv4Address (unsigned nodeid)
 {

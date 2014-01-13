@@ -46,6 +46,7 @@ public:
   Ipv4Address GetIpv4Address (unsigned nodeid);
   void InstallStack (InternetStackHelper stack);
   void AssignIpv4Addresses (Ipv4AddressHelper ip, Ipv4AddressHelper link_ip);
+  Address GetAddress(unsigned nodeid);
 private:
 
   NodeContainer m_node;
