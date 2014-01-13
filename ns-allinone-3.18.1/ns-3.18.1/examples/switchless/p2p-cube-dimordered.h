@@ -50,6 +50,7 @@ public:
   Ipv4Address GetIpv4Address (unsigned nodeid);
   void InstallStack (InternetStackHelper stack);
   void AssignIpv4Addresses (Ipv4AddressHelper ip, Ipv4AddressHelper link_ip);
+  Address GetAddress(unsigned nodeid);
 
 private:
   unsigned m_total_nodes;
@@ -58,6 +59,7 @@ private:
   NetDeviceContainer m_devices;
   NetDeviceContainer m_hub_bridge_devs;
   Ipv4InterfaceContainer m_Interfaces;
+  DimensionOrderedInterfaceContainer m_diminterfaces;
 };
 
 } // namespace ns3

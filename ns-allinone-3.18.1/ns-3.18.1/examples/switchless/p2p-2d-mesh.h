@@ -88,6 +88,7 @@ public:
    */
   Ipv4Address GetIpv4Address (uint32_t row, uint32_t col);
   Ipv4Address GetIpv4Address (uint32_t nodeid);
+  Address GetAddress (uint32_t nodeid);
   /**
    * \param stack an InternetStackHelper which is used to install 
    *              on every node in the grid

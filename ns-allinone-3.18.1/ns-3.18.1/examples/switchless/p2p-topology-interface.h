@@ -53,6 +53,7 @@ public:
   virtual void InstallStack (InternetStackHelper stack) = 0;
 
   virtual void AssignIpv4Addresses (Ipv4AddressHelper ip, Ipv4AddressHelper link_ip) = 0;
+  virtual Address GetAddress(unsigned nodeid) = 0;
 };
 
 } // namespace ns3

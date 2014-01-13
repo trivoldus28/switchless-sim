@@ -129,8 +129,8 @@ PointToPointCubeDimorderedHelper::PointToPointCubeDimorderedHelper (unsigned x, 
       }
     }
   }
-  DimensionOrderedInterfaceContainer interfaces;
-  interfaces = DimensionOrderedAddressHelper::Assign (assignList);
+  // DimensionOrderedInterfaceContainer interfaces;
+  m_diminterfaces = DimensionOrderedAddressHelper::Assign (assignList);
 }
 
 PointToPointCubeDimorderedHelper::~PointToPointCubeDimorderedHelper ()
@@ -171,6 +171,12 @@ PointToPointCubeDimorderedHelper::GetIpv4Address (unsigned nodeid)
 {
   // return (m_Interfaces.GetAddress(nodeid*2));
   return 0;
+}
+
+Address
+PointToPointCubeDimorderedHelper::GetAddress (unsigned nodeid)
+{
+  return (m_diminterfaces.GetAddress(nodeid));
 }
 
 } // namespace ns3

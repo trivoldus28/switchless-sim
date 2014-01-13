@@ -226,4 +226,18 @@ PointToPoint2DMeshHelper::GetIpv4Address (unsigned nodeid){
   return (m_Interfaces.at (row)).GetAddress (col);
 }
 
+Address
+PointToPoint2DMeshHelper::GetAddress (unsigned nodeid){
+  unsigned row = nodeid / m_xSize;
+  unsigned col = nodeid % m_xSize;
+  if (row > m_nodes.size () - 1 || 
+      col > m_nodes.at (row).GetN () - 1) 
+    {
+      std::cout << "Requesting node "<< nodeid << ":" << row << "x" << col << std::endl;
+      NS_FATAL_ERROR ("Index out of bounds in PointToPoint2DMeshHelper::GetIpv4Address.");
+    }
+
+  return (m_Interfaces.at (row)).GetAddress (col);
+}
+
 } // namespace ns3
