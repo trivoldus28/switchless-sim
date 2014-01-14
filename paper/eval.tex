@@ -74,4 +74,18 @@ Figure~\ref{fig:weather_packetdelay} shows the distribution graph of all packets
 On the oher hand, there are a few reasons why hierarchical or fat-tree has good performance. The most conspicuous reason is that our micro-benchmark doesn't map exactly to a weather modeling simulation in that for each node we pick the 6 closest neighbors, which will always be in the same rack. If time allows, we will adjust the parameters for a more accurate results.
 
 \subsubsection{TCP vs UDP}
-Data center operators usually run TCP as the level 4 networking stack for better compatibility with MAN and WAN. However, TCP is "heavier" than UDP as a protocol, especially within data centers where packet drops are rare. As we utilize a full networking stack simulator for our study, we implement our topologies with both TCP and UDP and run a simulation exercise to see the 
+Data center operators usually run TCP as the level 4 networking stack for better compatibility with MAN and WAN. However, TCP is "heavier" than UDP as a protocol, especially within data centers where packet drops are rare. As we utilize a full networking stack simulator for our study, we implement our topologies with both TCP and UDP and run a simulation exercise to see how the overheads compare.
+
+What we found was that, at least for our simulation set up (as described in Methodology), TCP has about the same performance as UDP, but packet drops are more frequent, leading to completion time timing out
+
+\subsubsection{Dimension-ordered vs IP}
+As mentioned, for switchless topologies, we had two implementations: one with TCP/IP routing, and the other one with dimension-ordered routing commonly used in NoC for deadlock avoidance. In our simulation, as shown in Figure~\ref{fig:dimension_ordered}, we found that for some reason dimension-ordered routing is slower than IP. One possible reason for this is that dimension-ordered protocol restricts the possible data paths that packet can traverse through, and so introduces bandwidth contentions that otherwise might not exist in traditional IP routing.
+
+\captionsetup[subfloat]{captionskip=-0.003in}
+\begin{figure}
+    \centering
+        \includegraphics[width=0.4\textwidth]{dimension_ordered_udp}
+        \label{fig:dimension_ordered}
+    \caption{Packet latency distribution of a mesh network running UDP on top of either IP or dimension-ordered protocol.}
+\end{figure}
+
