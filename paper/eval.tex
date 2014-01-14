@@ -6,12 +6,12 @@ In this paper, we attempt to answer performance concerns with switching to a swi
 We also ran a few more benchmarks such as the overhead of UDP vs TCP in the data center setting, as well as IP routing version dimension-ordered routing.
 
 \subsection {Methodology}
-For performance evaluation, we use ns3, an open-source discrete-event network simulator devleoped by network research community. We modified the significant portion of the simulator for our purpose. These modifications include addition of dimension-ordered routing protocol, addition of various network topologies, etc. ns-3 simulator augmented with our modifications models all five OSI communication layers to the certain detail.
+For performance evaluation, we use ns3\cite{Ns3:Online}, an open-source discrete-event network simulator devleoped by network research community. We modified the significant portion of the simulator for our purpose. These modifications include addition of dimension-ordered routing protocol, addition of various network topologies, etc. ns-3 simulator augmented with our modifications models all five OSI communication layers to the certain detail.
 
 As it is hard to define a small representative application for the data center, we used a micro-benchmark that can be configured to model various different data center application's communication pattern. For example, this micro-benchmark can be configured to generate simple all-to-all style communication traffic with set intensity. On the other hand, it can also be configured to generate sporadic communications between two random nodes. Note that there are many other possible configurations which can model varying communication types.
 
 % benchmark configurations (common)
-The default configurations for all simulations are detailed in Table~\ref{tab:configurations}, unless noted specifically.
+1The default configurations for all simulations are detailed in Table~\ref{tab:configurations}, unless noted specifically.
 % # host: 512
 % Ethernet links: 1Gbps
 % hierarchical: 1 core, balanced fan-outs (agg / edge == edge / host)
