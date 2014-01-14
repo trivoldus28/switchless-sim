@@ -68,8 +68,6 @@ DataCenterApp::Setup (SendParams& sendingParams, uint32_t nodeId, NETWORK_STACK 
 
     if (sendingParams.m_sending && (sendingParams.m_nReceivers > sendingParams.m_nodes.size()))
     {
-        std::cout << m_sendParams.m_nReceivers << std::endl;
-        std::cout << (int)m_sendParams.m_nodes.size() << std::endl;
         NS_LOG_ERROR ("Number of receivers is greater than number of nodes");
         return false;
     }

@@ -272,7 +272,7 @@ main (int argc, char * argv[])
         std::vector <Address> receiverNodeList;
 
         if (sReceiverChoice == "random"){
-            std::cout << "Random Receiver" << std::endl;
+            // std::cout << "Random Receiver" << std::endl;
             for(int i=0;i<nNodes;i++)
             {
                 if(i!=*it)
@@ -286,37 +286,46 @@ main (int argc, char * argv[])
             params.m_receivers = DataCenterApp::RANDOM_SUBSET;
         }
         else{
-            std::cout << "Set Receiver" << std::endl;
-            std::cout << nNeighbor << std::endl;
-            std::cout << nNodes << std::endl;
+            // std::cout << "Set Receiver" << std::endl;
+            // std::cout << nNeighbor << std::endl;
+            // std::cout << nNodes << std::endl;
 
              std::unordered_set<int> receiverSet;
-             if (topologytype == FATTREE){
+             if (topologytype == FATTREE || topologytype == HIERARCHICAL){
                 int nodeid = *it;
-                float logval = log2(nNeighbor); // 
-                int logv = ceil(logval); //
-                int rem1 = nodeid % (int)(pow(2,(logv-1))); //
-                int rem2 = nodeid % (int)(pow(2,(logv))); //
-                int base1 = nodeid- rem1;
-                for (int i=0; i< pow(2,(logv-1)); i++)
-                {
-                    receiverSet.insert(base1+i);
-                }
-                int remainings = nNeighbor-pow(2,(logv-1));
-                int base2;
-                if(rem2> pow(2,(logv-1)))
-                {
-                    base2 = nodeid - rem2;
-                }
-                else
-                {
-                    base2 = nodeid - rem2 + pow(2,(logv-1));
-                }
-                while (remainings !=0)
-                {
-                    int randid = rand() % (int)(pow(2,(logv-1)));
-                    receiverSet.insert(base2+randid);
-                    remainings --;
+                // float logval = log2(nNeighbor); // 
+                // int logv = ceil(logval); //
+                // int rem1 = nodeid % (int)(pow(2,(logv-1))); //
+                // int rem2 = nodeid % (int)(pow(2,(logv))); //
+                // int base1 = nodeid- rem1;
+                // for (int i=0; i< pow(2,(logv-1)); i++)
+                // {
+                //     receiverSet.insert(base1+i);
+                // }
+                // int remainings = nNeighbor-pow(2,(logv-1));
+                // int base2;
+                // if(rem2> pow(2,(logv-1)))
+                // {
+                //     base2 = nodeid - rem2;
+                // }
+                // else
+                // {
+                //     base2 = nodeid - rem2 + pow(2,(logv-1));
+                // }
+                // while (remainings !=0)
+                // {
+                //     int randid = rand() % (int)(pow(2,(logv-1)));
+                //     receiverSet.insert(base2+randid);
+                //     remainings --;
+                // }
+
+                // int remaincount = nNeighbor;
+                int startid = nodeid - nNeighbor/2; // centering
+                startid = nodeid - (nodeid % 16);
+                while (startid < 0) startid += 16;
+                while ((startid + nNeighbor) > nNodes) startid -= 16;
+                for (int i = startid; i < startid + nNeighbor; i++){
+                    receiverSet.insert(i);
                 }
              }
              // else if(topologytype == MESH){
@@ -365,7 +374,7 @@ main (int argc, char * argv[])
              //        }
              //    }
              // }
-             else if(topologytype == CUBE){
+             else if(topologytype == CUBE || topologytype == CUBE_DIMORDERED){
                 unsigned senderZ = *it / (nXdim * nYdim);
                 unsigned senderY = *it / nXdim;
                 unsigned senderX = *it % nXdim;
@@ -451,7 +460,8 @@ main (int argc, char * argv[])
         }
         params.m_packetSize = nPacketSize;
         params.m_nIterations = nIterations; 
-        std::cout << "Number of receivers: " <<  params.m_nReceivers<< std::endl;
+        // std::cout << "Number of receivers: " <<  params.m_nReceivers<< std::endl;
+        // std::cout << "Number of nodes in set: " <<  params.m_nodes.size() << std::endl;
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
         bool ret = app->Setup(params, *it, network_stack_type, DEBUG);
         if (!ret){

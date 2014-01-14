@@ -186,10 +186,11 @@ if __name__ == '__main__':
 
 	# numberofnodes = [16]
 	# numberofnodes = [64]
-	numberofnodes = [512]
+	numberofnodes = [1024]
 	# topologies = ["mesh", "cube", "fattree", "hierarchical", "cube-dimordered"]
 	topologies = ["fattree", "hierarchical", "cube-dimordered","mesh-dimordered"]
-	# topologies = ["cube-dimordered"]
+	# topologies = ["fattree"]
+	workload = "rnnm"
 	workload = "all-to-all"
 	intervaltypes = ["fixed"]
 	hierarchical_type = "balanced"
@@ -204,11 +205,12 @@ if __name__ == '__main__':
 	# intervalranges = [[1,10]] # in NS, used in sporadic interval
 	numiterations = [1]
 	# neighborlist = [10,20,50,100]
-	neighborlist = [10]
+	neighborlist = [6,10,20,50,100]
+	# neighborlist = [6,10]
 	# numiterations = [16]
 	# numsenders = [float(1)/256]
 	# numreceivers = [float(1)/256]
-	numsenders = [.1]
+	numsenders = [1]
 	numreceivers = [.2]
 	l4types = ["UDP"]
 
@@ -307,8 +309,8 @@ if __name__ == '__main__':
 												command = './waf --run "main-test' + args + ' --debug=1"'
 												commands.append(command)
 												# logfnames.append(logfname)
-												# logfname = "NearestNeighbors_" + topo + "_" + `numreceiver`
-												logfname = "Nbody_" + topo + "_" + `interval`
+												# logfname = "Weather_" + topo + "_" + `numreceiver`
+												logfname = "Nbody1000_" + topo + "_" + `interval`
 												logfname += '.log'
 												logfnames.append(logfname)
 												# print(command)
