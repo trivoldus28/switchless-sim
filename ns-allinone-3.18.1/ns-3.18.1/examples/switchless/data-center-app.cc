@@ -159,9 +159,18 @@ DataCenterApp::SetupRXSocket (void)
             break;
         }
         case TCP_DO_STACK:
-            NS_LOG_WARN ("DimensionOrdered TCP Stack not yet supported");
-            return;
+        {
+            m_rxSocket = Socket::CreateSocket (GetNode (), DoTcpSocketFactory::GetTypeId ());
+            m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(m_sendParams.m_packetSize+11));
+            //m_rxSocket->SetAttribute ("SndBufSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("RcvBufSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("SegmentSize", UintegerValue(16384));
+            //m_rxSocket->SetAttribute ("ConnTimeout", UintegerValue(3));
+            Address local (DimensionOrderedSocketAddress (DimensionOrderedAddress::GetAny (), PORT));
+            m_rxSocket->Bind (local);
+            m_rxSocket->Listen ();
             break;
+        }
         default:
             NS_LOG_ERROR ("Invalid network stack specified, did you call DataCenterApp::Setup()??");
             return;
@@ -226,9 +235,19 @@ DataCenterApp::SetupTXSocket (uint32_t sendParamsNodeIndex)
             break;
         }
         case TCP_DO_STACK:
-            NS_LOG_WARN ("DimensionOrdered TCP Stack not yet supported");
-            return;
+        {
+            socket = Socket::CreateSocket (GetNode (), DoTcpSocketFactory::GetTypeId ());
+            socket->SetAttribute ("SegmentSize", UintegerValue(m_sendParams.m_packetSize+11));
+            //socket->SetAttribute ("SndBufSize", UintegerValue(16384));
+            //socket->SetAttribute ("RcvBufSize", UintegerValue(16384));
+            //socket->SetAttribute ("SegmentSize", UintegerValue(16384));
+            //socket->SetAttribute ("ConnTimeout", UintegerValue(3));
+            DimensionOrderedAddress addr = DimensionOrderedAddress::ConvertFrom (m_sendParams.m_nodes[sendParamsNodeIndex]);
+            Address nodeAddress (DimensionOrderedSocketAddress (addr, PORT));
+            socket->Bind ();
+            socket->Connect (nodeAddress);
             break;
+        }
         default:
             NS_LOG_ERROR ("Invalid network stack specified, did you call DataCenterApp::Setup()??");
             return;
@@ -390,10 +409,39 @@ bool
 DataCenterApp::HandleConnectionRequest (Ptr<Socket> socket, const Address& from)
 {
     NS_LOG_FUNCTION (this << socket << from);
-    NS_LOG_INFO ("Node " << GetNode ()->GetId () << " Connection Request Received:\n" <<
-                 "    Source: " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << "\n" <<
-                 "    Destination: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
-                 "    Time: " << Simulator::Now());
+    
+    if (InetSocketAddress::IsMatchingType (from))
+    {
+        NS_LOG_INFO ("Node " << GetNode ()->GetId () << " Connection Request Received:\n" <<
+                     "    Source: " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << "\n" <<
+                     "    Destination: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () 
+                            << "\n" <<
+                     "    Time: " << Simulator::Now());
+    }
+    else if (DimensionOrderedSocketAddress::IsMatchingType (from))
+    {
+        // Determine destination
+        Ptr<DimensionOrdered> dimOrdered = GetNode ()->GetObject<DimensionOrdered> ();
+        DimensionOrderedAddress dst = dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal ();
+        if (dst == DimensionOrderedAddress::GetZero ())
+            dst = dimOrdered->GetAddress (DimensionOrdered::X_NEG).GetLocal ();
+        if (dst == DimensionOrderedAddress::GetZero ())
+            dst = dimOrdered->GetAddress (DimensionOrdered::Y_POS).GetLocal ();
+        if (dst == DimensionOrderedAddress::GetZero ())
+            dst = dimOrdered->GetAddress (DimensionOrdered::Y_NEG).GetLocal ();
+        if (dst == DimensionOrderedAddress::GetZero ())
+            dst = dimOrdered->GetAddress (DimensionOrdered::Z_POS).GetLocal ();
+        if (dst == DimensionOrderedAddress::GetZero ())
+            dst = dimOrdered->GetAddress (DimensionOrdered::Z_NEG).GetLocal ();
+        NS_ASSERT (dst != DimensionOrderedAddress::GetZero ()); 
+
+        NS_LOG_INFO ("Node " << GetNode ()->GetId () << " Connection Request Received:\n" <<
+                     "    Source: " << DimensionOrderedSocketAddress::ConvertFrom (from)
+                                        .GetDimensionOrderedAddress () << "\n" <<
+                     "    Destination: " << dst << "\n" <<
+                     "    Time: " << Simulator::Now());
+    }
+
     socket->SetAttribute ("SndBufSize", UintegerValue(1048576));
     socket->SetAttribute ("RcvBufSize", UintegerValue(1048576));
     //socket->SetAttribute ("SegmentSize", UintegerValue(1048576)); Can't do this
@@ -414,10 +462,38 @@ DataCenterApp::HandleAccept (Ptr<Socket> socket, const Address& from)
     ReceiveInfo recvInfo;
     InitReceiveInfo (recvInfo);
     m_acceptSocketMap[socket] = recvInfo;
-    NS_LOG_INFO ("Node " << GetNode ()->GetId () << " Connection Accepted:\n" <<
-                 "    Source: " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << "\n" <<
-                 "    Destination: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << "\n" <<
-                 "    Time: " << Simulator::Now()); 
+
+    if (InetSocketAddress::IsMatchingType (from))
+    {
+        NS_LOG_INFO ("Node " << GetNode ()->GetId () << " Connection Accepted:\n" <<
+                     "    Source: " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << "\n" <<
+                     "    Destination: " << GetNode ()->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () 
+                            << "\n" <<
+                     "    Time: " << Simulator::Now()); 
+    }
+    else if (DimensionOrderedSocketAddress::IsMatchingType (from))
+    {
+        // Determine dst address
+        Ptr<DimensionOrdered> dimOrdered = GetNode ()->GetObject<DimensionOrdered> ();
+        DimensionOrderedAddress dst = dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal ();
+        if (dst == DimensionOrderedAddress::GetZero ())
+            dst = dimOrdered->GetAddress (DimensionOrdered::X_NEG).GetLocal ();
+        if (dst == DimensionOrderedAddress::GetZero ())
+            dst = dimOrdered->GetAddress (DimensionOrdered::Y_POS).GetLocal ();
+        if (dst == DimensionOrderedAddress::GetZero ())
+            dst = dimOrdered->GetAddress (DimensionOrdered::Y_NEG).GetLocal ();
+        if (dst == DimensionOrderedAddress::GetZero ())
+            dst = dimOrdered->GetAddress (DimensionOrdered::Z_POS).GetLocal ();
+        if (dst == DimensionOrderedAddress::GetZero ())
+            dst = dimOrdered->GetAddress (DimensionOrdered::Z_NEG).GetLocal ();
+        NS_ASSERT (dst != DimensionOrderedAddress::GetZero ());
+
+        NS_LOG_INFO ("Node " << GetNode ()->GetId () << " Connection Accepted:\n" <<
+                     "    Source: " << DimensionOrderedSocketAddress::ConvertFrom (from)
+                                            .GetDimensionOrderedAddress () << "\n" <<
+                     "    Destination: " << dst << "\n" <<
+                     "    Time: " << Simulator::Now());
+    }
 }
 
 void
@@ -474,6 +550,14 @@ DataCenterApp::HandleRead (Ptr<Socket> socket)
                 DimensionOrderedAddress dst = dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal ();
                 if (dst == DimensionOrderedAddress::GetZero ())
                     dst = dimOrdered->GetAddress (DimensionOrdered::X_NEG).GetLocal ();
+                if (dst == DimensionOrderedAddress::GetZero ())
+                    dst = dimOrdered->GetAddress (DimensionOrdered::Y_POS).GetLocal ();
+                if (dst == DimensionOrderedAddress::GetZero ())
+                    dst = dimOrdered->GetAddress (DimensionOrdered::Y_NEG).GetLocal ();
+                if (dst == DimensionOrderedAddress::GetZero ())
+                    dst = dimOrdered->GetAddress (DimensionOrdered::Z_POS).GetLocal ();
+                if (dst == DimensionOrderedAddress::GetZero ())
+                    dst = dimOrdered->GetAddress (DimensionOrdered::Z_NEG).GetLocal ();
                 NS_ASSERT (dst != DimensionOrderedAddress::GetZero ());
 
                 NS_LOG_INFO ("Node " << GetNode ()->GetId () << " RX:\n" <<
@@ -826,6 +910,14 @@ DataCenterApp::SendResponsePacket (Ptr<Socket> socket, Address& to, uint16_t seq
         DimensionOrderedAddress src = dimOrdered->GetAddress (DimensionOrdered::X_POS).GetLocal ();
         if (src == DimensionOrderedAddress::GetZero ())
             src = dimOrdered->GetAddress (DimensionOrdered::X_NEG).GetLocal ();
+        if (src == DimensionOrderedAddress::GetZero ())
+            src = dimOrdered->GetAddress (DimensionOrdered::Y_POS).GetLocal ();
+        if (src == DimensionOrderedAddress::GetZero ())
+            src = dimOrdered->GetAddress (DimensionOrdered::Y_NEG).GetLocal ();
+        if (src == DimensionOrderedAddress::GetZero ())
+            src = dimOrdered->GetAddress (DimensionOrdered::Z_POS).GetLocal ();
+        if (src == DimensionOrderedAddress::GetZero ())
+            src = dimOrdered->GetAddress (DimensionOrdered::Z_NEG).GetLocal ();
         NS_ASSERT (src != DimensionOrderedAddress::GetZero ());
 
         NS_LOG_INFO ("Node " << GetNode ()->GetId () << " TX:\n" <<

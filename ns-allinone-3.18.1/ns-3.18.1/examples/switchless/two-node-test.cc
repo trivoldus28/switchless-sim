@@ -21,7 +21,7 @@
 #define UDP_DO 2
 #define TCP_DO 3
 
-#define STACK UDP_DO
+#define STACK TCP_DO
 
 using namespace ns3;
 
