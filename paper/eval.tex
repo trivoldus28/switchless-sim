@@ -2,8 +2,10 @@
 \label{sec:eval}
 
 \subsection {Methodology}
-(1) Tool(NS3) and its modifications
-(2) Microbenchmark(DATACENTER APP) 
+For performance evaluation, we use ns3, an open-source discrete-event network simulator devleoped by network research community. We modified the significant portion of the simulator for our purpose. These modifications include addition of dimension-ordered routing protocol, addition of various network topologies, etc. ns-3 simulator augmented with our modifications models all five OSI communication layers to the certain detail.
+
+As it is hard to define a small representative application for the data center, we used a micro-benchmark that can be configured to model various different data center application's communication pattern. For example, this micro-benchmark can be configured to generate simple all-to-all style communication traffic with set intensity. On the other hand, it can also be configured to generate sporadic communications between two random nodes. Note that there are many other possible configurations which can model varying communication types.
+
 \subsection {Results}
 Results -- 
 (1) Impact of topology change on performance
