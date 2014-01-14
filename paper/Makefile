@@ -14,6 +14,7 @@ SOURCES=$(NAME)-cos518.tex \
 	eval.tex \
 	related.tex \
 	conclusion.tex \
+  costmodel.tex \
 	local.bib
 
 FIGS= figs/conventional-hierarchical-topo.pdf \
