@@ -81,7 +81,7 @@ public:
 private:
     // Constants
     static const uint16_t PORT = 8080;
-    static const uint32_t MAX_PACKET_SIZE = 1500;
+    static const uint32_t MAX_PACKET_SIZE = 1500000;
 
     // Struct to hold information to sending to a node
     typedef struct SendInfoStruct

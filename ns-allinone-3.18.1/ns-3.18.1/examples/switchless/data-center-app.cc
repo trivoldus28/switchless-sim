@@ -66,19 +66,21 @@ DataCenterApp::Setup (SendParams& sendingParams, uint32_t nodeId, NETWORK_STACK 
         return false;
     } 
 
-    if (sendingParams.m_sending && sendingParams.m_nReceivers > sendingParams.m_nodes.size())
+    if (sendingParams.m_sending && (sendingParams.m_nReceivers > sendingParams.m_nodes.size()))
     {
+        std::cout << m_sendParams.m_nReceivers << std::endl;
+        std::cout << (int)m_sendParams.m_nodes.size() << std::endl;
         NS_LOG_ERROR ("Number of receivers is greater than number of nodes");
         return false;
     }
 
-    if (sendingParams.m_sending && sendingParams.m_packetSize > MAX_PACKET_SIZE)
+    if (sendingParams.m_sending && (sendingParams.m_packetSize > MAX_PACKET_SIZE))
     {
         NS_LOG_ERROR ("Packet size is greater than max packet size");
         return false;
     }
 
-    if (sendingParams.m_sending && sendingParams.m_minSendInterval > sendingParams.m_maxSendInterval)
+    if (sendingParams.m_sending && (sendingParams.m_minSendInterval > sendingParams.m_maxSendInterval))
     {
         NS_LOG_ERROR ("Min send interval is greater than max send interval");
         return false;
@@ -943,6 +945,8 @@ DataCenterApp::SelectRandomReceiverSubset (std::unordered_set<uint32_t>& subset)
     // Check we will not infinite loop when picking a receiver
     if (m_sendParams.m_nReceivers > m_sendParams.m_nodes.size())
     {
+        std::cout << (int)m_sendParams.m_nReceivers << std::endl;
+        std::cout << (int)m_sendParams.m_nodes.size() << std::endl;
         NS_LOG_ERROR ("Number of receivers is greater than number of nodes");
         return;
     }

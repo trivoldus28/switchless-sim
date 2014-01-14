@@ -182,7 +182,8 @@ main (int argc, char * argv[])
     PointToPointHelper pointToPoint;
 
 
-    pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("10Gbps"));
+    pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("100Gbps")); // 100Gbps is 10Gbps for some reason
+    // pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
     pointToPoint.SetChannelAttribute ("Delay", StringValue ("500ns")); // .5us
 
     std::cout << "Making topology\n";
@@ -271,6 +272,7 @@ main (int argc, char * argv[])
         std::vector <Address> receiverNodeList;
 
         if (sReceiverChoice == "random"){
+            std::cout << "Random Receiver" << std::endl;
             for(int i=0;i<nNodes;i++)
             {
                 if(i!=*it)
@@ -284,6 +286,10 @@ main (int argc, char * argv[])
             params.m_receivers = DataCenterApp::RANDOM_SUBSET;
         }
         else{
+            std::cout << "Set Receiver" << std::endl;
+            std::cout << nNeighbor << std::endl;
+            std::cout << nNodes << std::endl;
+
              std::unordered_set<int> receiverSet;
              if (topologytype == FATTREE){
                 int nodeid = *it;
@@ -439,13 +445,13 @@ main (int argc, char * argv[])
         }
         else
         {
-            std::cout << "Running Random Sporadic" << std::endl;
             params.m_sendPattern = DataCenterApp::RANDOM_SPORADIC;
             params.m_maxSendInterval = MicroSeconds(nMaxinterval);
             params.m_minSendInterval = MicroSeconds(nMininterval);
         }
         params.m_packetSize = nPacketSize;
         params.m_nIterations = nIterations; 
+        std::cout << "Number of receivers: " <<  params.m_nReceivers<< std::endl;
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
         bool ret = app->Setup(params, *it, network_stack_type, DEBUG);
         if (!ret){

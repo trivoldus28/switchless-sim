@@ -457,7 +457,7 @@ DimensionOrderedL3Protocol::SendRealOut (InterfaceDirection dir, Ptr<Packet> pac
     if (outInterface->IsUp ())
     {
         NS_LOG_LOGIC ("Send to destination " << header.GetDestination ());
-        NS_ASSERT (packet->GetSize () <= outInterface->GetDevice ()->GetMtu ());
+        //NS_ASSERT (packet->GetSize () <= outInterface->GetDevice ()->GetMtu ());
 
         m_txTrace (packet, m_node->GetObject<DimensionOrdered> (), dir);
         outInterface->Send (packet, header.GetDestination ());

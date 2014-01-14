@@ -65,6 +65,8 @@ PointToPointHierarchicalHelper::PointToPointHierarchicalHelper(unsigned num_node
   for(int i = 0; i < num_node; i++){
     m_node_devices.Add(p2phelper.Install(m_host.Get(i), m_edge.Get(i/num_node_per_edge)));
   }
+
+  p2phelper.SetDeviceAttribute ("DataRate", StringValue ("400Gbps")); // uplink is 40Gbps
   // connect edge to agg
   for(int i = 0; i < num_edge; i++){
     for (int j = 0; j < num_repl1; j++){

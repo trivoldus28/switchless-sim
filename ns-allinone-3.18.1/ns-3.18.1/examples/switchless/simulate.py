@@ -21,7 +21,7 @@ def getXY(numnodes):
       y = y - 1
   return (int(x),int(y))
 
-FANOUT = 48
+FANOUT = 16
 
 def getXYZ(numnodes):
     # z is limited to FANOUT (rack depth limitation)
@@ -70,10 +70,10 @@ def getHierarhicalValues(n, t):
         e = 1
       elif n <= FANOUT * FANOUT:
         e = math.ceil(pow(n,.5));
-        a = n1
+        a = m1
       else:
         e = math.ceil(pow(n,.66666));
-        a = math.ceil(pow(n,.33333)) * n1;
+        a = math.ceil(pow(n,.33333)) * m1;
   return (int(e),int(a),int(m1),int(m2))
 
 def parseStandardVariables(argdict):
@@ -158,7 +158,7 @@ if __name__ == '__main__':
 	#major properties, adjust them here
 	numberofnodes = [16,64,256,512]
 	topologies = ["fattree", "mesh", "cube", "hierarchical", "cube-dimordered","mesh-dimordered"]
-	hierarchical_type = "lowcost"
+	hierarchical_type = "balanced"
 	intervaltypes = ["fixed", "random"]
 	synctypes = [1,0] #synchronized or not
 	numsenders = [.2,.4,.6,.8]
@@ -186,26 +186,31 @@ if __name__ == '__main__':
 
 	# numberofnodes = [16]
 	# numberofnodes = [64]
-	numberofnodes = [256]
+	numberofnodes = [512]
 	# topologies = ["mesh", "cube", "fattree", "hierarchical", "cube-dimordered"]
-	# topologies = ["fattree", "mesh", "cube", "hierarchical", "cube-dimordered","mesh-dimordered"]
-	topologies = ["mesh-dimordered"]
-	intervaltypes = ["random"]
+	topologies = ["fattree", "hierarchical", "cube-dimordered","mesh-dimordered"]
+	# topologies = ["cube-dimordered"]
+	workload = "all-to-all"
+	intervaltypes = ["fixed"]
+	hierarchical_type = "balanced"
 	synctypes = [1] #synchronized or not/sporadic
 	# intervaltypes = ["random"]
 	# synctypes = [0] #synchronized or not
-	packetsizes = [256,512,1024]
-	intervals = [100,1000,10000] # in NS 
-	# intervals = [10] # in NS 
-	intervalranges = [[2,2]] # in NS, used in sporadic interval
+	# packetsizes = [2000,20000,50000]
+	packetsizes = [4000]
+	# intervals = [100,1000,10000] # in MS 
+	intervals = [0] # in NS 
+	intervalranges = [[0,0]] # in NS, used in sporadic interval
 	# intervalranges = [[1,10]] # in NS, used in sporadic interval
-	numiterations = [3]
-	neighborlist = [4]
+	numiterations = [1]
+	# neighborlist = [10,20,50,100]
+	neighborlist = [10]
 	# numiterations = [16]
-	numsenders = [float(1)/256]
-	numreceivers = [float(1)/256]
+	# numsenders = [float(1)/256]
+	# numreceivers = [float(1)/256]
+	numsenders = [.1]
+	numreceivers = [.2]
 	l4types = ["UDP"]
-	workload = "rnrm"
 
 	namesuffix = `numberofnodes[0]` + "_neighbor"
 
@@ -259,7 +264,7 @@ if __name__ == '__main__':
 
 												args = parseStandardVariables(argdict)
 
-												logfname = ""
+												# logfname = ""
 												intervallog = ""
 												try:
 													intervallog = `interval[0]` + "_" + `interval[1][0]` + "_" + `interval[1][1]`
@@ -273,7 +278,7 @@ if __name__ == '__main__':
 													args += " --ncount=" + `nNode`
 													args += " --scount=" + `nNode`
 													args += " --rcount=" + `nNode-1`
-													logfname = "log_alltoall_" + `nNode`
+													# logfname = "log_alltoall_" + `nNode`
 												
 												if (workload == "rnrm"):
 													# random n, random m
@@ -282,7 +287,7 @@ if __name__ == '__main__':
 													args += " --scount=" + `nsender`
 													args += " --rcount=" + `nreceiver`
 													args += " --ncount=" + `nNode`
-													logfname = "log_rnrm_" + `nNode` + "_" + `nsender` + "_" + `nreceiver`
+													# logfname = "log_rnrm_" + `nNode` + "_" + `nsender` + "_" + `nreceiver`
 
 												if workload == "rnnm":
 													# random n, neighbor m
@@ -291,16 +296,20 @@ if __name__ == '__main__':
 													args += " --scount=" + `nsender`
 													args += " --neighborcount=" + `nneighbor`
 													args += " --ncount=" + `nNode`
-													logfname = "log_rnnm_" + `nNode` + "_" + `nsender` + "_" + `nneighbor`
+													# logfname = "log_rnnm_" + `nNode` + "_" + `nsender` + "_" + `nneighbor`
 
 												# logfname += "_" + topo + "_" + intervaltype + "_" + intervallog + "_" + `synctype` \
 												#  			 + "_" + `packetsize` + "_" + `numiteration`
 
-												logfname = topo
-												logfname += ".log"
+												# logfname = topo
+												# logfname += ".log"
 
 												command = './waf --run "main-test' + args + ' --debug=1"'
 												commands.append(command)
+												# logfnames.append(logfname)
+												# logfname = "NearestNeighbors_" + topo + "_" + `numreceiver`
+												logfname = "Nbody_" + topo + "_" + `interval`
+												logfname += '.log'
 												logfnames.append(logfname)
 												# print(command)
 
@@ -317,7 +326,8 @@ if __name__ == '__main__':
 	for i,command in enumerate(commands):
 		if writetofile:
 			# command += " 2> " + logfnames[i]
-			command += " 2> " + logfnames[i] + `i` + ' &'
+			command += " 2> " + logfnames[i] + ' &'
+			# command += " 2> " + logfnames[i] + `i` + ' &'
 		print(command)
 		# print(logfnames[i])
 		if execute:

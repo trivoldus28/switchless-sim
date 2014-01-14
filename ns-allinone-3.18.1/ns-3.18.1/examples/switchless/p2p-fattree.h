@@ -61,7 +61,7 @@ private:
   NodeContainer m_host;
   NetDeviceContainer m_node_devices;
   NetDeviceContainer m_router_devices;
-  Ipv4InterfaceContainer m_hostIface;
+  Ipv4InterfaceContainer m_interfaces;
   Ipv4InterfaceContainer m_edgeIface;
   Ipv4InterfaceContainer m_aggrIface;
   Ipv4InterfaceContainer m_coreIface;
