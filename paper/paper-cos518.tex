@@ -2,8 +2,8 @@
 %%%
 %%% Set these variables appropriately
 %%%
-\newcommand{\AUTHORS}{YOUR NAME HERE}
-\newcommand{\TITLE}{PAPER TITLE HERE}
+\newcommand{\AUTHORS}{Michael McKeown, Tri Nguyen, and Tae Jun Ham}
+\newcommand{\TITLE}{Switchless Data Center Architecture}
 \newcommand{\KEYWORDS}{}
 \newcommand{\CONFERENCE}{}
 \newcommand{\PAGENUMBERS}{yes}       % "yes" or "no"
@@ -14,6 +14,7 @@
 
 %%%% Setup the document/page
 \documentclass[pdftex,twoside,twocolumn,10pt,letterpaper]{article}
+
 \usepackage{ifthen}
 
 \ifthenelse{\equal{\PAGENUMBERS}{yes}}{%
@@ -30,15 +31,16 @@
 \usepackage[numbers,sort]{natbib}
 \usepackage{xspace}
 \usepackage{booktabs}
-\usepackage{subfigure}
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
 \usepackage{mathptmx}   % Times + Times-like math symbols
 \usepackage{courier}
 \usepackage[scaled=0.92]{helvet}
-
 \usepackage{color}
-\usepackage[pdftex]{graphicx}
+\usepackage{graphicx}
+\usepackage{subfig}
+\DeclareGraphicsExtensions{.pdf}
+\graphicspath{{./figs/}}
 \ifthenelse{\isundefined{\wantBW}}{%
   \usepackage[colorlinks]{hyperref}%        % for online version
 }{%
@@ -129,7 +131,8 @@ bookmarksopen = {true}
 
 \input{abstract}   
 \input{intro}
-\input{design}
+\input{background}
+\input{arch}
 \input{eval}
 \input{related}
 \input{conclusion}
