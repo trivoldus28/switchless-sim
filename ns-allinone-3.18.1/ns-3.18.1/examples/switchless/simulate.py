@@ -98,6 +98,12 @@ def parseStandardVariables(argdict):
     args += " --t1=" + `x`
     args += " --t2=" + `y`
     args += " --t3=" + `z`
+  elif argdict["topo"] == "mesh-dimordered":
+    x,y = getXY(argdict["nNode"])
+    args += " --tp=" + `CUBEDO`
+    args += " --t1=" + `x`
+    args += " --t2=" + `y`
+    args += " --t3=1"
   elif argdict["topo"] == "hierarchical":
     hierarchical_type = argdict["hierarchical_type"]
     e,a,m1,m2 = getHierarhicalValues(argdict["nNode"], hierarchical_type)
@@ -151,7 +157,7 @@ if __name__ == '__main__':
 
 	#major properties, adjust them here
 	numberofnodes = [16,64,256,512]
-	topologies = ["fattree", "mesh", "cube", "hierarchical", "cube-dimordered"]
+	topologies = ["fattree", "mesh", "cube", "hierarchical", "cube-dimordered","mesh-dimordered"]
 	hierarchical_type = "lowcost"
 	intervaltypes = ["fixed", "random"]
 	synctypes = [1,0] #synchronized or not
@@ -162,34 +168,44 @@ if __name__ == '__main__':
 
 	#minor properties
 	numiterations = [1,2,3]
-	intervals = [1, 5, 10, 20] # in us 
-	intervalranges = [[1,5],[10,50]] # in us, used in sporadic interval
+	intervals = [1, 5, 10, 20] # in NS 
+	intervalranges = [[1,5],[10,50]] # in NS, used in sporadic interval
 	packetsizes = [256,512] # what is this? bytes?
 
+	#######################
 	# OVERRIDE PARAMS HERE
+	########################
 	workload = arg1
 	if workload == "":
 		workload = "test"
 
+	# fixed interval sync: packets are sent in locked step, only using isize
+	# random sporadic: send packets in intervals without receiving
+	# fixed unsync: locked step, but the first interval is not the same
+	# random synchronized: wait time is random between sending
+
 	# numberofnodes = [16]
 	# numberofnodes = [64]
 	numberofnodes = [256]
-	topologies = ["mesh", "cube", "fattree", "hierarchical", "cube-dimordered"]
-	intervaltypes = ["fixed"]
-	synctypes = [1] #synchronized or not
+	# topologies = ["mesh", "cube", "fattree", "hierarchical", "cube-dimordered"]
+	# topologies = ["fattree", "mesh", "cube", "hierarchical", "cube-dimordered","mesh-dimordered"]
+	topologies = ["mesh-dimordered"]
+	intervaltypes = ["random"]
+	synctypes = [1] #synchronized or not/sporadic
 	# intervaltypes = ["random"]
 	# synctypes = [0] #synchronized or not
-	packetsizes = [256]
-	intervals = [1] # in us 
-	# intervals = [10] # in us 
-	intervalranges = [[0,1]] # in us, used in sporadic interval
-	# intervalranges = [[1,10]] # in us, used in sporadic interval
-	numiterations = [1]
+	packetsizes = [256,512,1024]
+	intervals = [100,1000,10000] # in NS 
+	# intervals = [10] # in NS 
+	intervalranges = [[2,2]] # in NS, used in sporadic interval
+	# intervalranges = [[1,10]] # in NS, used in sporadic interval
+	numiterations = [3]
 	neighborlist = [4]
 	# numiterations = [16]
-	numsenders = [1]
-	numreceivers = [1]
-	l4types = ["TCP"]
+	numsenders = [float(1)/256]
+	numreceivers = [float(1)/256]
+	l4types = ["UDP"]
+	workload = "rnrm"
 
 	namesuffix = `numberofnodes[0]` + "_neighbor"
 
@@ -295,12 +311,13 @@ if __name__ == '__main__':
 	writetofile = False
 
   # execute = True # uncomment this line to execute the command)
-	# writetofile = True
+	writetofile = True
 
 	filestoplot = []
 	for i,command in enumerate(commands):
 		if writetofile:
-			command += " 2> " + logfnames[i]
+			# command += " 2> " + logfnames[i]
+			command += " 2> " + logfnames[i] + `i` + ' &'
 		print(command)
 		# print(logfnames[i])
 		if execute:

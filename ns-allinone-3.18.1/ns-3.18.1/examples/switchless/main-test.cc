@@ -45,9 +45,9 @@ int
 main (int argc, char * argv[])
 {
 
+    LogComponentEnable ("DataCenterApp", LOG_DEBUG);
     // LogComponentEnable ("DataCenterApp", LOG_LEVEL_ALL);
     // LogComponentEnable ("DimensionOrderedL3Protocol", LOG_LEVEL_ALL);
-    LogComponentEnable ("DataCenterApp", LOG_DEBUG);
     // LogComponentEnable ("DimensionOrderedL3Protocol", LOG_LEVEL_ALL);
     // unsigned nRackSize = 0;
     // unsigned nTreeFanout = 0;
@@ -439,6 +439,7 @@ main (int argc, char * argv[])
         }
         else
         {
+            std::cout << "Running Random Sporadic" << std::endl;
             params.m_sendPattern = DataCenterApp::RANDOM_SPORADIC;
             params.m_maxSendInterval = MicroSeconds(nMaxinterval);
             params.m_minSendInterval = MicroSeconds(nMininterval);
@@ -448,7 +449,7 @@ main (int argc, char * argv[])
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
         bool ret = app->Setup(params, *it, network_stack_type, DEBUG);
         if (!ret){
-            std::cout << "Setup failed" << std::endl;
+            std::cout << "Setup senders failed" << std::endl;
             exit(1);
         }
         topology->GetNode(*it)->AddApplication(app);
@@ -462,7 +463,7 @@ main (int argc, char * argv[])
         Ptr<DataCenterApp> app = CreateObject<DataCenterApp>();
         bool ret = app->Setup(params, *it, network_stack_type, DEBUG); 
         if (!ret){
-            std::cout << "Setup failed" << std::endl;
+            std::cout << "Setup receivers failed" << std::endl;
             exit(1);
         }
         topology->GetNode(*it)->AddApplication(app);
@@ -480,6 +481,8 @@ main (int argc, char * argv[])
     std::cout << "Running simulation\n";
     Simulator::Run ();
     Simulator::Destroy ();
+
+    std::cout << "Simulation finished\n";
 
     return 0;
 }

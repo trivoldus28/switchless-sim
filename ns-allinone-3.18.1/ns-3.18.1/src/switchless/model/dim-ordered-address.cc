@@ -87,6 +87,7 @@ DimensionOrderedAddress::SetAddress (uint8_t x, uint8_t y, uint8_t z)
     m_addressZ = z;
 }
 
+
 bool
 DimensionOrderedAddress::IsEqual (const DimensionOrderedAddress &other) const
 {
@@ -116,9 +117,9 @@ void
 DimensionOrderedAddress::Print (std::ostream &os) const
 {
     NS_LOG_FUNCTION (this);
-    os << "(" << std::to_string(m_addressX) << 
-          ", " << std::to_string(m_addressY) << 
-          ", " << std::to_string(m_addressZ) << ")";
+    os << "(" << (int)(m_addressX) << 
+          ", " << (int)(m_addressY) << 
+          ", " << (int)(m_addressZ) << ")";
 }
 
 bool
