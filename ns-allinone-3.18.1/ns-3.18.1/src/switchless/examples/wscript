@@ -13,4 +13,13 @@ def build(bld):
         'dim-ordered-udp-client.cc',
         'dim-ordered-udp-server.cc',
         'dim-ordered-udp-example.cc'
+    
+    }
+
+    obj = bld.create_ns3_program('dim-ordered-tcp-example', ['core', 'network', 'point-to-point', 'switchless'])
+    obj.source = {
+        'dim-ordered-tcp-client.cc',
+        'dim-ordered-tcp-server.cc',
+        'dim-ordered-tcp-example.cc'
+    
     }

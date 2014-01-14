@@ -63,7 +63,7 @@ DoUdpSocketImpl::~DoUdpSocketImpl ()
       /**
        * Note that this piece of code is a bit tricky:
        * when DeAllocate is called, it will call into
-       * Ipv4EndPointDemux::Deallocate which triggers
+       * DimensionOrderedEndPointDemux::Deallocate which triggers
        * a delete of the associated endPoint which triggers
        * in turn a call to the method DoUdpSocketImpl::Destroy below
        * will will zero the m_endPoint field.

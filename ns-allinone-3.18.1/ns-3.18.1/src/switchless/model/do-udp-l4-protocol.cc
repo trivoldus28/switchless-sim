@@ -117,7 +117,7 @@ DoUdpL4Protocol::DoDispose (void)
   m_node = 0;
   m_downTarget.Nullify ();
 /*
- = MakeNullCallback<void,Ptr<Packet>, Ipv4Address, Ipv4Address, uint8_t, Ptr<Ipv4Route> > ();
+ = MakeNullCallback<void,Ptr<Packet>, DimensionOrderedAddress, DimensionOrderedAddress, uint8_t> ();
 */
   DimensionOrderedL4Protocol::DoDispose ();
 }

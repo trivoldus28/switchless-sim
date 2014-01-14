@@ -1,11 +1,11 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 
-#include "dim-ordered-udp-server.h"
+#include "dim-ordered-tcp-server.h"
 
-NS_LOG_COMPONENT_DEFINE ("DimensionOrderedUdpServer");
-NS_OBJECT_ENSURE_REGISTERED (DimensionOrderedUdpServer);
+NS_LOG_COMPONENT_DEFINE ("DimensionOrderedTcpServer");
+NS_OBJECT_ENSURE_REGISTERED (DimensionOrderedTcpServer);
 
-DimensionOrderedUdpServer::DimensionOrderedUdpServer ()
+DimensionOrderedTcpServer::DimensionOrderedTcpServer ()
   : m_setup (false),
     m_running (false),
     m_rxSocket (0),
@@ -14,13 +14,13 @@ DimensionOrderedUdpServer::DimensionOrderedUdpServer ()
     NS_LOG_FUNCTION (this);
 }
 
-DimensionOrderedUdpServer::~DimensionOrderedUdpServer ()
+DimensionOrderedTcpServer::~DimensionOrderedTcpServer ()
 {
     NS_LOG_FUNCTION (this);
 }
 
 bool
-DimensionOrderedUdpServer::Setup ()
+DimensionOrderedTcpServer::Setup ()
 {
     NS_LOG_FUNCTION (this);
 
@@ -29,29 +29,30 @@ DimensionOrderedUdpServer::Setup ()
 }
 
 void
-DimensionOrderedUdpServer::StartApplication (void)
+DimensionOrderedTcpServer::StartApplication (void)
 {
     NS_LOG_FUNCTION (this);
 
     if (!m_setup)
-        NS_LOG_WARN ("Application started before calling DimensionOrderedUdpClient::Setup. Using defaults.");
+        NS_LOG_WARN ("Application started before calling DimensionOrderedTcpClient::Setup. Using defaults.");
 
     m_running = true;
     // Create socket and connect to server
     Ptr<DimensionOrdered> dimOrdered = GetNode ()->GetObject<DimensionOrdered> ();
     NS_ASSERT_MSG (dimOrdered, "Application started without a DimensionOrdered stack installed on the node");
-    m_rxSocket = Socket::CreateSocket (GetNode (), DoUdpSocketFactory::GetTypeId ());
+    m_rxSocket = Socket::CreateSocket (GetNode (), DoTcpSocketFactory::GetTypeId ());
     DimensionOrderedSocketAddress local = DimensionOrderedSocketAddress (DimensionOrderedAddress::GetAny (), PORT);
     m_rxSocket->Bind (local);
-    m_rxSocket->SetRecvCallback (MakeCallback (&DimensionOrderedUdpServer::HandleRead, this));
-    m_rxSocket->SetAcceptCallback (MakeCallback (&DimensionOrderedUdpServer::HandleConnectionRequest, this),
-                                   MakeCallback (&DimensionOrderedUdpServer::HandleAccept, this));
-    m_rxSocket->SetCloseCallbacks (MakeCallback (&DimensionOrderedUdpServer::HandleClose, this),
-                                   MakeCallback (&DimensionOrderedUdpServer::HandleError, this));
+    m_rxSocket->Listen ();
+    m_rxSocket->SetRecvCallback (MakeCallback (&DimensionOrderedTcpServer::HandleRead, this));
+    m_rxSocket->SetAcceptCallback (MakeCallback (&DimensionOrderedTcpServer::HandleConnectionRequest, this),
+                                   MakeCallback (&DimensionOrderedTcpServer::HandleAccept, this));
+    m_rxSocket->SetCloseCallbacks (MakeCallback (&DimensionOrderedTcpServer::HandleClose, this),
+                                   MakeCallback (&DimensionOrderedTcpServer::HandleError, this));
 }
 
 void
-DimensionOrderedUdpServer::StopApplication (void)
+DimensionOrderedTcpServer::StopApplication (void)
 {
     NS_LOG_FUNCTION (this);
 
@@ -68,7 +69,7 @@ DimensionOrderedUdpServer::StopApplication (void)
 }
 
 void
-DimensionOrderedUdpServer::SendResponsePacket (Ptr<Socket> socket, Address& to)
+DimensionOrderedTcpServer::SendResponsePacket (Ptr<Socket> socket, Address& to)
 {
     NS_LOG_FUNCTION (this << socket << to);
 
@@ -82,21 +83,21 @@ DimensionOrderedUdpServer::SendResponsePacket (Ptr<Socket> socket, Address& to)
 }
 
 bool
-DimensionOrderedUdpServer::HandleConnectionRequest (Ptr<Socket> socket, const Address &from)
+DimensionOrderedTcpServer::HandleConnectionRequest (Ptr<Socket> socket, const Address &from)
 {
     NS_LOG_FUNCTION (this << socket << from);
     NS_LOG_INFO ("Node " << GetNode ()->GetId () << " connection request received:\n" <<
                  "      Source: " << DimensionOrderedSocketAddress::ConvertFrom (from).GetDimensionOrderedAddress () << "\n" <<
                  "      Destination: " << GetNode ()->GetObject<DimensionOrdered> ()->GetAddress (DimensionOrdered::X_POS).GetLocal () << "\n" <<
                  "      Time: " << Simulator::Now ());
-
+    return true;
 }
 
 void
-DimensionOrderedUdpServer::HandleAccept (Ptr<Socket> socket, const Address &from)
+DimensionOrderedTcpServer::HandleAccept (Ptr<Socket> socket, const Address &from)
 {
     NS_LOG_FUNCTION (this << socket << from);
-    socket->SetRecvCallback (MakeCallback (&DimensionOrderedUdpServer::HandleRead, this));
+    socket->SetRecvCallback (MakeCallback (&DimensionOrderedTcpServer::HandleRead, this));
     m_acceptSockets.push_back (socket);
     NS_LOG_INFO ("Node " << GetNode ()->GetId () << " connection accepted:\n" <<
                  "      Source: " << DimensionOrderedSocketAddress::ConvertFrom (from).GetDimensionOrderedAddress () << "\n" <<
@@ -105,7 +106,7 @@ DimensionOrderedUdpServer::HandleAccept (Ptr<Socket> socket, const Address &from
 }
 
 void
-DimensionOrderedUdpServer::HandleRead (Ptr<Socket> socket)
+DimensionOrderedTcpServer::HandleRead (Ptr<Socket> socket)
 {
     NS_LOG_FUNCTION (this << socket);
 
@@ -127,7 +128,7 @@ DimensionOrderedUdpServer::HandleRead (Ptr<Socket> socket)
 }
 
 void
-DimensionOrderedUdpServer::HandleClose (Ptr<Socket> socket)
+DimensionOrderedTcpServer::HandleClose (Ptr<Socket> socket)
 {
     NS_LOG_FUNCTION (this << socket);
     NS_LOG_INFO ("Node " << GetNode ()->GetId () << " connection closed:\n" <<
@@ -135,7 +136,7 @@ DimensionOrderedUdpServer::HandleClose (Ptr<Socket> socket)
 }
 
 void
-DimensionOrderedUdpServer::HandleError (Ptr<Socket> socket)
+DimensionOrderedTcpServer::HandleError (Ptr<Socket> socket)
 {
     NS_LOG_FUNCTION (this << socket);
     NS_LOG_ERROR ("Node " << GetNode ()->GetId () << " connection error:\n" <<

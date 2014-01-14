@@ -15,8 +15,7 @@ DimensionOrderedStackHelper::DimensionOrderedStackHelper ()
 void
 DimensionOrderedStackHelper::Initialize ()
 {
-    // TODO: uncomment when TCP is finished
-    //SetTcp ("ns3::DoTcpL4Protocol");
+    SetTcp ("ns3::DoTcpL4Protocol");
 }
 
 DimensionOrderedStackHelper::~DimensionOrderedStackHelper ()
@@ -95,8 +94,7 @@ DimensionOrderedStackHelper::Install (Ptr<Node> node, std::tuple<uint8_t, uint8_
     dimOrdered->SetDimensionsMax (dimsMax);
 
     CreateAndAggregateObjectFromTypeId (node, "ns3::DoUdpL4Protocol");
-    //TODO: uncomment when TCP is finished
-    //node->AggregateObject (m_tcpFactory.Create<Object> ());
+    node->AggregateObject (m_tcpFactory.Create<Object> ());
     Ptr<PacketSocketFactory> factory = CreateObject<PacketSocketFactory> ();
     node->AggregateObject (factory);
 }
