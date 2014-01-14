@@ -21,7 +21,13 @@ FIGS= figs/conventional-hierarchical-topo.pdf \
       figs/switchless-arch-torus.pdf \
       figs/switchless-arch-cube.pdf \
       figs/in-server-switch-bus.pdf \
-      figs/in-server-switch-noc.pdf
+      figs/in-server-switch-noc.pdf \
+      figs/dimension_ordered_udp.pdf \
+      figs/Nbody_cube-dimordered_parsed_delay.pdf \
+      figs/Nbody_cube-dimordered_parsed_latency.pdf \
+      figs/Weather_cube-dimordered_50.log.parsed_delay.pdf \
+      figs/Weather_cube-dimordered_delay.pdf
+      
 
 all: $(TARGET).ps
 pdf: all
@@ -29,6 +35,7 @@ pdf: all
 $(TARGET).pdf: Makefile  $(SOURCES) $(FIGS)
 	pdflatex  $(TARGET).tex
 	-bibtex --min-crossrefs=100    $(TARGET)
+	pdflatex  $(TARGET).tex
 	pdflatex  $(TARGET).tex
 
 color: $(TARGET).pdf
