@@ -1,14 +1,59 @@
 \section{Evaluation}
 \label{sec:eval}
+In this paper, we attempt to answer performance concerns with switching to a switchless topology from either fat-tree or hierarchical set-up: how much slower would running a workload like weather modeling or Hadoop? To this end, we simulate a micro-benchmark with parameters approximate that of real workloads on 2 switchless topologies (mesh and cube), and 2 traditional topologies (fat-tree and hierarchical). As alluded to in Section~\ref{sec:arch}, we do not expect switchless to have higher performance than a fat-tree. Yet, with the massive force of low-cost attached to switchless, we would hope that any performance degradation would not be so drastic.
+
+We also ran a few more benchmarks such as a bandwidth stress test to see the effect of increasing data transfer rate, as well as the efficiency of UDP vs TCP.
 
 \subsection {Methodology}
 For performance evaluation, we use ns3, an open-source discrete-event network simulator devleoped by network research community. We modified the significant portion of the simulator for our purpose. These modifications include addition of dimension-ordered routing protocol, addition of various network topologies, etc. ns-3 simulator augmented with our modifications models all five OSI communication layers to the certain detail.
 
 As it is hard to define a small representative application for the data center, we used a micro-benchmark that can be configured to model various different data center application's communication pattern. For example, this micro-benchmark can be configured to generate simple all-to-all style communication traffic with set intensity. On the other hand, it can also be configured to generate sporadic communications between two random nodes. Note that there are many other possible configurations which can model varying communication types.
 
+% benchmark configurations (common)
+The default configurations for all simulations are detailed in Table~\ref{tab:configurations}, unless noted specifically.
+% # host: 512
+% Ethernet links: 1Gbps
+% hierarchical: 1 core, balanced fan-outs (agg / edge == edge / host)
+% link latency is 500ns
+% cube z-dimension limit is 40
+% 
+
 \subsection {Results}
-Results -- 
-(1) Impact of topology change on performance
-(2) Impact of routing change on performance
-(3) Application Sensitivity (Different application configurations)
-(4) Scalability (host count change)
+% Results -- 
+% (1) Impact of topology change on performance
+% (2) Impact of routing change on performance
+% (3) Application Sensitivity (Different application configurations)
+% (4) Scalability (host count change)
+
+
+\subsubsection{N-Body simulation performance}
+\newcommand{\nbody}{N-Body}
+In a classic \nbody simulation, we have an all-to-all communication pattern. In Figure~\ref{fig:nbody_packetdelay} we have the latency distribution graph of all packets sent in one computation round of an \nbody simulation; in Figure~\ref{fig:nbody_latency} we have the longest packet delay--the global communication latency of a computation round--compared.
+
+\captionsetup[subfloat]{captionskip=-0.003in}
+\begin{figure}
+    \centering
+    \subfloat[Conventional Hierarchical]
+    {
+        \includegraphics[width=0.4\textwidth]{Nbody_cube-dimordered_parsed_delay.pdf}
+        \label{fig:nbody_packetdelay}
+    }
+    \\
+    \vspace{-0.1in}
+    \subfloat[Fat-Tree]
+    {
+        \includegraphics[width=0.4\textwidth]{Nbody_cube-dimordered_parsed_latency.pdf}
+        \label{fig:nbody_latency}
+    }
+    \vspace{-0.07in}
+    \caption{Common Data Center Network Topologies}
+    \label{fig:common_topos}
+\end{figure}
+
+First, looking at the packet delay graph, we see that while switchless topologies have higher occurences of really short packet delay (nodes close together), they also have a long tails (nodes far away) that limit the global computation throughput of an \nbody simulation. As shown in Figure~\ref{fig:nbody_latency}, fat-tree is about 4 times faster than cube and hierarchy, and as much as 7 times faster than mesh topology.
+
+On the other hand, it doesn't necessarily mean that simulation under fat-tree is 4 times faster than cube: the computational time is needed to compute overall performance.
+% perhaps we need a plot here, comparing different topologies' time in y axis with computational time in the x axis.
+
+\subsubsection{Weather modeling performance}
+In weather modeling, we have 
