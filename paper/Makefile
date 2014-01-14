@@ -17,7 +17,11 @@ SOURCES=$(NAME)-cos518.tex \
 	local.bib
 
 FIGS= figs/conventional-hierarchical-topo.pdf \
-      figs/fat-tree-topo.pdf
+      figs/fat-tree-topo.pdf \
+      figs/switchless-arch-torus.pdf \
+      figs/switchless-arch-cube.pdf \
+      figs/in-server-switch-bus.pdf \
+      figs/in-server-switch-noc.pdf
 
 all: $(TARGET).ps
 pdf: all
