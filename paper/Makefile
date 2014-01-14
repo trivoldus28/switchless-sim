@@ -9,13 +9,15 @@ GNUPLOT:= gnuplot
 SOURCES=$(NAME)-cos518.tex \
 	abstract.tex \
 	intro.tex \
-	design.tex \
+	background.tex \
+    arch.tex \
 	eval.tex \
 	related.tex \
 	conclusion.tex \
 	local.bib
 
-FIGS=
+FIGS= figs/conventional-hierarchical-topo.pdf \
+      figs/fat-tree-topo.pdf
 
 all: $(TARGET).ps
 pdf: all
@@ -49,4 +51,4 @@ display: $(TARGET).pdf
 	evince $(TARGET).pdf
 
 clean:
-	rm -f *.aux *.log *.out *.bbl *.blg *~ *.bak $(FIGS) $(TARGET).ps $(TARGET).pdf
+	rm -f *.aux *.log *.out *.bbl *.blg *~ *.bak $(TARGET).ps $(TARGET).pdf
