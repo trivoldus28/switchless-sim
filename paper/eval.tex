@@ -75,6 +75,28 @@ Figure~\ref{fig:weather_packetdelay} shows the distribution graph of all packets
 
 On the other hand, there are a few reasons why hierarchical or fat-tree has good performance. The most conspicuous reason is that our micro-benchmark doesn't map exactly to a weather modeling simulation in that for each node we pick the six closest neighbors, which will always be in the same rack [IS THIS TRUE???]. If time allows, we will adjust the parameters for a more accurate results.
 
+\subsubsection{Random N to random M}
+
+\captionsetup[subfloat]{captionskip=-0.003in}
+\begin{figure}
+    \centering
+    \subfloat[Packet Delay Distribution]
+    {
+        \includegraphics[width=0.3\textwidth]{25_delay}
+        \label{fig:25_packetdelay}
+    }
+    \\
+    \vspace{-0.1in}
+    \subfloat[Longest Delay]
+    {
+        \includegraphics[width=0.3\textwidth]{25_latency.pdf}
+        \label{fig:25_latency}
+    }
+    \vspace{-0.07in}
+    \caption{RNRM Simulation Results}
+\end{figure}
+
+
 \subsubsection{TCP vs UDP}
 Data center operators usually run TCP as the level 4 networking stack for better compatibility with MAN and WAN [CITE?? I DONT THINK THIS IS TRUE]. However, TCP has more overhead compared with UDP, and TCP guarantees are not necessary in data centers where dropped packet are rare. As we utilize a full network stack simulator for our study, we implement our topologies with both TCP and UDP and run a simulation exercise to see how the overheads compare.
 
