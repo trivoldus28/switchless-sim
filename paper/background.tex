@@ -1,8 +1,9 @@
+\vspace{-0.1in}
 \section{Background}
 \label{sec:background}
 
 This section discusses data center architectures that are commonly implemented today.  We discuss both network topologies and network stacks.  Of course, we do not claim that all data centers follow these architectures, however, we have found them to be the most common.
-
+\vspace{-0.1in}
 \subsection {Network Topology}
 
 Most data center network topologies today follow a hierarchical approach, using two or three levels of hierarchy~\cite{Al-Fares:2008:SCD}.  The edge is the lowest level of hierarchy, and typically consists of a set of servers in a rack connected to a top-of-rack switch.  At the next level, the aggregation level, a set of switches connect all top-of-rack switches together.  The root of the hierarchy, the core level, contains a set of root switches that connect the aggregation level switches together.  While not all data centers follow this exactly, they generally implement some variation of it.
@@ -11,7 +12,6 @@ More bandwidth is allocated to switches and links at higher levels of the hierar
 
 We consider two network toplogies commonly used today, conventional hierarchical and fat-tree.  Figure~\ref{fig:common_topos} illustrates the two network topologies.  The conventional hierarchical topology, Figure~\ref{fig:conventional_hierarchical_topo}, uses larger switches with higher-bandwidth links at higher levels in the hierarchy, while the fat-tree topology, Figure~\ref{fig:fat_tree_topo}, uses uniform switches and links with more switches and connections at higher levels in the hierarchy.
 
-Generally, the fat-tree topology is more expensive than the conventional hierarchical topology.  This is because it uses many more switches and the price difference between smaller switches and larger switches does not outweigh the difference in number of switches (see Section~\ref{sec:cost_model}).  However, the fat-tree topology provides a larger number of paths between a given source and destination, thus providing higher-bandwidth between nodes.  Having a larger number of paths between nodes also decreases the chance of network partitions since it is possible to route around failures.
 
 \captionsetup[subfloat]{captionskip=-0.003in}
 \begin{figure}
@@ -32,8 +32,8 @@ Generally, the fat-tree topology is more expensive than the conventional hierarc
     \caption{Common Data Center Network Topologies}
     \label{fig:common_topos}
 \end{figure}
-
-
 \subsection {Network Stack}
+
+Generally, the fat-tree topology is more expensive than the conventional hierarchical topology.  This is because it uses many more switches and the price difference between smaller switches and larger switches does not outweigh the difference in number of switches (see Section~\ref{sec:cost_model}).  However, the fat-tree topology provides a larger number of paths between a given source and destination, thus providing higher-bandwidth between nodes.  Having a larger number of paths between nodes also decreases the chance of network partitions since it is possible to route around failures.
 
 Our research [CITE] has shown that most data centers run a standard Internet stack internally consisting of Ethernet at the link layer, IP at the network layer, TCP or UDP at the transport layer, and a custom application layer protocol.  There may be special cases where proprietary protocols are used internally, however, this is uncommon.
