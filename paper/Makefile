@@ -26,7 +26,6 @@ FIGS= figs/conventional-hierarchical-topo.pdf \
       figs/dimension_ordered_udp.pdf \
       figs/nbody_delay.pdf \
       figs/nbody_latency.pdf \
-      figs/Weather_cube-dimordered_50.log.parsed_delay.pdf \
       figs/weather_delay.pdf
       
 
