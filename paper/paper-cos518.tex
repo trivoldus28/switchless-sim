@@ -19,12 +19,12 @@
 
 \ifthenelse{\equal{\PAGENUMBERS}{yes}}{%
 \usepackage[nohead,
-            left=1in,right=1in,top=1in,
-            footskip=0.5in,bottom=0.75in     % Room for page numbers
+            left=0.9in,right=0.9in,top=0.75in,
+            footskip=0.5in,bottom=0.70in     % Room for page numbers
             ]{geometry}
 }{%
 \usepackage[noheadfoot,columnsep=0.2in,
-            margin=1in,centering,truedimen]{geometry}
+            margin=0.8in,centering,truedimen]{geometry}
 }
 
 \usepackage{cite}
@@ -130,7 +130,6 @@ bookmarksopen = {true}
 
 \begin{document}
 \maketitle
-
 \input{abstract}   
 \input{intro}
 \input{background}
