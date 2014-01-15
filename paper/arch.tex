@@ -1,7 +1,8 @@
+\vspace{-0.1in}
 \section{Switchless Architecture}
 \label{sec:arch}
 
-The switchless architecture, as the name implies, removes switches from the data center network architecture.  Instead, switches are integrated into servers and the topology is chosen to keep the fanout of the in-server switches low.  The in-server switches could be implemented as separate boards attach to the server's I/O bus or they could be directly integrated with the processor on die.  We choose to focus on integrating the switches with the processor on die since silicon area is cheap and the latency from the processor to the switch is lower (and we are computer architects!).  In the following subsections, we discuss switchless network topologies, the design of in-server switches, the switchless network stack, and the benefits that come with the switchless architecture.
+The switchless architecture, as the name implies, removes switches from the data center network architecture.  Instead, switches are integrated into servers and the topology is chosen to keep the fanout of the in-server switches low.  The in-server switches could be implemented as separate boards attach to the server's I/O bus or they could be directly integrated with the processor on die.  We choose to focus on integrating the switches with the processor on die since silicon area is cheap and the latency from the processor to the switch is lower.  In the following subsections, we discuss switchless network topologies, the design of in-server switches, the switchless network stack, and the benefits that come with the switchless architecture.
 
 \subsection{Switchless Network Topologies}
 
