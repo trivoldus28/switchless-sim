@@ -99,10 +99,10 @@ On the other hand, there are a few reasons why hierarchical or fat-tree has good
 \end{figure}
 
 
-\subsubsection{TCP versus UDP}
-Data center operators usually run TCP as the level 4 networking stack~\cite{Regnier:2004:TCPODCS,Alizadeh:2010:DCT,Kandula:2009:NDC}. However, TCP has more overhead compared with UDP, and TCP guarantees are not necessary in data centers where dropped packet are rare. As we utilize a full network stack simulator for our study, we implement our topologies with both TCP and UDP and run a simulation exercise to see how the overheads compare.
+%\subsubsection{TCP versus UDP}
+%Data center operators usually run TCP as the level 4 networking stack~\cite{Regnier:2004:TCPODCS,Alizadeh:2010:DCT,Kandula:2009:NDC}. However, TCP has more overhead compared with UDP, and TCP guarantees are not necessary in data centers where dropped packet are rare. As we utilize a full network stack simulator for our study, we implement our topologies with both TCP and UDP and run a simulation exercise to see how the overheads compare.
 
-What we found was that, at least for our simulation set up, TCP has about the same performance as UDP, but packet drops are more frequent, leading to completion time timing out.
+%What we found was that, at least for our simulation set up, TCP has about the same performance as UDP, but packet drops are more frequent, leading to completion time timing out.
 
 
 \subsubsection{Dimension Ordered Routing versus IP Routing}
