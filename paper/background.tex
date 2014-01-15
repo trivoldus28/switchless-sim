@@ -2,10 +2,12 @@
 \section{Background}
 \label{sec:background}
 
-This section discusses data center architectures that are commonly implemented today. Fat-tree and Hierarchy-based datacenter network architectures are mostly common forms.
- %We discuss both network topologies and network stacks.  Of course, we do not claim that all data centers follow these architectures, however, we have found them to be the most common.
+This section discusses data center architectures that are commonly implemented today. We discuss both network topologies and network stacks.  Of course, we do not claim that all data centers follow these architectures, however, we have found them to be the most common.
+
+%Fat-tree and hierarchy-based datacenter network architectures are mostly common forms.
 %\vspace{-0.1in}
-%\subsection {Network Topology}
+
+\subsection {Network Topology}
 
 Most data center network topologies today follow a hierarchical approach, using two or three levels of hierarchy~\cite{Al-Fares:2008:SCD}.  The edge is the lowest level of hierarchy, and typically consists of a set of servers in a rack connected to a top-of-rack switch.  At the next level, the aggregation level, a set of switches connect all top-of-rack switches together.  The root of the hierarchy, the core level, contains a set of root switches that connect the aggregation level switches together.  While not all data centers follow this exactly, they generally implement some variation of it.
 
