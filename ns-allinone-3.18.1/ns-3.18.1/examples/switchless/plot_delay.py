@@ -43,7 +43,7 @@ def plotDelay(resultFilenames):
                 if re.search ("\([-+]?[0-9]*\.?[0-9]+, [-+]?[0-9]*\.?[0-9]+\)", line) :
                     splitLine = line.split (",")
                     packetSize = int (splitLine[0][1:])
-                    delay = float (splitLine[1][1:-2])
+                    delay = float (splitLine[1][1:-2]) / 1000.0;
                     sizeValues[index].append (packetSize)
                     delayValues[index].append (delay)
                 else :
@@ -55,13 +55,16 @@ def plotDelay(resultFilenames):
             if delayValue > maxDelay :
                 maxDelay = delayValue
 
-    colors = cm.rainbow ( np.linspace (0, 1, len (delayValues)))
+    matplotlib.rcParams.update({'font.size':17})
+    matplotlib.rcParams.update({'figure.autolayout': True})
+
+    colors = cm.gray ( np.linspace (0, 1, len (delayValues)))
     shortenedfilenames = []
     for name in resultFilenames:
         shortenedfilenames.append(name.split('.')[0])
     plt.hist(delayValues, 20, color=colors, label=shortenedfilenames)
     plt.legend()
-    plt.xlabel ("Packet Delay (ns)")
+    plt.xlabel ("Packet Delay (us)")
     plt.ylabel ("Occurrences")
     plt.savefig ("delay.pdf")
     plt.close()
