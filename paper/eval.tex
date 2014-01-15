@@ -32,7 +32,7 @@ The default configurations for all simulations are detailed in Table~\ref{tab:co
 The following sections present simulation results for different communication patterns and protocols.
 
 
-\subsubsection{All-to-All Communication}
+\subsubsection{All-to-All Communication}\label{sec:all-to-all-communication}
 \newcommand{\nbody}{N-Body}
 In all-to-all communication, all nodes communicate to all other nodes.  This type of communication pattern is representative of applications such as \nbody~simulations and other data center applications in which nodes must communicate to all other nodes. Figure~\ref{fig:nbody_packetdelay} shows the packet delay distribution of all packets sent in one computation round of an all-to-all simulation for all topologies and network stacks; Figure~\ref{fig:nbody_latency} shows the longest packet delay--the global communication latency of a computation round--compared.
 
@@ -62,7 +62,9 @@ On the other hand, it does not necessarily mean that simulation under fat-tree i
 % perhaps we need a plot here, comparing different topologies' time in y axis with computational time in the x axis.
 
 \subsubsection{All-to-Neighbors Communication}
-In all-to-neighbors, every node communicates with only its neighbors; this means that every node in the system communicates to six other nodes in the cube topology. This communication pattern represents applications such as weather modeling and other data center applications with localized communication.  This workload should map very well to switchless topologies, whereas conventional hierarchical and fat-tree could still perform well but the energy cost may be significant. [WHAT DOES NEIGHBORS MEAN FOR HIERARCHICAL AND FAT-TREE?? AND WHAT ENERGY COST??]
+In all-to-neighbors, every node communicates with only its neighbors; this means that every node in the system communicates to six other nodes in the cube topology. This communication pattern represents applications such as weather modeling and other data center applications with localized communication.  This workload should map very well to switchless topologies.
+%whereas conventional hierarchical and fat-tree could still perform well.
+%but the energy cost may be significant. 
 
 \captionsetup[subfloat]{captionskip=-0.003in}
 \begin{figure}
@@ -73,7 +75,8 @@ In all-to-neighbors, every node communicates with only its neighbors; this means
     \label{fig:weather_packetdelay}
 \end{figure}
 
-Figure~\ref{fig:weather_packetdelay} shows the distribution graph of all packets transferred in a computation round of an all-to-neighbors communication pattern with six neighbors. For reasons not quite understood, there are still packets which have long delays with both cube and torus topology. [WE SHOULD UNDERSTAND THIS OR GIVE SOME REASONS, I HAVE SOME IDEAS]
+Figure~\ref{fig:weather_packetdelay} shows the distribution graph of all packets transferred in a computation round of an all-to-neighbors communication pattern with six neighbors. 
+For reasons not quite understood, there are still packets which have long delays with both cube and torus topology. [WE SHOULD UNDERSTAND THIS OR GIVE SOME REASONS, I HAVE SOME IDEAS]
 
 On the other hand, there are a few reasons why hierarchical or fat-tree has good performance. The most conspicuous reason is that our micro-benchmark doesn't map exactly to a all-to-neighbors simulation in that for each node we pick the six closest neighbors, which will always be in the same rack. If time allows, we will adjust the parameters for a more accurate results.
 
