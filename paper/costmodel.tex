@@ -13,7 +13,7 @@ This section is organized into two subsections. First, we will state our assumpt
 
 There are two types of switches utilized in our evaluations: a top-of-rack switch that has 36 10Gbps ports plus 4 uplink 40Gbps ports, and an aggregator switch that has 32 40Gbps ports. A quick survey reveals that the current cheapest price for these are \$7k and \$14k accordingly (Mellanox SX1012 and Mellanox SX1036).
 
-\subsubsection{Links}
+\subsubsection{Interconnects}
 First, we assumed a 10Gbps Ethernet connection on all hosts and switches, with the exception of hierarchical designs where top-of-rack and aggregators are using 40Gbps links.
 
 Second, we assume that data centers will not use copper Ethernet for links longer than 15m. While at 10Gbps, certain copper connectors are rated at up to 100m, at 40Gbps this maximum length decreases to 30m, and while there is not yet a standard for 100Gbps copper Ethernet, we would guess that these will be only able to carry clean signal at an even shorter range. Therefore, while switchless can operate solely on copper Ethernet, other topologies will have to use fiber optics at the aggregation/core range. In the following cost equations, we do not take into account the copper cost, while the fiber optic link cost is assumed to be \$1 per meter, which requires a pair of optical transceivers (10GBASE-SR or 40GBASE-SR) each costing \$200.
@@ -22,11 +22,11 @@ Second, we assume that data centers will not use copper Ethernet for links longe
 Integrating a network switch on-chip will incur cost in several areas of a microprocessor. We discuss a few of these: off-chip pins, power constraint, die area consumption, and external extension board for Ethernet jacks. While there can be many sources of on-chip network switch cost, silicon cost of an additional core and an extension board cost are two huge main factors. Other sources, such as additional off-chip pins, and thermal/power related costs are negligible. 
 \newcommand{\subsubsubsection}{\textbf}
 
-\subsubsubsection{Off-chip pin}
-We do not think that off-chip pins requirement will be a significant factor in cost due to the low number of pins required for a Ethernet connection. As described in IEEE standards~\cite{eithercitation?}, a standard Ethernet jack contains 4 differential-pairs, for a total of 8 pins. With a minimum of 6 ports required for a cube switchless topology, this means we need to dedicate 48 pins to the on-chip Ethernet switch. This is only 1.5x that of 32 pins requirement for a 16x PCI-E connection, of which a regular server has up to 40x[DO THESE ALL CORRESPOND TO PROCESSOR PINS?]~\cite{https://www-ssl.intel.com/content/www/us/en/processors/xeon/xeon-e5-v2-datasheet-vol-1.htmlFIXME}. Furthermore, it is possible for Ethernet data to be transferred through PCI-E to get to the CPU.
+\subsubsubsection{Processor pins}
+We do not think that off-chip pins requirement will be a significant factor in cost due to the low number of pins required for a Ethernet connection. A standard RJ45 Ethernet jack contains 4 differential-pairs, for a total of 8 pins. With a minimum of 6 ports required for a cube switchless topology, this means we need to dedicate 48 pins to the on-chip Ethernet switch. This is only 1.5x that of 32 pins requirement for a 16x PCI-E connection, of which a regular server has up to 40x. Furthermore, it is possible for Ethernet data to be transferred through PCI-E to get to the CPU.
 
 \subsubsubsection{Power constraint}
-As estimated in~\cite{cheap_silicon}, some reasonable power consumption per-link count for a 10Gbps switch is 1W for commodity switches, 3W for programmable pipelines, and 3W for general-purpose CPU-based switches. With 6 links for a cube topology, we would expect to spend 6-18W for power consumption, depending on implementation. While we do not include power consumption in our trade-off analysis, heat dissipation limit of the CPU is a major limitation on potential switchless architectures.
+As estimated in~\cite{cheapsilicon}, some reasonable power consumption per-link count for a 10Gbps switch is 1W for commodity switches, 3W for programmable pipelines, and 3W for general-purpose CPU-based switches. With 6 links for a cube topology, we would expect to spend 6-18W for power consumption, depending on implementation. While we do not include power consumption in our trade-off analysis, heat dissipation limit of the CPU is a major limitation on potential switchless architectures.
 
 \subsubsubsection{Die area cost}
 Die area cost of an on-chip switch is hugely dependent on the implementation, and the switching features needed. Here we will only give a bare minimum estimation.
@@ -37,7 +37,7 @@ However, the same can be said for fat-tree or hierarchical topologies where a cu
 
 In the worst case, a dedicated CPU core is needed to manage the hash table. Now we have a different question: whether a single core is fast enough to switch packets without performance degradation. It turns out that, for 1500B packets and 10Gbps, an Ethernet link will interrupt the processor 833 times a second. A single RISC core at 2GHz will have ample time to multiplex multiple links.
 
-Considering the cost of such a processor in products like Beaglebone~\cite{FIXME}, we estimate the silicon cost of an additional dedicated core at \$20 for calculation purposes.
+Considering the cost of such a processor in products like Beaglebone, we estimate the silicon cost of an additional dedicated core at \$20 for calculation purposes.
 
 \subsubsubsection{Extension board}
 Hosts' motherboards will probably not have 6 Ethernet jacks to be used for switchless, so we include an extension board to the cost equation at \$50 per host.
@@ -75,3 +75,17 @@ Interconnect_{cost} = \$500 * (K^4 / 8)
 \end{align}
 \subsubsection{Switchless}
 Switchless does not have switches, and we do not take into acount the copper Ethernet cables. Its other costs involve the cost of silicon (\$20) and the cost of the extension board (\$50).
+
+\subsection{Analysis}
+
+\captionsetup[subfloat]{captionskip=-0.003in}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.3\textwidth]{10000_linear_permachinecost}
+    \vspace{-0.1in}
+    \caption{Per-host cost of network as number of host is increased to 10,000.}
+    \label{fig:cost_perhost}
+\end{figure}
+
+As seen in Figure~\ref{fig:cost_perhost}, the cost of fat-tree can increase up to \$20000, traditional hierarchy (with bandwidth overprovisioning) to \$2000, while switchless remains a flat \$70.
+
