@@ -41,18 +41,18 @@ In all-to-all communication, all nodes communicate to all other nodes.  This typ
     \centering
     \subfloat[Packet Delay Distribution]
     {
-        \includegraphics[width=0.3\textwidth]{nbody_delay}
+        \includegraphics[width=0.25\textwidth]{nbody_delay}
         \label{fig:nbody_packetdelay}
     }
     \\
     \vspace{-0.1in}
     \subfloat[Longest Delay]
     {
-        \includegraphics[width=0.3\textwidth]{nbody_latency.pdf}
+        \includegraphics[width=0.25\textwidth]{nbody_latency.pdf}
         \label{fig:nbody_latency}
     }
     \vspace{-0.07in}
-    \caption{N-Body Simulation Results}
+    \caption{All-to-All Simulation Results}
     \label{fig:common_topos}
 \end{figure}
 
@@ -67,9 +67,9 @@ In all-to-neighbors, every node communicates with only its neighbors; this means
 \captionsetup[subfloat]{captionskip=-0.003in}
 \begin{figure}
     \centering
-    \includegraphics[width=0.3\textwidth]{weather_delay}    
+    \includegraphics[width=0.22\textwidth]{weather_delay}    
     \vspace{-0.1in}
-    \caption{Weather Modeling Packet Delay Distribution}
+    \caption{All-to-Neighbors Packet Delay Distribution}
     \label{fig:weather_packetdelay}
 \end{figure}
 
@@ -84,14 +84,14 @@ On the other hand, there are a few reasons why hierarchical or fat-tree has good
     \centering
     \subfloat[Packet Delay Distribution]
     {
-        \includegraphics[width=0.3\textwidth]{25_delay}
+        \includegraphics[width=0.25\textwidth]{25_delay}
         \label{fig:25_packetdelay}
     }
     \\
     \vspace{-0.1in}
     \subfloat[Longest Delay]
     {
-        \includegraphics[width=0.3\textwidth]{25_latency.pdf}
+        \includegraphics[width=0.25\textwidth]{25_latency.pdf}
         \label{fig:25_latency}
     }
     \vspace{-0.07in}
@@ -111,7 +111,7 @@ As mentioned, for switchless topologies, we had two implementations: one with TC
 \captionsetup[subfloat]{captionskip=-0.003in}
 \begin{figure}
     \centering
-    \includegraphics[width=0.3\textwidth]{dimension_ordered_udp}
+    \includegraphics[width=0.22\textwidth]{dimension_ordered_udp}
     \vspace{-0.1in}
     \caption{Packet Delay Distribution of a Torus Network Running UDP Over IP and UDP Over Dimension Ordered.}
     \label{fig:dim_ordered}
