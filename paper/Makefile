@@ -14,7 +14,7 @@ SOURCES=$(NAME)-cos518.tex \
 	eval.tex \
 	related.tex \
 	conclusion.tex \
-  costmodel.tex \
+    costmodel.tex \
 	local.bib
 
 FIGS= figs/conventional-hierarchical-topo.pdf \
@@ -24,7 +24,7 @@ FIGS= figs/conventional-hierarchical-topo.pdf \
       figs/in-server-switch-bus.pdf \
       figs/in-server-switch-noc.pdf \
       figs/dimension_ordered_udp.pdf \
-      figs/Nbody_cube-dimordered_parsed_delay.pdf \
+      figs/nbody_delay.pdf \
       figs/Nbody_cube-dimordered_parsed_latency.pdf \
       figs/Weather_cube-dimordered_50.log.parsed_delay.pdf \
       figs/Weather_cube-dimordered_delay.pdf
